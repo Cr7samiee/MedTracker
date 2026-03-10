@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - MedTracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div class="landing-container">
+        <nav class="navbar solid-nav">
+            <a href="index.html" class="logo" style="text-decoration:none;">
+                <span class="logo-icon">💊</span>
+                <span class="logo-text">MedTracker</span>
+            </a>
+            <div class="nav-links">
+                <span id="userRoleBadge" class="badge">Role</span>
+                <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+            </div>
+        </nav>
+
+        <main class="hero-section" style="padding-top: 100px; display: block;">
+            <div class="glass-card" style="max-width: 800px; margin: 0 auto; text-align: center;">
+                <h2>Welcome to your <span class="highlight">Dashboard</span></h2>
+                <p class="mt-4 text-muted">This is a placeholder for the post-login dashboard.</p>
+                <p class="mt-2 text-muted">You have successfully authenticated via Vanilla PHP and JS!</p>
+
+                <div class="mt-4">
+                    <div class="med-item success text-left" style="max-width: 400px; margin: 1rem auto;">
+                        <div class="med-icon">🎉</div>
+                        <div class="med-info">
+                            <h4>Authentication Success</h4>
+                            <span>Your session is active</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Very simple frontend check to see if role exists in DB/Storage
+            const storedRole = localStorage.getItem('role');
+            if (storedRole) {
+                document.getElementById('userRoleBadge').textContent = storedRole;
+            }
+
+            document.getElementById('logoutBtn').addEventListener('click', () => {
+                localStorage.removeItem('role');
+                // You would typically make a fetch call to complete logout in PHP
+                window.location.href = 'login.html';
+            });
+        });
+    </script>
+</body>
+
+</html>

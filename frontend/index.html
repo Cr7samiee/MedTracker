@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedTracker - Smart Medicine Reminder</title>
+    <!-- Modern font -> Outfit -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div class="landing-container">
+        <!-- Abstract gradient background shapes -->
+        <div class="bg-shape shape-1"></div>
+        <div class="bg-shape shape-2"></div>
+        <div class="bg-shape shape-3"></div>
+
+        <nav class="navbar">
+            <div class="logo">
+                <span class="logo-icon">💊</span>
+                <span class="logo-text">MedTracker</span>
+            </div>
+            <div class="nav-links">
+                <a href="login.html" class="nav-link">Login</a>
+                <a href="role_selection.html" class="btn btn-primary">Sign Up</a>
+            </div>
+        </nav>
+
+        <main class="hero-section">
+            <div class="hero-content">
+                <div class="badge fade-in-up">🌟 Your Health, Simplified</div>
+                <h1 class="hero-title fade-in-up delay-1">Never Miss a <span class="highlight">Dose</span> Again</h1>
+                <p class="hero-subtitle fade-in-up delay-2">
+                    MedTracker is your smart, elegant companion for managing medications, tracking inventory, and
+                    ensuring your loved ones stay healthy.
+                </p>
+                <div class="hero-actions fade-in-up delay-3">
+                    <a href="role_selection.html" class="btn btn-primary btn-large">Get Started <span
+                            class="arrow">→</span></a>
+                    <a href="login.html" class="btn btn-secondary btn-large">I already have an account</a>
+                </div>
+            </div>
+            <div class="hero-image-container fade-in-up delay-4">
+                <!-- Using a beautifully styled abstract representation of medicine tracking instead of an image to keep it fully vanilla CSS -->
+                <div class="glass-card mockup-card">
+                    <div class="mockup-header">
+                        <div class="mockup-dot red"></div>
+                        <div class="mockup-dot yellow"></div>
+                        <div class="mockup-dot green"></div>
+                    </div>
+                    <div class="mockup-body">
+                        <div class="mockup-title">Today's Schedule</div>
+
+                        <div class="med-item success">
+                            <div class="med-icon">💊</div>
+                            <div class="med-info">
+                                <h4>Amoxicillin</h4>
+                                <span>08:00 AM • After Breakfast</span>
+                            </div>
+                            <div class="med-status">Taken</div>
+                        </div>
+
+                        <div class="med-item pending">
+                            <div class="med-icon">💧</div>
+                            <div class="med-info">
+                                <h4>Vitamin C</h4>
+                                <span>02:00 PM • With Water</span>
+                            </div>
+                            <div class="med-status">Upcoming</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>

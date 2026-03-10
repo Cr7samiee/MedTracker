@@ -1,0 +1,30 @@
+# MedTracker Development Tasks
+
+## Phase 1: Planning and Setup
+- [ ] Write implementation plan for DB and Auth flow.
+- [ ] Review implementation plan with User.
+- [ ] Set up MySQL database and `users` table schema.
+
+## Phase 2: Backend Development (PHP)
+- [ ] Create `config.php` for database connection.
+- [ ] Create `signup.php` to handle user registration (Admin, Health Worker, User).
+- [ ] Create `login.php` to handle authentication via Phone and Password.
+- [ ] Set up PHPMailer for OTP emails.
+- [ ] Create `forgot_password.php` to generate and send OTP.
+- [ ] Create `reset_password.php` to verify OTP and update password.
+
+## Phase 3: Frontend Development (HTML/JS/CSS)
+- [ ] Create `index.html` (Get Started page) with premium medicine reminder aesthetics.
+- [ ] Create `role_selection.html` (Choose role for Login/Signup).
+- [ ] Create `signup.html` (Dynamic form fields based on role: Name, Phone, Email, Password, Post/Relation).
+- [ ] Create `login.html` (Phone and Password).
+- [ ] Create `forgot_password.html` and `reset_password.html` for OTP flow.
+- [ ] Create `dashboard.html` (Placeholder after login).
+- [ ] Write `css/style.css` for a beautiful, modern, dynamic design.
+- [ ] Write `js/script.js` for form validation, dynamic toggling of inputs, and AJAX requests.
+
+## Phase 4: Verification
+- [ ] Test Database creation.
+- [ ] Test Signup for each role.
+- [ ] Test Login flow.
+- [ ] Test Forgot Password (OTP) flow.

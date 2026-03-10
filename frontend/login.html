@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - MedTracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div class="landing-container center-content">
+        <div class="bg-shape shape-2" style="top: -100px; left: -100px; right: auto; bottom: auto;"></div>
+        <div class="bg-shape shape-3" style="bottom: 10%; right: 10%; left: auto; top: auto;"></div>
+
+        <nav class="navbar solid-nav">
+            <a href="index.html" class="logo" style="text-decoration:none;">
+                <span class="logo-icon">💊</span>
+                <span class="logo-text">MedTracker</span>
+            </a>
+        </nav>
+
+        <main class="auth-wrapper fade-in-up">
+            <div class="glass-card auth-card">
+                <div class="text-center mb-4">
+                    <h2>Welcome <span class="highlight">Back</span></h2>
+                    <p>Enter your details to access your account.</p>
+                </div>
+
+                <form id="loginForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" name="phone" required placeholder="e.g. 1234567890">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="password" name="password" required placeholder="••••••••">
+                            <button type="button" class="password-toggle">👁️</button>
+                        </div>
+                    </div>
+
+                    <div class="form-options mb-4">
+                        <label class="remember-me">
+                            <input type="checkbox"> Remember me
+                        </label>
+                        <a href="forgot_password.html" class="text-primary text-sm">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block" id="loginBtn">Log In</button>
+                    <div id="loginMessage" class="form-message"></div>
+                </form>
+
+                <div class="auth-footer mt-4 text-center">
+                    Don't have an account? <a href="role_selection.html" class="text-primary font-bold">Sign up</a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+
+</html>

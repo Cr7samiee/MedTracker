@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - MedTracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div class="landing-container center-content">
+        <div class="bg-shape shape-1" style="top: auto; bottom: -10%;"></div>
+
+        <nav class="navbar solid-nav">
+            <a href="index.html" class="logo" style="text-decoration:none;">
+                <span class="logo-icon">💊</span>
+                <span class="logo-text">MedTracker</span>
+            </a>
+        </nav>
+
+        <main class="auth-wrapper fade-in-up">
+            <div class="glass-card auth-card">
+                <div class="text-center mb-4">
+                    <h2>Create <span class="highlight">Account</span></h2>
+                    <p>Register as a <strong id="roleDisplay" class="text-primary">User</strong>.</p>
+                </div>
+
+                <form id="signupForm" class="auth-form">
+                    <input type="hidden" id="role" name="role" value="User">
+
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" name="name" required placeholder="John Doe">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" name="phone" required placeholder="9841000000">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" required placeholder="john@example.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="password" name="password" required placeholder="••••••••">
+                            <button type="button" id="togglePassword" class="password-toggle">👁️</button>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic field for Health Worker -->
+                    <div class="form-group" id="postGroup" style="display: none;">
+                        <label for="post">Post / Designation</label>
+                        <input type="text" id="post" name="post" placeholder="e.g. Senior Nurse">
+                    </div>
+
+                    <!-- Dynamic field for User -->
+                    <div class="form-group" id="relationGroup" style="display: none;">
+                        <label for="relation">Relation (if caring for someone else)</label>
+                        <input type="text" id="relation" name="relation" placeholder="e.g. self, mother, grandfather">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block mt-4" id="signupBtn">Sign Up</button>
+                    <div id="signupMessage" class="form-message"></div>
+                </form>
+
+                <div class="auth-footer mt-4 text-center">
+                    Already have an account? <a href="login.html" class="text-primary font-bold">Log in</a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+
+</html>
