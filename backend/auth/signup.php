@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     try {
-        // Fetch the last ID for this role to determine the next number
+        
         $stmt = $pdo->prepare("SELECT id FROM users WHERE role = ? ORDER BY CAST(SUBSTRING(id, 2) AS UNSIGNED) DESC LIMIT 1");
         $stmt->execute([$role]);
         $lastIdRow = $stmt->fetch();

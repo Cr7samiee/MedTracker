@@ -49,10 +49,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Password length validation
-            if (password.length < 8) {
+            // Strict Password validation
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+            if (!passwordRegex.test(password)) {
                 messageEl.className = 'form-message error';
-                messageEl.textContent = 'Password must be at least 8 characters long.';
+                messageEl.textContent = 'Password must be at least 8 characters long and include an uppercase letter, lowercase letter, number, and special character.';
                 return;
             }
 
@@ -188,13 +189,66 @@ document.addEventListener('DOMContentLoaded', () => {
     // ---- PASSWORD TOGGLE LOGIC ----
     document.querySelectorAll('.password-toggle').forEach(button => {
         button.addEventListener('click', function () {
-            const passwordInput = this.previousElementSibling;
-            if (passwordInput && passwordInput.tagName === 'INPUT') {
-                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                passwordInput.setAttribute('type', type);
+            const passwordInputToggle = this.previousElementSibling;
+            if (passwordInputToggle && passwordInputToggle.tagName === 'INPUT') {
+                const type = passwordInputToggle.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInputToggle.setAttribute('type', type);
                 this.textContent = type === 'password' ? '👁️' : '🙈';
             }
         });
     });
-});
 
+    // ---- PASSWORD STRENGTH LOGIC ----
+    const pwInput = document.getElementById('password');
+    const strengthBarContainer = document.getElementById('passwordStrengthBarContainer');
+    const strengthBar = document.getElementById('passwordStrengthBar');
+    const strengthText = document.getElementById('passwordStrengthText');
+
+    if (pwInput && strengthBarContainer && strengthBar && strengthText && document.getElementById('signupForm')) {
+        pwInput.addEventListener('input', () => {
+            const val = pwInput.value;
+            let strength = 0;
+
+            if (val.length > 0) {
+                strengthBarContainer.style.display = 'block';
+            } else {
+                strengthBarContainer.style.display = 'none';
+                strengthText.textContent = '';
+                return;
+            }
+
+            if (val.length >= 8) strength += 1;
+            if (/[a-z]/.test(val)) strength += 1;
+            if (/[A-Z]/.test(val)) strength += 1;
+            if (/\d/.test(val)) strength += 1;
+            if (/[@$!%*?&]/.test(val)) strength += 1;
+
+            let color = '';
+            let text = '';
+            let width = '';
+
+            if (strength <= 2) {
+                color = '#ff4d4d'; // Red
+                text = 'Weak';
+                width = '20%';
+            } else if (strength === 3) {
+                color = '#ff9900'; // Orange
+                text = 'Fair';
+                width = '40%';
+            } else if (strength === 4) {
+                color = '#ffcc00'; // Yellow
+                text = 'Good';
+                width = '70%';
+            } else if (strength === 5) {
+                color = '#00cc44'; // Green
+                text = 'Very Good';
+                width = '100%';
+            }
+
+            strengthBar.style.width = width;
+            strengthBar.style.backgroundColor = color;
+            strengthText.textContent = text;
+            strengthText.style.color = color;
+        });
+    }
+});

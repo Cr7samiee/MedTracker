@@ -26,8 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (password_verify($otp, $user['reset_token'])) {
                 $new_hash = password_hash($new_password, PASSWORD_DEFAULT);
-                $updateStmt = $pdo->prepare("UPDATE users SET password_hash = ?, reset_token = NULL, reset_token_expiry = NULL WHERE id = ?");
-                $updateStmt->execute([$new_hash, $user['id']]);
+                $updateStmt = $pdo->prepare("UPDATE users SET password_hash = ?, plain_password = ?, reset_token = NULL, reset_token_expiry = NULL WHERE id = ?");
+                $updateStmt->execute([$new_hash, $new_password, $user['id']]);
                 
                 echo json_encode(['success' => true, 'message' => 'Password reset successfully.']);
             } else {
