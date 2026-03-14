@@ -49,11 +49,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Strict Password validation
-            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-            if (!passwordRegex.test(password)) {
+            // Strict Password validation (individual checks to avoid encoding issues)
+            const pwErrors = [];
+            if (password.length < 8) pwErrors.push('at least 8 characters');
+            if (!/[a-z]/.test(password)) pwErrors.push('a lowercase letter');
+            if (!/[A-Z]/.test(password)) pwErrors.push('an uppercase letter');
+            if (!/[0-9]/.test(password)) pwErrors.push('a number');
+            if (!/[^a-zA-Z0-9]/.test(password)) pwErrors.push('a special character (e.g. @$!%*?&)');
+            if (pwErrors.length > 0) {
                 messageEl.className = 'form-message error';
-                messageEl.textContent = 'Password must be at least 8 characters long and include an uppercase letter, lowercase letter, number, and special character.';
+                messageEl.textContent = 'Password must include: ' + pwErrors.join(', ') + '.';
                 return;
             }
 
@@ -200,20 +205,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ---- PASSWORD STRENGTH LOGIC ----
     const pwInput = document.getElementById('password');
-    const strengthBarContainer = document.getElementById('passwordStrengthBarContainer');
-    const strengthBar = document.getElementById('passwordStrengthBar');
+    const segments = document.querySelectorAll('.strength-segment');
     const strengthText = document.getElementById('passwordStrengthText');
 
-    if (pwInput && strengthBarContainer && strengthBar && strengthText && document.getElementById('signupForm')) {
+    if (pwInput && segments.length === 5 && strengthText && document.getElementById('signupForm')) {
         pwInput.addEventListener('input', () => {
             const val = pwInput.value;
             let strength = 0;
 
-            if (val.length > 0) {
-                strengthBarContainer.style.display = 'block';
-            } else {
-                strengthBarContainer.style.display = 'none';
-                strengthText.textContent = '';
+            if (val.length === 0) {
+                segments.forEach(seg => seg.style.backgroundColor = '#e0e0e0');
+                strengthText.textContent = 'Enter a password to see strength';
+                strengthText.style.color = '#888';
                 return;
             }
 
@@ -225,28 +228,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let color = '';
             let text = '';
-            let width = '';
+            let activeSegments = 0;
 
-            if (strength <= 2) {
+            if (strength <= 1) {
                 color = '#ff4d4d'; // Red
+                text = 'Very Weak';
+                activeSegments = 1;
+            } else if (strength === 2) {
+                color = '#ff8533'; // Orange-Red
                 text = 'Weak';
-                width = '20%';
+                activeSegments = 2;
             } else if (strength === 3) {
-                color = '#ff9900'; // Orange
-                text = 'Fair';
-                width = '40%';
-            } else if (strength === 4) {
                 color = '#ffcc00'; // Yellow
+                text = 'Fair';
+                activeSegments = 3;
+            } else if (strength === 4) {
+                color = '#99cc00'; // Light Green
                 text = 'Good';
-                width = '70%';
+                activeSegments = 4;
             } else if (strength === 5) {
                 color = '#00cc44'; // Green
                 text = 'Very Good';
-                width = '100%';
+                activeSegments = 5;
             }
 
-            strengthBar.style.width = width;
-            strengthBar.style.backgroundColor = color;
+            segments.forEach((seg, index) => {
+                if (index < activeSegments) {
+                    seg.style.backgroundColor = color;
+                } else {
+                    seg.style.backgroundColor = '#e0e0e0';
+                }
+            });
+
             strengthText.textContent = text;
             strengthText.style.color = color;
         });

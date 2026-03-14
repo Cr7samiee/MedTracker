@@ -730,3 +730,55 @@ p {
         flex-direction: column;
     }
 }
+
+/* ---- Button Active / Click Feedback ---- */
+.btn:active {
+    transform: scale(0.96) translateY(1px);
+    box-shadow: 0 2px 4px -1px rgba(79, 70, 229, 0.3);
+    transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+
+.btn-primary:active {
+    background: linear-gradient(135deg, var(--primary-hover), #3730a3);
+}
+
+.btn-secondary:active {
+    background: #e2e8f0;
+}
+
+.role-card:active {
+    transform: scale(0.97) translateY(0px);
+    box-shadow: var(--shadow-sm);
+    border-color: var(--primary);
+    transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+
+.password-toggle:active {
+    transform: scale(0.85);
+    transition: transform 0.08s ease;
+}
+
+/* ---- Password Strength Segments ---- */
+.strength-segments-container {
+    display: flex;
+    gap: 5px;
+    height: 6px;
+    width: 100%;
+    margin-top: 6px;
+    margin-bottom: 4px;
+}
+
+.strength-segment {
+    flex: 1;
+    border-radius: 3px;
+    background-color: #e0e0e0;
+    transition: background-color 0.3s ease;
+}
+
+.strength-label {
+    font-size: 0.8em;
+    font-weight: 700;
+    min-height: 1.2em;
+    color: #888;
+    margin-top: 2px;
+}

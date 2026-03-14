@@ -51,10 +51,27 @@
                             <input type="password" id="password" name="password" required placeholder="••••••••">
                             <button type="button" id="togglePassword" class="password-toggle">👁️</button>
                         </div>
-                        <div id="passwordStrengthBarContainer" style="height: 5px; width: 100%; background-color: #e0e0e0; border-radius: 3px; overflow: hidden; margin-bottom: 5px; display: none;">
-                            <div id="passwordStrengthBar" style="height: 100%; width: 0%; transition: width 0.3s, background-color 0.3s;"></div>
+                        <div id="passwordStrengthSegments"
+                            style="display: flex; gap: 5px; height: 5px; width: 100%; margin-bottom: 5px;">
+                            <div class="strength-segment"
+                                style="flex: 1; border-radius: 3px; background-color: #e0e0e0; transition: background-color 0.3s;">
+                            </div>
+                            <div class="strength-segment"
+                                style="flex: 1; border-radius: 3px; background-color: #e0e0e0; transition: background-color 0.3s;">
+                            </div>
+                            <div class="strength-segment"
+                                style="flex: 1; border-radius: 3px; background-color: #e0e0e0; transition: background-color 0.3s;">
+                            </div>
+                            <div class="strength-segment"
+                                style="flex: 1; border-radius: 3px; background-color: #e0e0e0; transition: background-color 0.3s;">
+                            </div>
+                            <div class="strength-segment"
+                                style="flex: 1; border-radius: 3px; background-color: #e0e0e0; transition: background-color 0.3s;">
+                            </div>
                         </div>
-                        <div id="passwordStrengthText" style="font-size: 0.8em; font-weight: bold; min-height: 1.2em;"></div>
+                        <div id="passwordStrengthText"
+                            style="font-size: 0.8em; font-weight: bold; min-height: 1.2em; color: #888;">Enter a
+                            password to see strength</div>
                     </div>
 
                     <!-- Dynamic field for Health Worker -->
@@ -80,7 +97,7 @@
         </main>
     </div>
 
-    <script src="js/script.js"></script>
+    <script src="js/script.js?v=2"></script>
 </body>
 
 </html>
