@@ -95,6 +95,14 @@
                         <input type="text" id="relation" name="relation" placeholder="e.g. self, mother, grandfather">
                     </div>
 
+                    <div class="form-group" id="healthWorkerCodeGroup" style="display: none;">
+                        <label for="healthWorkerCode">Doctor / Health Worker Code</label>
+                        <input type="text" id="healthWorkerCode" name="health_worker_code" placeholder="e.g. HW-H100">
+                        <small style="display:block; margin-top:0.45rem; color:var(--text-muted);">
+                            Optional but recommended if you want your medicines to sync directly with your assigned health worker.
+                        </small>
+                    </div>
+
                     <button type="submit" class="btn btn-primary btn-block mt-4" id="signupBtn">Sign Up</button>
                     <div id="signupMessage" class="form-message"></div>
                 </form>

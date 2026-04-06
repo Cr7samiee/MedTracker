@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../config/config.php';
+require_once '../api/assignment_utils.php';
 
 header('Content-Type: application/json');
 
@@ -14,6 +15,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     try {
+        medtracker_ensure_assignment_schema($pdo);
+
         $stmt = $pdo->prepare("SELECT * FROM users WHERE phone = ?");
         $stmt->execute([$phone]);
         $user = $stmt->fetch();
@@ -28,7 +31,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'message' => 'Login successful',
                 'role' => $user['role'],
                 'name' => $user['name'],
-                'user_id' => $user['id']
+                'user_id' => $user['id'],
+                'worker_code' => $user['worker_code'] ?? null,
             ]);
         } else {
             echo json_encode(['success' => false, 'message' => 'Invalid phone or password.']);

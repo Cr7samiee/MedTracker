@@ -3,12 +3,14 @@ session_start();
 header('Content-Type: application/json');
 include_once '../config/config.php';
 require_once 'schedule_utils.php';
+require_once 'assignment_utils.php';
 
 $role = medtracker_normalize_role($_GET['role'] ?? $_SESSION['role'] ?? 'User');
 $user_id = $_GET['user_id'] ?? ($_SESSION['user_id'] ?? null);
 
 try {
     medtracker_ensure_schedule_schema($pdo);
+    medtracker_ensure_assignment_schema($pdo);
 
     if (($role === 'User' || $role === 'Health Worker') && !$user_id) {
         echo json_encode(['success' => false, 'message' => 'User session not found. Please log in again.']);
@@ -35,7 +37,12 @@ try {
         $medicineQuery .= " AND m.patient_id = :uid ";
         $medicineParams[':uid'] = $user_id;
     } elseif ($role === 'Health Worker' && $user_id) {
-        $medicineQuery .= " AND m.prescriber_id = :uid ";
+        $medicineQuery .= " AND EXISTS (
+            SELECT 1
+            FROM caregiver_patient cp
+            WHERE cp.patient_id = m.patient_id
+              AND cp.caregiver_id = :uid
+        ) ";
         $medicineParams[':uid'] = $user_id;
     }
 
@@ -81,7 +88,12 @@ try {
         $query .= " AND m.patient_id = :uid ";
         $params[':uid'] = $user_id;
     } elseif ($role === 'Health Worker' && $user_id) {
-        $query .= " AND m.prescriber_id = :uid ";
+        $query .= " AND EXISTS (
+            SELECT 1
+            FROM caregiver_patient cp
+            WHERE cp.patient_id = m.patient_id
+              AND cp.caregiver_id = :uid
+        ) ";
         $params[':uid'] = $user_id;
     }
     // Admin gets everything

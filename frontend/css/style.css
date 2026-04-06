@@ -1043,6 +1043,21 @@ p {
     border-top: 1px solid var(--footer-border);
 }
 
+.main-content > .main-footer {
+    margin-top: 3rem;
+    border-radius: 24px 24px 0 0;
+    padding-inline: 2rem;
+}
+
+.dashboard-layout + .main-footer {
+    margin-left: 280px;
+    padding-inline: 3rem;
+}
+
+.dashboard-layout + .main-footer .footer-content {
+    max-width: 100%;
+}
+
 .footer-content {
     max-width: 1400px;
     margin: 0 auto;
@@ -1103,5 +1118,10 @@ p {
 @media (max-width: 768px) {
     .footer-brand {
         max-width: none;
+    }
+
+    .dashboard-layout + .main-footer {
+        margin-left: 0;
+        padding-inline: 1.25rem;
     }
 }

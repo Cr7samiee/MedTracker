@@ -1,18 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patient Dashboard - MedTracker</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css?v=6">
     <link rel="stylesheet" href="css/dashboard.css?v=1">
+    <style>
+        body { background: radial-gradient(circle at top left, rgba(79,70,229,0.10), transparent 24%), radial-gradient(circle at top right, rgba(236,72,153,0.10), transparent 18%), linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 55%, #F8FAFC 100%); color: var(--text-main); }
+        .sidebar { background: rgba(255,255,255,0.94); border-right: 1px solid rgba(15,23,42,0.08); }
+        .sidebar-brand .title, .page-title h1, .welcome-block h2, .section-header h3, .widget-title { color: var(--text-main); }
+        .sidebar-brand .subtitle, .nav-item, .page-tab, .text-muted { color: var(--text-muted) !important; }
+        .nav-item.active, .page-tab.active { color: var(--primary) !important; background: rgba(79,70,229,0.08); border-bottom-color: #EC4899; }
+        .main-content { background: transparent; }
+        .dashboard-grid { grid-template-columns: 1.55fr 1fr; align-items: start; }
+        .hero-panel, .panel-card, .widget, .schedule-item { background: var(--surface-solid); border: 1px solid rgba(15,23,42,0.08); box-shadow: var(--shadow-sm); }
+        .hero-panel { border-radius: 28px; padding: 1.75rem; margin-bottom: 1.5rem; background: linear-gradient(135deg, rgba(79,70,229,0.06), rgba(236,72,153,0.05), #FFFFFF); }
+        .hero-head { display: flex; justify-content: space-between; gap: 1.5rem; align-items: flex-start; margin-bottom: 1.5rem; }
+        .hero-chip { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.85rem; border-radius: 999px; background: rgba(236,72,153,0.12); color: #DB2777; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.85rem; }
+        .welcome-block p { color: var(--text-muted); max-width: 560px; }
+        .mini-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+        .mini-metric { background: rgba(255,255,255,0.86); border: 1px solid rgba(79,70,229,0.10); border-radius: 20px; padding: 1rem 1.1rem; }
+        .mini-metric span { display: block; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 0.45rem; }
+        .mini-metric strong { font-size: 1.7rem; color: var(--primary); }
+        .mini-metric p { margin: 0.4rem 0 0; font-size: 0.82rem; color: var(--text-muted); }
+        .week-strip { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0.75rem; margin-top: 1.35rem; }
+        .week-day { border-radius: 22px; padding: 0.95rem 0.75rem; background: rgba(255,255,255,0.82); border: 1px solid rgba(15,23,42,0.08); text-align: center; transition: transform 0.2s ease, border-color 0.2s ease; }
+        .week-day.today { background: linear-gradient(180deg, rgba(236,72,153,0.12), rgba(79,70,229,0.06)); border-color: rgba(236,72,153,0.35); transform: translateY(-2px); }
+        .week-day.complete { border-color: rgba(16,185,129,0.48); }
+        .week-day.partial { border-color: rgba(250,204,21,0.42); }
+        .week-day.missed { border-color: rgba(248,113,113,0.48); }
+        .week-name { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.45rem; }
+        .week-number { width: 46px; height: 46px; margin: 0 auto 0.55rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 800; border: 2px solid rgba(79,70,229,0.12); color: var(--text-main); }
+        .week-day.today .week-number { border-color: rgba(236,72,153,0.32); background: rgba(255,241,242,0.96); color: var(--primary); }
+        .week-status { font-size: 0.72rem; color: var(--text-muted); }
+        .week-status.complete { color: #6EE7B7; }
+        .week-status.partial { color: #FDE68A; }
+        .week-status.missed { color: #FCA5A5; }
+        .section-header { margin-top: 0; }
+        .schedule-item { border-radius: 22px; padding: 1.15rem; }
+        .schedule-item.taken { border-left: 4px solid #10B981; }
+        .schedule-item.pending { border-left: 4px solid #F87171; }
+        .schedule-item.next { border-left: 4px solid var(--primary); }
+        .item-icon { background: rgba(79,70,229,0.08); color: var(--primary); }
+        .item-time { color: var(--primary); }
+        .item-name { color: var(--text-main); }
+        .item-meta { color: var(--text-muted); }
+        .panel-card { border-radius: 28px; padding: 1.35rem; margin-bottom: 1.4rem; }
+        .water-hero { display: flex; justify-content: space-between; gap: 1rem; align-items: center; }
+        .water-ring { width: 118px; height: 118px; border-radius: 50%; background: conic-gradient(#38BDF8 0%, rgba(79,70,229,0.08) 0%); display: flex; align-items: center; justify-content: center; position: relative; }
+        .water-ring::after { content: ""; position: absolute; inset: 11px; border-radius: 50%; background: #FFFFFF; }
+        .water-center { position: relative; z-index: 1; text-align: center; }
+        .water-center strong { display: block; font-size: 1.5rem; color: #0EA5E9; }
+        .water-center span { font-size: 0.74rem; color: var(--text-muted); }
+        .water-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; margin-top: 1rem; }
+        .water-btn { border: 1px solid rgba(79,70,229,0.12); background: rgba(79,70,229,0.08); color: var(--primary); border-radius: 14px; padding: 0.8rem 0.65rem; font-weight: 700; cursor: pointer; }
+        .water-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.7rem; margin-top: 1rem; }
+        .water-stat { background: rgba(79,70,229,0.04); border-radius: 16px; padding: 0.9rem 1rem; }
+        .water-stat span { display: block; font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.35rem; }
+        .water-stat strong { font-size: 1.15rem; color: var(--text-main); }
+        .widget.widget-alert { background: rgba(236,72,153,0.04); border-color: rgba(236,72,153,0.12); }
+        .alert-item { background: rgba(79,70,229,0.03); border: 1px solid rgba(79,70,229,0.08); }
+        .alert-info h4, .note-footer, .widget-note .widget-title { color: var(--text-main); }
+        .alert-info p, .widget-note p { color: var(--text-muted); }
+        .widget-note { background: linear-gradient(135deg, rgba(79,70,229,0.10), rgba(236,72,153,0.12)); }
+        .widget-note p { font-style: normal; }
+        @media (max-width: 1100px) { .dashboard-grid { grid-template-columns: 1fr; } .week-strip, .mini-metrics, .water-actions, .water-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        @media (max-width: 720px) { .hero-head, .water-hero, .top-bar, .page-title { flex-direction: column; align-items: flex-start; } .week-strip, .mini-metrics, .water-actions, .water-stats { grid-template-columns: 1fr; } }
+    </style>
 </head>
-
 <body>
     <div class="dashboard-layout">
-        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
                 <a href="javascript:void(0)" class="sidebar-brand" style="text-decoration: none;">
@@ -21,83 +80,83 @@
                 </a>
             </div>
             <nav class="sidebar-nav">
-                <a href="dashboard.html" class="nav-item active">
-                    <i>📊</i>
-                    <span>Dashboard</span>
-                </a>
-                <a href="medications.html" class="nav-item">
-                    <i>💊</i>
-                    <span>Medications</span>
-                </a>
-                <a href="schedule.html" class="nav-item">
-                    <i>🗓️</i>
-                    <span>Schedule</span>
-                </a>
-                <a href="reports.html" class="nav-item">
-                    <i>📈</i>
-                    <span>Reports</span>
-                </a>
-                <a href="settings.html" class="nav-item">
-                    <i>⚙️</i>
-                    <span>Settings</span>
-                </a>
+                <a href="dashboard.html" class="nav-item active"><i>📊</i><span>Dashboard</span></a>
+                <a href="medications.html" class="nav-item"><i>💊</i><span>Medications</span></a>
+                <a href="schedule.html" class="nav-item"><i>🗓️</i><span>Schedule</span></a>
+                <a href="reports.html" class="nav-item"><i>📈</i><span>Reports</span></a>
+                <a href="settings.html" class="nav-item"><i>⚙️</i><span>Settings</span></a>
             </nav>
             <div class="sidebar-footer">
-                <button class="btn btn-primary btn-block" style="display: flex; gap: 0.5rem;"
-                    onclick="window.location.href='add_medication.html'">
-                    <i>+</i> Add Medication
-                </button>
-                <div class="user-profile-sm" style="margin-top: 1rem;">
-                    <img src="https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff" alt="User Portal">
+                <button class="btn btn-primary btn-block" style="display:flex; gap:0.5rem;" onclick="window.location.href='add_medication.html'"><i>+</i> Add Medicine</button>
+                <div class="user-profile-sm" style="margin-top:1rem;">
+                    <img src="https://ui-avatars.com/api/?name=User&background=4F46E5&color=fff" alt="User Portal">
                     <div class="info">
                         <span class="name dynamic-user-name">User</span>
                         <span class="role">Medication Tracking</span>
                     </div>
                 </div>
-                <button class="btn btn-primary btn-block"
-                    style="display: flex; gap: 0.5rem; background: var(--red); margin-top: 1rem;" id="logoutBtn">
-                    <i>🚪</i> Logout
-                </button>
+                <button class="btn btn-primary btn-block" style="display:flex; gap:0.5rem; background:#991B1B; margin-top:1rem;" id="logoutBtn"><i>🚪</i> Logout</button>
             </div>
         </aside>
-        <!-- Main Content -->
+
         <main class="main-content">
             <div class="top-bar">
                 <div class="page-title">
-                    <h1>Patient Dashboard</h1>
+                    <h1>Today</h1>
                     <div class="page-tabs">
-                        <a href="dashboard.html" class="page-tab active">Dashboard</a>
+                        <a href="dashboard.html" class="page-tab active">Today</a>
                         <a href="medications.html" class="page-tab">Medications</a>
-                        <a href="reports.html" class="page-tab">Reports</a>
+                        <a href="reports.html" class="page-tab">Progress</a>
                     </div>
                 </div>
                 <div class="top-icons">
-                    <button class="icon-btn" onclick="window.location.href='reports.html'">
-                        🔔
-                        <span class="badge"></span>
-                    </button>
-                    <button class="icon-btn" id="profileDropdownBtn" onclick="window.location.href='settings.html'">
-                        👤
-                    </button>
+                    <button class="icon-btn" onclick="window.location.href='reports.html'">🔔<span class="badge"></span></button>
+                    <button class="icon-btn" onclick="window.location.href='settings.html'">👤</button>
                 </div>
             </div>
-            <div class="dashboard-grid">
-                <!-- Left Column -->
-                <div class="main-column">
-                    <div class="welcome-info" style="margin-bottom: 2rem;">
+
+            <div class="hero-panel">
+                <div class="hero-head">
+                    <div class="welcome-block">
+                        <span class="hero-chip">Daily Care Window</span>
                         <h2>Hello, <span class="dynamic-user-name">User</span></h2>
                         <p class="text-muted" id="dashboardSummary">Loading your medication plan for today...</p>
                     </div>
-                    <div class="overview-cards">
-                        <div class="overview-card" style="background-color: var(--background);">
-                            <h3 style="color: var(--primary);" id="dashboardAdherence">0%</h3>
-                            <p class="text-muted">Adherence</p>
-                        </div>
-                        <div class="overview-card" style="background-color: var(--background);">
-                            <h3 style="color: var(--yellow);" id="dashboardLowStock">0</h3>
-                            <p class="text-muted">Low Stock</p>
-                        </div>
+                    <div style="text-align:right;">
+                        <div style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.45rem;">Today</div>
+                        <div id="dashboardTodayDate" style="font-size:1.9rem; font-weight:800;"></div>
                     </div>
+                </div>
+
+                <div class="mini-metrics">
+                    <div class="mini-metric">
+                        <span>Today's Adherence</span>
+                        <strong id="dashboardAdherence">0%</strong>
+                        <p id="weeklyAdherenceStatus">Starting</p>
+                    </div>
+                    <div class="mini-metric">
+                        <span>Low Stock</span>
+                        <strong id="dashboardLowStock">0</strong>
+                        <p>Medicines that may need refill planning.</p>
+                    </div>
+                    <div class="mini-metric">
+                        <span>Water Goal</span>
+                        <strong id="dashboardWaterHeadline">0%</strong>
+                        <p id="dashboardWaterSubhead">Hydration progress is loading.</p>
+                    </div>
+                </div>
+
+                <div class="week-strip" id="dashboardWeekStrip">
+                    <div class="week-day today">
+                        <span class="week-name">Today</span>
+                        <div class="week-number">-</div>
+                        <div class="week-status">Loading</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="main-column">
                     <div class="section-header">
                         <h3>Today's Schedule</h3>
                         <div class="schedule-filters">
@@ -109,55 +168,67 @@
                         <p class="text-muted">Loading today's doses...</p>
                     </div>
                 </div>
-                <!-- Right Column (Widgets) -->
+
                 <div class="side-column">
-                    <!-- Adherence Widget -->
-                    <div class="widget">
-                        <h4 class="widget-title">Weekly Adherence</h4>
-                        <div class="adherence-chart">
-                            <div class="chart-center">
-                                <h2 id="weeklyAdherenceValue">0%</h2>
-                                <span id="weeklyAdherenceStatus">STARTING</span>
+                    <div class="panel-card">
+                        <h4 class="widget-title">Water Tracking</h4>
+                        <div class="water-hero">
+                            <div>
+                                <p style="margin:0; color:var(--text-muted);">Track hydration alongside medicines so your daily care plan stays complete.</p>
+                            </div>
+                            <div class="water-ring" id="dashboardWaterRing">
+                                <div class="water-center">
+                                    <strong id="dashboardWaterMl">0 ml</strong>
+                                    <span id="dashboardWaterGoal">of 2000 ml</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="chart-legend">
-                            <div class="legend-item">
-                                <span class="legend-dot green"></span>
-                                <span>Completed</span>
-                            </div>
-                            <span id="completedDoseCount">0 Doses</span>
+                        <div class="water-actions">
+                            <button class="water-btn" onclick="logWaterIntake(250)">+250 ml</button>
+                            <button class="water-btn" onclick="logWaterIntake(500)">+500 ml</button>
+                            <button class="water-btn" onclick="resetWaterIntake()">Reset</button>
                         </div>
-                        <div class="chart-legend">
-                            <div class="legend-item">
-                                <span class="legend-dot light-green"></span>
-                                <span>Pending/Skipped</span>
-                            </div>
-                            <span id="pendingDoseCount">0 Doses</span>
+                        <div class="water-stats">
+                            <div class="water-stat"><span>Today's Progress</span><strong id="dashboardWaterPercent">0%</strong></div>
+                            <div class="water-stat"><span>7-Day Average</span><strong id="dashboardWaterAverage">0 ml</strong></div>
                         </div>
                     </div>
-                    <!-- Alerts Widget -->
+
                     <div class="widget widget-alert">
-                        <h4 class="widget-title">⚠️ Alerts & Refill</h4>
-                        <div id="dashboardAlerts">
-                            <p class="text-muted">Checking stock levels...</p>
-                        </div>
+                        <h4 class="widget-title">Alerts & Refill</h4>
+                        <div id="dashboardAlerts"><p class="text-muted">Checking stock levels...</p></div>
                     </div>
-                    <!-- Note Widget -->
+
                     <div class="widget widget-note">
-                        <h4 class="widget-title">Doctor's Note</h4>
-                        <p id="dashboardDoctorNote">"<span class="dynamic-user-name">User</span>, keep logging each dose so your care team can track your progress accurately."</p>
-                        <div class="note-footer">
-                            <i>✓</i> Verified for <span class="dynamic-user-name">User</span>
-                        </div>
+                        <h4 class="widget-title">Care Tip</h4>
+                        <p id="dashboardDoctorNote">Keep logging each dose and water intake so your weekly progress view stays accurate and useful.</p>
+                        <div class="note-footer"><i>✓</i> Daily wellness guidance for <span class="dynamic-user-name">User</span></div>
                     </div>
                 </div>
             </div>
         </main>
     </div>
+
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="footer-logo">
+                    <span class="logo-icon">💊</span>
+                    <span class="logo-text">MedTracker</span>
+                </div>
+                <p class="footer-tagline">Reminders, inventory, and care coordination in one calm, simple place.</p>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 MedTracker. Your smart companion for medication and health.</p>
+            </div>
+        </div>
+    </footer>
+
     <script src="js/script.js"></script>
     <script>
         let patientDashboardData = [];
         let patientDashboardFilter = 'all';
+        let patientDashboardReport = { summary: {}, alerts: [], week_overview: [], water: {} };
 
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('#logoutBtn').forEach((button) => {
@@ -167,6 +238,12 @@
                         window.MedTrackerApp.logout();
                     }
                 });
+            });
+
+            document.getElementById('dashboardTodayDate').textContent = new Date().toLocaleDateString([], {
+                weekday: 'long',
+                month: 'short',
+                day: 'numeric'
             });
 
             document.getElementById('filterAllBtn')?.addEventListener('click', () => {
@@ -191,48 +268,80 @@
 
         async function fetchPatientDashboard() {
             try {
-                const response = await fetch('../backend/api/get_schedule.php');
-                const result = await response.json();
+                const [scheduleResponse, reportResponse] = await Promise.all([
+                    fetch('../backend/api/get_schedule.php'),
+                    fetch('../backend/api/get_patient_adherence.php')
+                ]);
 
-                if (!result.success) {
-                    throw new Error(result.message || 'Unable to load schedule.');
+                const scheduleResult = await scheduleResponse.json();
+                const reportResult = await reportResponse.json();
+
+                if (!scheduleResult.success) {
+                    throw new Error(scheduleResult.message || 'Unable to load schedule.');
                 }
 
-                patientDashboardData = Array.isArray(result.data) ? result.data : [];
-                renderPatientDashboardStats(patientDashboardData);
+                if (!reportResult.success) {
+                    throw new Error(reportResult.message || 'Unable to load progress data.');
+                }
+
+                patientDashboardData = Array.isArray(scheduleResult.data) ? scheduleResult.data : [];
+                patientDashboardReport = reportResult;
+
+                renderPatientDashboardStats(patientDashboardData, patientDashboardReport.summary || {}, patientDashboardReport.water || {});
+                renderWeekStrip(patientDashboardReport.week_overview || []);
                 renderPatientDashboardSchedule();
-                await renderPatientDashboardAlerts(patientDashboardData);
+                renderWaterWidget(patientDashboardReport.water || {});
+                renderPatientDashboardAlerts(patientDashboardData, patientDashboardReport.alerts || []);
             } catch (error) {
                 document.getElementById('dashboardSummary').textContent = 'Unable to load your dashboard right now.';
-                document.getElementById('patientDashboardSchedule').innerHTML = "<p class=\"text-muted\">We could not load today's schedule.</p>";
+                document.getElementById('patientDashboardSchedule').innerHTML = '<p class="text-muted">We could not load today&apos;s schedule.</p>';
                 document.getElementById('dashboardAlerts').innerHTML = '<p class="text-muted">Alerts are unavailable right now.</p>';
             }
         }
 
-        function renderPatientDashboardStats(items) {
+        function renderPatientDashboardStats(items, summary, water) {
             const total = items.length;
             const completed = items.filter((item) => item.status === 'Taken').length;
             const lowStock = new Set(items.filter((item) => Number(item.stock_remaining) <= 5).map((item) => item.medicine_id)).size;
             const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
             const pending = total - completed;
-            const summary = total === 0
+            const summaryText = total === 0
                 ? 'You have no medicines scheduled for today yet.'
-                : `You have ${total} medication${total === 1 ? '' : 's'} scheduled for today. ${completed} dose${completed === 1 ? '' : 's'} completed.`;
+                : `You have ${total} scheduled dose${total === 1 ? '' : 's'} today, with ${completed} completed and ${pending} still needing attention.`;
 
-            document.getElementById('dashboardSummary').textContent = summary;
+            document.getElementById('dashboardSummary').textContent = summaryText;
             document.getElementById('dashboardAdherence').textContent = `${percent}%`;
             document.getElementById('dashboardLowStock').textContent = String(lowStock);
-            document.getElementById('weeklyAdherenceValue').textContent = `${percent}%`;
-            document.getElementById('weeklyAdherenceStatus').textContent = percent >= 80 ? 'ON TRACK' : percent >= 50 ? 'IMPROVING' : 'NEEDS FOCUS';
-            document.getElementById('completedDoseCount').textContent = `${completed} Doses`;
-            document.getElementById('pendingDoseCount').textContent = `${pending} Doses`;
+            document.getElementById('weeklyAdherenceStatus').textContent = percent >= 80 ? 'On track for today' : percent >= 50 ? 'Halfway there' : 'Needs focus';
+            document.getElementById('dashboardWaterHeadline').textContent = `${water.today_percent || 0}%`;
+            document.getElementById('dashboardWaterSubhead').textContent = `${water.today_ml || 0} ml of ${water.goal_ml || 2000} ml hydration goal`;
+
+            if ((summary.overuse_total || 0) > 0) {
+                document.getElementById('dashboardDoctorNote').textContent = 'An overuse alert was detected recently. Review your dose timing carefully before logging the same medicine again.';
+            }
+        }
+
+        function renderWeekStrip(days) {
+            const container = document.getElementById('dashboardWeekStrip');
+
+            if (!days.length) {
+                container.innerHTML = '<div class="week-day today"><span class="week-name">Today</span><div class="week-number">-</div><div class="week-status">No data</div></div>';
+                return;
+            }
+
+            const labels = { complete: 'Complete', partial: 'Partial', missed: 'Missed', pending: 'Pending', upcoming: 'Upcoming', none: 'No doses' };
+            container.innerHTML = days.map((day) => `
+                <div class="week-day ${day.status} ${day.is_today ? 'today' : ''}">
+                    <span class="week-name">${day.day_short}</span>
+                    <div class="week-number">${day.day_number}</div>
+                    <div class="week-status ${day.status}">${labels[day.status] || 'Tracked'}</div>
+                </div>
+            `).join('');
         }
 
         function renderPatientDashboardSchedule() {
             const scheduleList = document.getElementById('patientDashboardSchedule');
-            const filteredItems = patientDashboardFilter === 'remaining'
-                ? patientDashboardData.filter((item) => item.status !== 'Taken')
-                : patientDashboardData;
+            const filteredItems = patientDashboardFilter === 'remaining' ? patientDashboardData.filter((item) => item.status !== 'Taken') : patientDashboardData;
 
             if (!filteredItems.length) {
                 scheduleList.innerHTML = '<p class="text-muted">No doses match this filter right now.</p>';
@@ -241,31 +350,21 @@
 
             scheduleList.innerHTML = filteredItems.map((item) => {
                 const status = item.status || 'Pending';
-                const scheduledTime = item.scheduled_time
-                    ? new Date(item.scheduled_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                    : 'Anytime';
-                const timeLabel = status === 'Taken'
-                    ? `TAKEN AT ${scheduledTime}`
-                    : status === 'Skipped'
-                        ? `SKIPPED AT ${scheduledTime}`
-                        : `NEXT: ${scheduledTime}`;
+                const scheduledTime = item.scheduled_time ? new Date(item.scheduled_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Anytime';
+                const timeLabel = status === 'Taken' ? `Taken at ${scheduledTime}` : status === 'Skipped' ? `Skipped at ${scheduledTime}` : `Due at ${scheduledTime}`;
                 const icon = Number(item.stock_remaining) <= 5 ? '📦' : '💊';
-                const courseLabel = item.duration_days
-                    ? `Day ${item.treatment_day || 1}/${item.duration_days}`
-                    : '';
-                const meta = [item.dosage, item.instructions || 'Follow prescription guidance', courseLabel, item.stock_remaining + ' left']
-                    .filter(Boolean)
-                    .join(' • ');
+                const courseLabel = item.duration_days ? `Day ${item.treatment_day || 1}/${item.duration_days}` : '';
+                const meta = [item.dosage, item.instructions || 'Follow prescription guidance', courseLabel, `${item.stock_remaining} left`].filter(Boolean).join(' • ');
                 const cardClass = status === 'Taken' ? 'taken' : status === 'Skipped' ? 'pending' : 'next';
 
                 let actions = status === 'Taken'
                     ? '<span class="status-badge completed">✓ Completed</span>'
-                    : '<span class="status-badge" style="background: rgba(239, 68, 68, 0.12); color: var(--red);">✕ Skipped</span>';
+                    : '<span class="status-badge" style="background: rgba(248, 113, 113, 0.12); color: #FCA5A5;">✕ Skipped</span>';
 
                 if (status === 'Pending') {
                     actions = `
-                        <button class="btn btn-primary btn-sm" onclick="updateDashboardDose(${item.log_id}, ${item.medicine_id}, 'Taken')">✓ Log Dose</button>
-                        <button class="btn btn-secondary btn-sm" style="border: none; background: #E2E8F0;" onclick="updateDashboardDose(${item.log_id}, ${item.medicine_id}, 'Skipped')">Skip</button>
+                        <button class="btn btn-primary btn-sm" style="border:none;" onclick="updateDashboardDose(${item.log_id}, ${item.medicine_id}, 'Taken')">✓ Log Dose</button>
+                        <button class="btn btn-secondary btn-sm" style="border:none; background:rgba(79,70,229,0.08); color:var(--primary);" onclick="updateDashboardDose(${item.log_id}, ${item.medicine_id}, 'Skipped')">Skip</button>
                     `;
                 }
 
@@ -283,41 +382,27 @@
             }).join('');
         }
 
-        async function renderPatientDashboardAlerts(items) {
-            const alerts = Array.from(
-                new Map(
-                    items
-                        .filter((item) => Number(item.stock_remaining) <= 5)
-                        .map((item) => [item.medicine_id, item])
-                ).values()
-            );
+        function renderWaterWidget(water) {
+            const goal = Number(water.goal_ml || 2000);
+            const todayMl = Number(water.today_ml || 0);
+            const percent = Math.max(0, Math.min(100, Number(water.today_percent || 0)));
+
+            document.getElementById('dashboardWaterMl').textContent = `${todayMl} ml`;
+            document.getElementById('dashboardWaterGoal').textContent = `of ${goal} ml`;
+            document.getElementById('dashboardWaterPercent').textContent = `${percent}%`;
+            document.getElementById('dashboardWaterAverage').textContent = `${Number(water.weekly_average_ml || 0)} ml`;
+            document.getElementById('dashboardWaterRing').style.background = `conic-gradient(#38BDF8 ${percent}%, rgba(255,255,255,0.08) ${percent}% 100%)`;
+        }
+
+        function renderPatientDashboardAlerts(items, reportAlerts) {
+            const lowStockAlerts = Array.from(new Map(items.filter((item) => Number(item.stock_remaining) <= 5).map((item) => [item.medicine_id, item])).values());
+            const overuseAlerts = (reportAlerts || []).filter((alert) => alert.type === 'overuse').slice(0, 2);
             const container = document.getElementById('dashboardAlerts');
-            let overuseAlerts = [];
 
-            try {
-                const reportResponse = await fetch('../backend/api/get_patient_adherence.php');
-                const report = await reportResponse.json();
-                if (report.success) {
-                    overuseAlerts = (report.alerts || []).filter((alert) => alert.type === 'overuse').slice(0, 2);
-                }
-            } catch (error) {
-                console.error(error);
-            }
-
-            if (!alerts.length && !overuseAlerts.length) {
+            if (!lowStockAlerts.length && !overuseAlerts.length) {
                 container.innerHTML = '<p class="text-muted">No active alerts right now.</p>';
                 return;
             }
-
-            const lowStockHtml = alerts.map((item) => `
-                <div class="alert-item">
-                    <div class="alert-info">
-                        <h4>${item.medicine_name}</h4>
-                        <p>${item.stock_remaining} dose${Number(item.stock_remaining) === 1 ? '' : 's'} remaining</p>
-                    </div>
-                    <button class="btn-text" onclick="increaseDashboardStock(${item.medicine_id})">Refill</button>
-                </div>
-            `).join('');
 
             const overuseHtml = overuseAlerts.map((alert) => `
                 <div class="alert-item">
@@ -329,7 +414,55 @@
                 </div>
             `).join('');
 
+            const lowStockHtml = lowStockAlerts.map((item) => `
+                <div class="alert-item">
+                    <div class="alert-info">
+                        <h4>${item.medicine_name}</h4>
+                        <p>${item.stock_remaining} dose${Number(item.stock_remaining) === 1 ? '' : 's'} remaining</p>
+                    </div>
+                    <button class="btn-text" onclick="increaseDashboardStock(${item.medicine_id})">Refill</button>
+                </div>
+            `).join('');
+
             container.innerHTML = overuseHtml + lowStockHtml;
+        }
+
+        async function logWaterIntake(amountMl) {
+            try {
+                const response = await fetch('../backend/api/log_water_intake.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount_ml: amountMl, mode: 'add' })
+                });
+                const result = await response.json();
+                if (!result.success) {
+                    throw new Error(result.message || 'Unable to update water intake.');
+                }
+                await fetchPatientDashboard();
+            } catch (error) {
+                alert(error.message || 'Unable to update water intake right now.');
+            }
+        }
+
+        async function resetWaterIntake() {
+            if (!confirm('Reset today\'s water intake?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('../backend/api/log_water_intake.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount_ml: 0, mode: 'reset' })
+                });
+                const result = await response.json();
+                if (!result.success) {
+                    throw new Error(result.message || 'Unable to reset water intake.');
+                }
+                await fetchPatientDashboard();
+            } catch (error) {
+                alert(error.message || 'Unable to reset water intake right now.');
+            }
         }
 
         async function increaseDashboardStock(medicineId) {
@@ -342,17 +475,12 @@
                 const response = await fetch('../backend/api/update_stock.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        medicine_id: medicineId,
-                        added_stock: Number(refillAmount)
-                    })
+                    body: JSON.stringify({ medicine_id: medicineId, added_stock: Number(refillAmount) })
                 });
                 const result = await response.json();
-
                 if (!result.success) {
                     throw new Error(result.message || 'Unable to update quantity.');
                 }
-
                 await fetchPatientDashboard();
             } catch (error) {
                 alert(error.message || 'Unable to refill this medicine right now.');
@@ -371,14 +499,12 @@
                     body: JSON.stringify({ log_id: logId, medicine_id: medicineId, status })
                 });
                 const result = await response.json();
-
                 if (!result.success) {
                     if (result.overuse_alert) {
                         await fetchPatientDashboard();
                     }
                     throw new Error(result.message || 'Unable to update dose.');
                 }
-
                 await fetchPatientDashboard();
             } catch (error) {
                 alert(error.message || 'Unable to update this medication right now.');
@@ -386,5 +512,4 @@
         }
     </script>
 </body>
-
 </html>

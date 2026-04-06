@@ -267,6 +267,32 @@
             align-items: center;
         }
 
+        .dosage-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            margin-top: 0.45rem;
+        }
+
+        .dosage-adjust-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--primary);
+            font-weight: 800;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .dosage-lock-note {
+            margin-top: 0.45rem;
+            font-size: 0.76rem;
+            color: var(--text-muted);
+        }
+
         .btn-refill {
             padding: 0.5rem 1rem;
             border-radius: 8px;
@@ -301,7 +327,7 @@
             height: 200px;
             position: relative;
             border-radius: 50%;
-            background: conic-gradient(var(--green) 85%, #E2E8F0 0);
+            background: conic-gradient(var(--green) 0%, #E2E8F0 0 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -334,6 +360,20 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
             font-weight: 700;
+        }
+
+        .pulse-breakdown {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .pulse-dot-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
         }
 
         .pulse-info h2 {
@@ -459,22 +499,22 @@
             <div class="adherence-pulse">
                 <div class="pulse-chart">
                     <div class="pulse-center">
-                        <h2>85%</h2>
-                        <span>MONTHLY GOAL</span>
+                        <h2 id="medicationsPulsePercent">0%</h2>
+                        <span id="medicationsPulseLabel">TODAY'S GOAL</span>
                     </div>
                 </div>
                 <div class="pulse-info">
                     <h2>Adherence Pulse</h2>
                     <p id="medicationsPulseText">Your medication adherence updates automatically from the doses you log each day.</p>
                     
-                    <div style="display:flex; gap:1.5rem; margin-bottom: 2rem;">
-                        <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.875rem;">
+                    <div class="pulse-breakdown">
+                        <div class="pulse-dot-label">
                             <div style="width:12px; height:12px; border-radius:50%; background:var(--green);"></div>
-                            Completed Doses
+                            <span id="medicationsPulseCompleted">Completed Doses: 0</span>
                         </div>
-                        <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.875rem;">
+                        <div class="pulse-dot-label">
                             <div style="width:12px; height:12px; border-radius:50%; background:#E2E8F0;"></div>
-                            Remaining Doses
+                            <span id="medicationsPulseRemaining">Remaining Doses: 0</span>
                         </div>
                     </div>
                     
@@ -494,6 +534,21 @@
 
         </main>
     </div>
+
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="footer-logo">
+                    <span class="logo-icon">💊</span>
+                    <span class="logo-text">MedTracker</span>
+                </div>
+                <p class="footer-tagline">Reminders, inventory, and care coordination in one calm, simple place.</p>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 MedTracker. Your smart companion for medication and health.</p>
+            </div>
+        </div>
+    </footer>
 
     <script src="js/script.js"></script>
     <script>
@@ -541,6 +596,8 @@
             const uniquePrescriptions = Array.from(new Map(medicationsData.map((item) => [item.medicine_id, item])).values());
             const total = medicationsData.length;
             const completed = medicationsData.filter((item) => item.status === 'Taken').length;
+            const skipped = medicationsData.filter((item) => item.status === 'Skipped').length;
+            const remaining = Math.max(total - completed, 0);
             const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
             const lowStockItems = uniquePrescriptions.filter((item) => Number(item.stock_remaining) <= 5);
             const nextPending = medicationsData.find((item) => item.status !== 'Taken');
@@ -555,9 +612,14 @@
             document.getElementById('medicationsNextDose').textContent = nextPending
                 ? `${nextPending.medicine_name} at ${nextPending.scheduled_time ? new Date(nextPending.scheduled_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Anytime'}`
                 : 'No pending doses';
+            document.getElementById('medicationsPulsePercent').textContent = `${percent}%`;
+            document.getElementById('medicationsPulseLabel').textContent = total === 0 ? 'NO DOSES YET' : 'TODAY\'S GOAL';
+            document.getElementById('medicationsPulseCompleted').textContent = `Completed Doses: ${completed}`;
+            document.getElementById('medicationsPulseRemaining').textContent = `Remaining Doses: ${remaining}`;
+            document.querySelector('.pulse-chart').style.background = `conic-gradient(var(--green) 0 ${percent}%, #E2E8F0 ${percent}% 100%)`;
             document.getElementById('medicationsPulseText').innerHTML = total === 0
                 ? 'No active prescriptions are assigned yet. Ask your health worker to add a schedule.'
-                : `Your medication adherence is currently <span class="highlight-green">${percent}%</span> for today. Keep logging doses to maintain an accurate record.`;
+                : `You have completed <span class="highlight-green">${completed}</span> of <span class="highlight-green">${total}</span> scheduled doses today, with <span class="highlight-green">${remaining}</span> still open${skipped ? ` and ${skipped} marked skipped` : ''}.`;
         }
 
         function renderMedicationCards() {
@@ -604,6 +666,14 @@
                         <div class="med-freq">
                             <span class="col-title">DOSAGE</span>
                             <span class="freq-val">${med.dosage}</span>
+                            ${med.source_type === 'patient'
+                                ? `
+                                    <div class="dosage-control">
+                                        <button class="dosage-adjust-btn" title="Decrease dosage" onclick="adjustMedicationDosage(${med.medicine_id}, -1, '${String(med.dosage).replace(/'/g, "\\'")}')">−</button>
+                                        <button class="dosage-adjust-btn" title="Increase dosage" onclick="adjustMedicationDosage(${med.medicine_id}, 1, '${String(med.dosage).replace(/'/g, "\\'")}')">+</button>
+                                    </div>
+                                `
+                                : '<div class="dosage-lock-note">Locked to prescribed dosage</div>'}
                             <p class="med-desc" style="margin-top:0.4rem;">${med.frequency || 'As needed'}</p>
                         </div>
                         <div class="med-stock">
@@ -644,6 +714,67 @@
                 await loadMedications();
             } catch (error) {
                 alert(error.message || 'Unable to increase this quantity right now.');
+            }
+        }
+
+        function parseDosageValue(dosage) {
+            const match = String(dosage || '').trim().match(/^(\d+(?:\.\d+)?)(\s*[A-Za-z].*)?$/);
+            if (!match) {
+                return null;
+            }
+
+            return {
+                value: Number(match[1]),
+                unit: match[2] || '',
+            };
+        }
+
+        function buildAdjustedDosage(dosage, direction) {
+            const parsed = parseDosageValue(dosage);
+            if (!parsed) {
+                return null;
+            }
+
+            const unitLower = parsed.unit.toLowerCase();
+            let step = 1;
+            if (unitLower.includes('mg')) {
+                step = parsed.value >= 100 ? 50 : 10;
+            } else if (unitLower.includes('ml')) {
+                step = 1;
+            } else if (parsed.value >= 10) {
+                step = 5;
+            }
+
+            const nextValue = Math.max(parsed.value + (direction * step), step);
+            return `${Number.isInteger(nextValue) ? nextValue : nextValue.toFixed(1)}${parsed.unit}`;
+        }
+
+        async function adjustMedicationDosage(medicineId, direction, currentDosage) {
+            const suggestedDosage = buildAdjustedDosage(currentDosage, direction);
+            const dosage = suggestedDosage || prompt('Enter the updated dosage:', currentDosage);
+
+            if (!dosage || dosage === currentDosage) {
+                return;
+            }
+
+            try {
+                const response = await fetch('../backend/api/update_dosage.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        medicine_id: medicineId,
+                        dosage
+                    })
+                });
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.message || 'Unable to update dosage.');
+                }
+
+                await loadMedications();
+            } catch (error) {
+                alert(error.message || 'Unable to update dosage right now.');
             }
         }
     </script>

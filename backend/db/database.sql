@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash VARCHAR(255) NOT NULL,
     plain_password VARCHAR(255) NOT NULL,
     post VARCHAR(100) DEFAULT NULL,    -- For Health Worker (e.g., Cardiology Specialist)
+    worker_code VARCHAR(20) DEFAULT NULL UNIQUE, -- Shareable code for patient linking
     relation VARCHAR(100) DEFAULT NULL, -- For Caregivers
     disease VARCHAR(100) DEFAULT NULL,  -- For User (Patient) ERD
     dob DATE DEFAULT NULL,              -- For User (Patient) ERD
@@ -63,6 +64,18 @@ CREATE TABLE IF NOT EXISTS caregiver_patient (
     assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (caregiver_id, patient_id),
     FOREIGN KEY (caregiver_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Hydration / Water Tracking
+CREATE TABLE IF NOT EXISTS water_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    patient_id VARCHAR(50) NOT NULL,
+    intake_date DATE NOT NULL,
+    intake_ml INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_patient_day (patient_id, intake_date),
     FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE CASCADE
 );
 

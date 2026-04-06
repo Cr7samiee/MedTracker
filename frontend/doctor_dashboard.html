@@ -13,6 +13,15 @@
             background: linear-gradient(180deg, #F8FAFC 0%, #EFF6FF 100%);
         }
 
+        .doctor-sidebar .user-profile-sm {
+            background: rgba(255, 255, 255, 0.72);
+            border-color: rgba(79, 70, 229, 0.12);
+        }
+
+        .doctor-sidebar .user-profile-sm .role {
+            color: var(--text-muted);
+        }
+
         .action-card {
             background: var(--primary);
             color: white;
@@ -150,22 +159,6 @@
             border: 1px solid var(--glass-border);
         }
 
-        .btn-emergency {
-            background: var(--red);
-            color: white;
-            border: none;
-            width: 100%;
-            padding: 1rem;
-            border-radius: 12px;
-            font-weight: 700;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 0.5rem;
-            margin-top: 2rem;
-            cursor: pointer;
-        }
-
         .role-chip {
             display: inline-flex;
             align-items: center;
@@ -218,17 +211,19 @@
             </nav>
 
             <div class="sidebar-footer">
-                <button class="btn-emergency" onclick="window.location.href='doctor_schedule.html'">
+                <button class="btn btn-primary btn-block" style="display:flex; gap:0.5rem;" onclick="window.location.href='doctor_schedule.html'">
                     <i>➕</i> Add Prescription
                 </button>
-                <div style="margin-top: 1rem; display:flex; flex-direction:column; gap:0.5rem;">
-                    <a href="doctor_dashboard.html#doctorAlertsSection" style="color:var(--text-muted); text-decoration:none; font-size:0.875rem; display:flex; align-items:center; gap:0.5rem;">
-                        <i>🔔</i> Care Alerts
-                    </a>
-                    <a href="login.html" id="logoutBtn" style="color:var(--text-muted); text-decoration:none; font-size:0.875rem; display:flex; align-items:center; gap:0.5rem;">
-                        <i>🚪</i> Logout
-                    </a>
+                <div class="user-profile-sm" style="margin-top:1rem;">
+                    <img src="https://ui-avatars.com/api/?name=Health+Worker&background=4F46E5&color=fff" alt="Health Worker Avatar">
+                    <div class="info">
+                        <span class="name dynamic-user-name">User</span>
+                        <span class="role">Healthcare Professional</span>
+                    </div>
                 </div>
+                <button class="btn btn-primary btn-block" style="display:flex; gap:0.5rem; background:#991B1B; margin-top:1rem;" id="logoutBtn">
+                    <i>🚪</i> Logout
+                </button>
             </div>
         </aside>
 
@@ -345,6 +340,21 @@
             </div>
         </main>
     </div>
+
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="footer-logo">
+                    <span class="logo-icon">💊</span>
+                    <span class="logo-text">MedTracker</span>
+                </div>
+                <p class="footer-tagline">Reminders, inventory, and care coordination in one calm, simple place.</p>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 MedTracker. Your smart companion for medication and health.</p>
+            </div>
+        </div>
+    </footer>
 
     <script src="js/script.js"></script>
     <script>

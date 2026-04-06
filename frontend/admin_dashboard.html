@@ -15,6 +15,15 @@
             border-right: 1px solid var(--glass-border);
         }
 
+        .admin-sidebar .user-profile-sm {
+            background: rgba(255, 255, 255, 0.72);
+            border-color: rgba(79, 70, 229, 0.12);
+        }
+
+        .admin-sidebar .user-profile-sm .role {
+            color: var(--text-muted);
+        }
+
         .system-status-banner {
             background: linear-gradient(135deg, rgba(248, 250, 252, 0.85), rgba(241, 245, 249, 0.85));
             border-radius: 24px;
@@ -81,6 +90,10 @@
 
         .chart-wrap {
             height: 280px;
+        }
+
+        .chart-wrap.compact {
+            height: 240px;
         }
 
         .chart-legend-summary {
@@ -252,12 +265,19 @@
             </nav>
 
             <div class="sidebar-footer">
-                <button class="btn btn-primary" style="background:var(--primary); width:100%; border:none; border-radius:12px; padding:1rem; color:white; font-weight:bold;" onclick="window.location.href='admin_dashboard.html#logMonitoringSection'">
+                <button class="btn btn-primary btn-block" style="display:flex; gap:0.5rem;" onclick="window.location.href='admin_dashboard.html#logMonitoringSection'">
                     <i>🚨</i> Open Logs
                 </button>
-                <a href="login.html" id="logoutBtn" style="color:var(--text-muted); text-decoration:none; font-size:0.875rem; display:flex; align-items:center; gap:0.5rem; margin-top:1rem;">
-                    <i>🚪</i> Secure Logout
-                </a>
+                <div class="user-profile-sm" style="margin-top:1rem;">
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=4F46E5&color=fff" alt="Admin Avatar">
+                    <div class="info">
+                        <span class="name dynamic-user-name">User</span>
+                        <span class="role">Admin Control</span>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-block" style="display:flex; gap:0.5rem; background:#991B1B; margin-top:1rem;" id="logoutBtn">
+                    <i>🚪</i> Logout
+                </button>
             </div>
         </aside>
 
@@ -330,6 +350,30 @@
                         </div>
                     </div>
 
+                    <div class="chart-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                            <div>
+                                <h3 style="font-size:1.15rem;">Active Users</h3>
+                                <p style="font-size:0.85rem; color:var(--text-muted);">Distinct users interacting with the site each day.</p>
+                            </div>
+                        </div>
+                        <div class="ops-grid" style="margin-bottom:1rem;">
+                            <div class="ops-card" style="padding:1rem 1.25rem;">
+                                <h4 style="margin-bottom:0.35rem;">Active Today</h4>
+                                <div style="font-size:2rem; font-weight:800; color:var(--primary);" id="adminActiveUsersToday">0</div>
+                                <p style="font-size:0.82rem; color:var(--text-muted); margin:0;">Users with real activity today</p>
+                            </div>
+                            <div class="ops-card" style="padding:1rem 1.25rem;">
+                                <h4 style="margin-bottom:0.35rem;">Weekly Peak</h4>
+                                <div style="font-size:2rem; font-weight:800; color:var(--green);" id="adminWeeklyActivePeak">0</div>
+                                <p style="font-size:0.82rem; color:var(--text-muted); margin:0;">Highest active-user day this week</p>
+                            </div>
+                        </div>
+                        <div class="chart-wrap compact">
+                            <canvas id="adminActiveUsersChart"></canvas>
+                        </div>
+                    </div>
+
                     <div id="userManagementSection" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
                         <h3 style="font-size:1.25rem;">User Management</h3>
                         <span style="font-size:0.85rem; color:var(--text-muted);">Reset passwords or remove accounts directly.</span>
@@ -391,15 +435,35 @@
                             <span>Low stock items</span>
                             <strong id="adminLowStockLabel">0</strong>
                         </div>
+                        <div class="ops-item">
+                            <span>Total users</span>
+                            <strong id="adminTotalUsersLabel">0</strong>
+                        </div>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="footer-logo">
+                    <span class="logo-icon">💊</span>
+                    <span class="logo-text">MedTracker</span>
+                </div>
+                <p class="footer-tagline">Reminders, inventory, and care coordination in one calm, simple place.</p>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 MedTracker. Your smart companion for medication and health.</p>
+            </div>
+        </div>
+    </footer>
+
     <script src="js/script.js"></script>
     <script>
         let adminUsageChart;
+        let adminActiveUsersChart;
 
         document.addEventListener('DOMContentLoaded', () => {
             if (!window.MedTrackerApp.protectRoute(['Admin'])) {
@@ -438,8 +502,12 @@
                 document.getElementById('adminPrescriptionCount').textContent = String(data.metrics.active_prescriptions || 0);
                 document.getElementById('adminUsagePulse').textContent = String(data.metrics.today_activity || 0);
                 document.getElementById('adminLowStockLabel').textContent = String(data.metrics.low_stock_total || 0);
+                document.getElementById('adminActiveUsersToday').textContent = String(data.metrics.active_users_today || 0);
+                document.getElementById('adminWeeklyActivePeak').textContent = String(data.metrics.weekly_active_peak || 0);
+                document.getElementById('adminTotalUsersLabel').textContent = String(data.metrics.total_user_count || 0);
 
                 renderAdminUsageChart(data.usage_chart || []);
+                renderAdminActiveUsersChart(data.active_users_chart || []);
                 renderAdminDoctorActivity(data.doctor_activity || []);
 
                 const logBox = document.querySelector('.log-box');
@@ -581,6 +649,62 @@
                     <strong>${row.total_medicines}</strong>
                 </div>
             `).join('') : '<p style="color:var(--text-muted);">No prescriber activity found.</p>';
+        }
+
+        function renderAdminActiveUsersChart(rows) {
+            const canvas = document.getElementById('adminActiveUsersChart');
+            if (!canvas) {
+                return;
+            }
+
+            if (adminActiveUsersChart) {
+                adminActiveUsersChart.destroy();
+            }
+
+            adminActiveUsersChart = new Chart(canvas, {
+                type: 'line',
+                data: {
+                    labels: rows.map((row) => new Date(row.usage_date).toLocaleDateString([], { month: 'short', day: 'numeric' })),
+                    datasets: [{
+                        label: 'Active Users',
+                        data: rows.map((row) => Number(row.active_users || 0)),
+                        borderColor: '#4F46E5',
+                        backgroundColor: 'rgba(79, 70, 229, 0.12)',
+                        fill: true,
+                        borderWidth: 3,
+                        tension: 0.35,
+                        pointRadius: 4,
+                        pointHoverRadius: 5,
+                        pointBackgroundColor: '#4F46E5'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.92)',
+                            titleFont: { family: 'Outfit', weight: '700' },
+                            bodyFont: { family: 'Outfit' },
+                            padding: 12
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#64748B' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0, color: '#64748B' },
+                            grid: { color: 'rgba(148, 163, 184, 0.18)' }
+                        }
+                    }
+                }
+            });
         }
 
         async function loadAdminUsers() {

@@ -9,7 +9,8 @@ window.MedTrackerApp = {
         return {
             userId: localStorage.getItem('user_id') || '',
             role: localStorage.getItem('role') || '',
-            name: localStorage.getItem('name') || 'User'
+            name: localStorage.getItem('name') || 'User',
+            workerCode: localStorage.getItem('worker_code') || ''
         };
     },
 
@@ -133,6 +134,7 @@ window.MedTrackerApp = {
         localStorage.removeItem('role');
         localStorage.removeItem('name');
         localStorage.removeItem('user_id');
+        localStorage.removeItem('worker_code');
     },
 
     logout() {
@@ -168,6 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (role === 'User') {
             document.getElementById('relationGroup').style.display = 'block';
             document.getElementById('relation').setAttribute('required', 'required');
+            document.getElementById('healthWorkerCodeGroup').style.display = 'block';
         }
     }
 
@@ -259,6 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     localStorage.setItem('role', result.role);
                     localStorage.setItem('name', result.name || 'User');
                     localStorage.setItem('user_id', result.user_id || '');
+                    localStorage.setItem('worker_code', result.worker_code || '');
                     
                     setTimeout(() => {
                         window.location.href = window.MedTrackerApp.getDashboardRoute(result.role);

@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../config/config.php';
+require_once '../api/assignment_utils.php';
 
 header('Content-Type: application/json');
 
@@ -12,6 +13,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'] ?? '';
     $post = trim($_POST['post'] ?? '');
     $relation = trim($_POST['relation'] ?? '');
+    $healthWorkerCode = strtoupper(trim($_POST['health_worker_code'] ?? ''));
+    $linkedWorker = null;
 
     // Basic validation
     if (empty($role) || empty($name) || empty($phone) || empty($email) || empty($password)) {
@@ -47,6 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     try {
+        medtracker_ensure_assignment_schema($pdo);
         
         $stmt = $pdo->prepare("SELECT id FROM users WHERE role = ? ORDER BY CAST(SUBSTRING(id, 2) AS UNSIGNED) DESC LIMIT 1");
         $stmt->execute([$role]);
@@ -59,13 +63,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $id = $prefix . $nextNumber;
+        $workerCode = $role === 'Health Worker' ? medtracker_generate_worker_code($id) : null;
 
         $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
-        $stmt = $pdo->prepare("INSERT INTO users (id, role, name, phone, email, password_hash, plain_password, post, relation) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$id, $role, $name, $phone, $email, $password_hash, $password, $post ?: null, $relation ?: null]);
-        echo json_encode(['success' => true, 'message' => 'Signup successful!']);
+        if ($role === 'User' && $healthWorkerCode !== '') {
+            $linkedWorker = medtracker_find_worker_by_code($pdo, $healthWorkerCode);
+            if (!$linkedWorker) {
+                echo json_encode(['success' => false, 'message' => 'That doctor code was not found. Please check and try again.']);
+                exit;
+            }
+        }
+
+        $pdo->beginTransaction();
+
+        $stmt = $pdo->prepare("INSERT INTO users (id, role, name, phone, email, password_hash, plain_password, post, relation, worker_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$id, $role, $name, $phone, $email, $password_hash, $password, $post ?: null, $relation ?: null, $workerCode]);
+
+        if ($role === 'User' && !empty($linkedWorker)) {
+            $assignmentResult = medtracker_assign_patient_to_worker($pdo, $id, $linkedWorker['id']);
+            if (!$assignmentResult['success']) {
+                $pdo->rollBack();
+                echo json_encode(['success' => false, 'message' => $assignmentResult['message']]);
+                exit;
+            }
+        }
+
+        $pdo->commit();
+
+        $message = 'Signup successful!';
+        if ($role === 'Health Worker' && $workerCode) {
+            $message .= ' Your doctor code is ' . $workerCode . '.';
+        } elseif ($role === 'User' && !empty($linkedWorker)) {
+            $message .= ' You are now connected with ' . $linkedWorker['name'] . '.';
+        }
+
+        echo json_encode([
+            'success' => true,
+            'message' => $message,
+            'worker_code' => $workerCode,
+        ]);
     } catch (PDOException $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+
         if ($e->getCode() == 23000) { // Integrity constraint violation (duplicate entry)
             echo json_encode(['success' => false, 'message' => 'Phone or Email already registered.']);
         } else {

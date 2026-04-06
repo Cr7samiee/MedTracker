@@ -96,6 +96,140 @@
             letter-spacing: 0.05em;
             font-weight: 700;
         }
+
+        .report-hero {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.96), rgba(236, 72, 153, 0.82));
+            border-radius: 28px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            color: white;
+        }
+
+        .week-overview-grid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 0.75rem;
+            margin-top: 1.25rem;
+        }
+
+        .week-overview-day {
+            border-radius: 20px;
+            padding: 0.9rem 0.6rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            text-align: center;
+        }
+
+        .week-overview-day.today {
+            background: rgba(255, 255, 255, 0.16);
+            border-color: rgba(255, 255, 255, 0.34);
+        }
+
+        .week-overview-day.complete { border-color: rgba(16, 185, 129, 0.5); }
+        .week-overview-day.partial { border-color: rgba(245, 158, 11, 0.45); }
+        .week-overview-day.missed { border-color: rgba(239, 68, 68, 0.45); }
+
+        .week-day-name {
+            display: block;
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 0.45rem;
+        }
+
+        .week-day-number {
+            width: 42px;
+            height: 42px;
+            margin: 0 auto 0.5rem;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.16);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+        }
+
+        .week-overview-day.today .week-day-number {
+            background: white;
+            color: #0F172A;
+            border-color: rgba(255,255,255,0.4);
+        }
+
+        .week-day-status {
+            font-size: 0.72rem;
+            color: rgba(255,255,255,0.72);
+        }
+
+        .chart-container.enhanced {
+            height: auto;
+        }
+
+        .chart-stage {
+            height: 360px;
+        }
+
+        .water-panel {
+            background: var(--surface-solid);
+            border-radius: 24px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 2rem;
+        }
+
+        .water-summary-row {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .water-summary-card {
+            background: #F8FAFC;
+            border-radius: 18px;
+            padding: 1rem 1.1rem;
+        }
+
+        .water-summary-card span {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.4rem;
+        }
+
+        .water-summary-card strong {
+            font-size: 1.4rem;
+            color: var(--text-main);
+        }
+
+        .water-chart-stage {
+            height: 220px;
+        }
+
+        .chart-context-note {
+            margin-top: 1rem;
+            padding: 0.9rem 1rem;
+            border-radius: 14px;
+            background: #F8FAFC;
+            color: var(--text-muted);
+            font-size: 0.86rem;
+            border: 1px solid rgba(148, 163, 184, 0.16);
+        }
+
+        @media (max-width: 980px) {
+            .week-overview-grid,
+            .water-summary-row {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 680px) {
+            .summary-grid,
+            .week-overview-grid,
+            .water-summary-row {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -149,6 +283,26 @@
                 <button class="btn btn-secondary" id="downloadReportBtn">Download PDF Report</button>
             </div>
 
+            <div class="report-hero">
+                <div style="display:flex; justify-content:space-between; gap:1rem; align-items:flex-start; flex-wrap:wrap;">
+                    <div>
+                        <h2 style="font-size:1.6rem; margin-bottom:0.35rem;">Weekly Progress Strip</h2>
+                        <p style="margin:0; color:rgba(255,255,255,0.72);">See how each day is going at a glance, then drill into trends below.</p>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-size:0.78rem; color:rgba(255,255,255,0.62); text-transform:uppercase; letter-spacing:0.08em;">Expected Doses</div>
+                        <div id="reportExpectedDoses" style="font-size:1.8rem; font-weight:800;">0</div>
+                    </div>
+                </div>
+                <div class="week-overview-grid" id="reportWeekOverview">
+                    <div class="week-overview-day today">
+                        <span class="week-day-name">Today</span>
+                        <div class="week-day-number">-</div>
+                        <div class="week-day-status">Loading</div>
+                    </div>
+                </div>
+            </div>
+
             <div class="summary-grid">
                 <div class="summary-card success">
                     <div class="summary-icon">✓</div>
@@ -173,8 +327,18 @@
                 </div>
             </div>
 
-            <div class="chart-container">
-                <canvas id="adherenceChart"></canvas>
+            <div class="chart-container enhanced">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:1rem; flex-wrap:wrap;">
+                    <div>
+                        <h2 style="font-size:1.25rem; margin-bottom:0.3rem;">Dose Completion Graph</h2>
+                        <p style="margin:0; color:var(--text-muted);" id="reportChartDescription">Stacked daily activity with a trend line for adherence rate.</p>
+                    </div>
+                    <div style="font-size:0.82rem; color:var(--text-muted);" id="reportChartRangeLabel">Last 7 days</div>
+                </div>
+                <div class="chart-stage">
+                    <canvas id="adherenceChart"></canvas>
+                </div>
+                <div class="chart-context-note" id="reportChartContext">This chart updates from the actual doses scheduled in your treatment window.</div>
             </div>
 
             <div class="summary-grid" style="grid-template-columns: repeat(2, 1fr);">
@@ -194,6 +358,32 @@
                 </div>
             </div>
 
+            <div class="water-panel">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:1rem; flex-wrap:wrap;">
+                    <div>
+                        <h2 style="font-size:1.25rem; margin-bottom:0.3rem;">Hydration Trend</h2>
+                        <p style="margin:0; color:var(--text-muted);">Water tracking for the same care window as your medication progress.</p>
+                    </div>
+                </div>
+                <div class="water-summary-row">
+                    <div class="water-summary-card">
+                        <span>Today</span>
+                        <strong id="reportWaterToday">0 ml</strong>
+                    </div>
+                    <div class="water-summary-card">
+                        <span>Goal</span>
+                        <strong id="reportWaterGoal">2000 ml</strong>
+                    </div>
+                    <div class="water-summary-card">
+                        <span>7-Day Average</span>
+                        <strong id="reportWaterAverage">0 ml</strong>
+                    </div>
+                </div>
+                <div class="water-chart-stage">
+                    <canvas id="hydrationChart"></canvas>
+                </div>
+            </div>
+
             <div class="alerts-panel">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
                     <h2 style="font-size:1.25rem;">Adherence Alerts</h2>
@@ -206,13 +396,31 @@
         </main>
     </div>
 
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="footer-logo">
+                    <span class="logo-icon">💊</span>
+                    <span class="logo-text">MedTracker</span>
+                </div>
+                <p class="footer-tagline">Reminders, inventory, and care coordination in one calm, simple place.</p>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 MedTracker. Your smart companion for medication and health.</p>
+            </div>
+        </div>
+    </footer>
+
     <script src="js/script.js"></script>
     <script>
         let adherenceChart;
+        let hydrationChart;
         let reportPayload = {
             summary: {},
             alerts: [],
-            chart: []
+            chart: [],
+            week_overview: [],
+            water: {}
         };
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -247,12 +455,16 @@
                 reportPayload = {
                     summary: result.summary || {},
                     alerts: result.alerts || [],
-                    chart: result.chart || []
+                    chart: result.chart || [],
+                    week_overview: result.week_overview || [],
+                    water: result.water || {}
                 };
 
                 renderReportSummary(reportPayload.summary);
+                renderWeekOverview(reportPayload.week_overview);
                 renderReportAlerts(reportPayload.alerts);
                 renderReportChart(reportPayload.chart);
+                renderWaterPanel(reportPayload.water);
             } catch (error) {
                 document.getElementById('reportAlertsList').innerHTML = '<p style="color:var(--text-muted);">Unable to load adherence alerts right now.</p>';
             }
@@ -264,6 +476,33 @@
             document.getElementById('reportOveruseTotal').textContent = String(summary.overuse_total || 0);
             document.getElementById('reportStreakDays').textContent = `${summary.streak_days || 0} Days`;
             document.getElementById('reportLowStockTotal').textContent = String(summary.low_stock_total || 0);
+            document.getElementById('reportExpectedDoses').textContent = String(summary.expected_doses || 0);
+        }
+
+        function renderWeekOverview(days) {
+            const container = document.getElementById('reportWeekOverview');
+
+            if (!days.length) {
+                container.innerHTML = '<div class="week-overview-day today"><span class="week-day-name">Today</span><div class="week-day-number">-</div><div class="week-day-status">No data</div></div>';
+                return;
+            }
+
+            const labels = {
+                complete: 'Complete',
+                partial: 'Partial',
+                missed: 'Missed',
+                pending: 'Pending',
+                upcoming: 'Upcoming',
+                none: 'No doses'
+            };
+
+            container.innerHTML = days.map((day) => `
+                <div class="week-overview-day ${day.status} ${day.is_today ? 'today' : ''}">
+                    <span class="week-day-name">${day.day_short}</span>
+                    <div class="week-day-number">${day.day_number}</div>
+                    <div class="week-day-status">${labels[day.status] || 'Tracked'}</div>
+                </div>
+            `).join('');
         }
 
         function renderReportAlerts(alerts) {
@@ -287,6 +526,9 @@
 
         function renderReportChart(chartRows) {
             const ctx = document.getElementById('adherenceChart');
+            const description = document.getElementById('reportChartDescription');
+            const rangeLabel = document.getElementById('reportChartRangeLabel');
+            const context = document.getElementById('reportChartContext');
             if (!ctx) {
                 return;
             }
@@ -295,34 +537,174 @@
                 adherenceChart.destroy();
             }
 
+            const rowsWithActivity = chartRows.filter((row) => {
+                const total = Number(row.taken || 0) + Number(row.skipped || 0) + Number(row.pending || 0) + Number(row.overuse || 0);
+                return total > 0;
+            });
+            const rowsToRender = rowsWithActivity.length ? rowsWithActivity : chartRows;
+            const hasCollapsedRange = rowsWithActivity.length > 0 && rowsWithActivity.length < chartRows.length;
+            const maxDoseCount = Math.max(1, ...rowsToRender.map((row) => Number(row.taken || 0) + Number(row.skipped || 0) + Number(row.pending || 0) + Number(row.overuse || 0)));
+
+            const adherenceRateSeries = rowsToRender.map((row) => {
+                const total = Number(row.taken || 0) + Number(row.skipped || 0) + Number(row.pending || 0);
+                return total ? Math.round((Number(row.taken || 0) / total) * 100) : null;
+            });
+
+            rangeLabel.textContent = hasCollapsedRange
+                ? `Showing ${rowsToRender.length} active treatment day${rowsToRender.length === 1 ? '' : 's'}`
+                : 'Last 7 days';
+            description.textContent = hasCollapsedRange
+                ? 'Only days with scheduled doses are shown here, so the chart stays focused on real treatment activity.'
+                : 'Stacked daily activity with a trend line for adherence rate.';
+            context.textContent = hasCollapsedRange
+                ? 'Days without scheduled medicine are hidden from the graph instead of being shown as flat zero-performance days.'
+                : 'This chart updates from the actual doses scheduled in your treatment window.';
+
             adherenceChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: chartRows.map((row) => row.label),
+                    labels: rowsToRender.map((row) => row.label),
                     datasets: [
                         {
                             label: 'Taken',
-                            data: chartRows.map((row) => row.taken),
+                            data: rowsToRender.map((row) => row.taken),
                             backgroundColor: '#10B981',
-                            borderRadius: 8
+                            borderRadius: 10,
+                            stack: 'doses',
+                            maxBarThickness: 58
                         },
                         {
                             label: 'Skipped',
-                            data: chartRows.map((row) => row.skipped),
+                            data: rowsToRender.map((row) => row.skipped),
                             backgroundColor: '#F59E0B',
-                            borderRadius: 8
+                            borderRadius: 10,
+                            stack: 'doses',
+                            maxBarThickness: 58
                         },
                         {
                             label: 'Pending',
-                            data: chartRows.map((row) => row.pending),
+                            data: rowsToRender.map((row) => row.pending),
                             backgroundColor: '#94A3B8',
-                            borderRadius: 8
+                            borderRadius: 10,
+                            stack: 'doses',
+                            maxBarThickness: 58
                         },
                         {
                             label: 'Overuse Alerts',
-                            data: chartRows.map((row) => row.overuse),
+                            data: rowsToRender.map((row) => row.overuse),
                             backgroundColor: '#EF4444',
-                            borderRadius: 8
+                            borderRadius: 10,
+                            stack: 'doses',
+                            maxBarThickness: 58
+                        },
+                        {
+                            type: 'line',
+                            label: 'Adherence %',
+                            data: adherenceRateSeries,
+                            borderColor: '#4F46E5',
+                            backgroundColor: 'rgba(79, 70, 229, 0.14)',
+                            borderWidth: 3,
+                            pointRadius: 4,
+                            pointHoverRadius: 5,
+                            pointBackgroundColor: '#4F46E5',
+                            tension: 0.35,
+                            spanGaps: false,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                boxWidth: 10,
+                                font: { family: 'Outfit' }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                afterBody: (items) => {
+                                    const row = rowsToRender[items[0]?.dataIndex ?? -1];
+                                    if (!row) {
+                                        return '';
+                                    }
+
+                                    const expected = Number(row.taken || 0) + Number(row.skipped || 0) + Number(row.pending || 0);
+                                    return expected
+                                        ? `Expected doses: ${expected}`
+                                        : 'No scheduled doses';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { stacked: true, grid: { display: false } },
+                        y: {
+                            beginAtZero: true,
+                            stacked: true,
+                            suggestedMax: maxDoseCount + 1,
+                            ticks: { precision: 0 }
+                        },
+                        y1: {
+                            beginAtZero: true,
+                            position: 'right',
+                            max: 100,
+                            ticks: {
+                                callback: (value) => `${value}%`
+                            },
+                            grid: { drawOnChartArea: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderWaterPanel(water) {
+            document.getElementById('reportWaterToday').textContent = `${Number(water.today_ml || 0)} ml`;
+            document.getElementById('reportWaterGoal').textContent = `${Number(water.goal_ml || 2000)} ml`;
+            document.getElementById('reportWaterAverage').textContent = `${Number(water.weekly_average_ml || 0)} ml`;
+
+            const ctx = document.getElementById('hydrationChart');
+            if (!ctx) {
+                return;
+            }
+
+            if (hydrationChart) {
+                hydrationChart.destroy();
+            }
+
+            hydrationChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: (water.series || []).map((row) => row.label),
+                    datasets: [
+                        {
+                            label: 'Water Intake (ml)',
+                            data: (water.series || []).map((row) => Number(row.value || 0)),
+                            borderColor: '#0EA5E9',
+                            backgroundColor: 'rgba(14, 165, 233, 0.14)',
+                            fill: true,
+                            borderWidth: 3,
+                            tension: 0.35,
+                            pointRadius: 4,
+                            pointHoverRadius: 5
+                        },
+                        {
+                            label: 'Goal',
+                            data: (water.series || []).map(() => Number(water.goal_ml || 2000)),
+                            borderColor: '#94A3B8',
+                            borderDash: [6, 6],
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            fill: false
                         }
                     ]
                 },
@@ -330,19 +712,24 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { position: 'top' },
-                        title: {
-                            display: true,
-                            text: 'Adherence Type By Day',
-                            font: { size: 16, family: 'Outfit' }
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                boxWidth: 10,
+                                font: { family: 'Outfit' }
+                            }
                         }
                     },
                     scales: {
-                        x: { stacked: true },
+                        x: {
+                            grid: { display: false }
+                        },
                         y: {
                             beginAtZero: true,
-                            stacked: true,
-                            ticks: { precision: 0 }
+                            ticks: {
+                                callback: (value) => `${value} ml`
+                            }
                         }
                     }
                 }
@@ -379,6 +766,7 @@
                 const summary = reportPayload.summary || {};
                 const chartRows = reportPayload.chart || [];
                 const alerts = reportPayload.alerts || [];
+                const water = reportPayload.water || {};
                 const generatedAt = new Date();
                 let y = 18;
 
@@ -405,7 +793,9 @@
                     { label: 'Missed Doses', value: String(summary.skipped_total || 0), color: [245, 158, 11] },
                     { label: 'Overuse Alerts', value: String(summary.overuse_total || 0), color: [239, 68, 68] },
                     { label: 'Safe Streak', value: `${summary.streak_days || 0} Days`, color: [79, 70, 229] },
-                    { label: 'Low Stock Alerts', value: String(summary.low_stock_total || 0), color: [100, 116, 139] }
+                    { label: 'Low Stock Alerts', value: String(summary.low_stock_total || 0), color: [100, 116, 139] },
+                    { label: 'Expected Doses', value: String(summary.expected_doses || 0), color: [59, 130, 246] },
+                    { label: 'Water Today', value: `${water.today_ml || 0} ml`, color: [14, 165, 233] }
                 ];
 
                 const cardWidth = (usableWidth - 8) / 2;
@@ -446,6 +836,24 @@
                         y += 5;
                         doc.addImage(chartImage, 'PNG', margin, y, usableWidth, 68);
                         y += 76;
+                    }
+                }
+
+                if (hydrationChart) {
+                    const hydrationImage = hydrationChart.toBase64Image('image/png', 1);
+                    if (hydrationImage) {
+                        if (y + 78 > pageHeight - margin) {
+                            doc.addPage();
+                            y = 18;
+                        }
+
+                        doc.setFont('helvetica', 'bold');
+                        doc.setFontSize(13);
+                        doc.setTextColor(31, 41, 55);
+                        doc.text('Hydration Trend', margin, y);
+                        y += 5;
+                        doc.addImage(hydrationImage, 'PNG', margin, y, usableWidth, 52);
+                        y += 60;
                     }
                 }
 

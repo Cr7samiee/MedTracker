@@ -4,6 +4,7 @@ header('Content-Type: application/json');
 
 require_once '../config/config.php';
 require_once 'adherence_utils.php';
+require_once 'water_utils.php';
 
 $role = strtolower(trim($_SESSION['role'] ?? ($_GET['role'] ?? '')));
 
@@ -13,6 +14,8 @@ if ($role !== 'admin') {
 }
 
 try {
+    medtracker_ensure_water_schema($pdo);
+
     $today = date('Y-m-d');
     $yesterday = date('Y-m-d', strtotime('-1 day'));
 
@@ -91,7 +94,39 @@ try {
 
     $overuseEvents = medtracker_fetch_overuse_logs($pdo, null, $chartStartDate);
 
+    $activeUsersStmt = $pdo->prepare(
+        "SELECT activity_date, COUNT(DISTINCT user_id) AS active_users
+         FROM (
+            SELECT DATE(scheduled_time) AS activity_date, patient_id AS user_id
+            FROM intake_logs
+            WHERE DATE(scheduled_time) >= ?
+
+            UNION ALL
+
+            SELECT intake_date AS activity_date, patient_id AS user_id
+            FROM water_logs
+            WHERE intake_date >= ?
+
+            UNION ALL
+
+            SELECT DATE(created_at) AS activity_date, prescriber_id AS user_id
+            FROM medicines
+            WHERE prescriber_id IS NOT NULL AND DATE(created_at) >= ?
+
+            UNION ALL
+
+            SELECT DATE(created_at) AS activity_date, patient_id AS user_id
+            FROM medicines
+            WHERE prescriber_id IS NULL AND DATE(created_at) >= ?
+         ) AS activity_stream
+         GROUP BY activity_date
+         ORDER BY activity_date ASC"
+    );
+    $activeUsersStmt->execute([$chartStartDate, $chartStartDate, $chartStartDate, $chartStartDate]);
+    $activeUserRows = $activeUsersStmt->fetchAll();
+
     $usageChartMap = [];
+    $activeUserChartMap = [];
     foreach (medtracker_build_date_series(7) as $date) {
         $usageChartMap[$date] = [
             'usage_date' => $date,
@@ -100,6 +135,10 @@ try {
             'pending' => 0,
             'overuse' => 0,
             'total' => 0,
+        ];
+        $activeUserChartMap[$date] = [
+            'usage_date' => $date,
+            'active_users' => 0,
         ];
     }
 
@@ -124,12 +163,29 @@ try {
         $usageChartMap[$dateKey]['overuse']++;
     }
 
+    foreach ($activeUserRows as $row) {
+        $dateKey = $row['activity_date'];
+        if (!isset($activeUserChartMap[$dateKey])) {
+            continue;
+        }
+
+        $activeUserChartMap[$dateKey]['active_users'] = (int) ($row['active_users'] ?? 0);
+    }
+
+    $totalUsers = $roleCounts['Admin'] + $roleCounts['Health Worker'] + $roleCounts['User'];
+    $activeUsersToday = (int) ($activeUserChartMap[$today]['active_users'] ?? 0);
+    $activeUsersWeeklyPeak = max(array_map(
+        static fn($row) => (int) ($row['active_users'] ?? 0),
+        $activeUserChartMap
+    ));
+
     echo json_encode([
         'success' => true,
         'metrics' => [
             'admin_count' => $roleCounts['Admin'],
             'health_worker_count' => $roleCounts['Health Worker'],
             'patient_count' => $roleCounts['User'],
+            'total_user_count' => $totalUsers,
             'active_prescriptions' => $medicineCount,
             'today_activity' => (int) ($usage['total_logs'] ?? 0),
             'taken_today' => (int) ($usage['taken_today'] ?? 0),
@@ -137,8 +193,11 @@ try {
             'pending_today' => (int) ($usage['pending_today'] ?? 0),
             'low_stock_total' => $lowStockTotal,
             'overuse_total' => count($overuseEvents),
+            'active_users_today' => $activeUsersToday,
+            'weekly_active_peak' => $activeUsersWeeklyPeak,
         ],
         'usage_chart' => array_values($usageChartMap),
+        'active_users_chart' => array_values($activeUserChartMap),
         'doctor_activity' => $doctorActivity,
         'recent_logs' => $recentLogs,
     ]);

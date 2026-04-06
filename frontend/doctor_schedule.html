@@ -12,6 +12,15 @@
             background: linear-gradient(180deg, #F8FAFC 0%, #EFF6FF 100%);
         }
 
+        .doctor-sidebar .user-profile-sm {
+            background: rgba(255, 255, 255, 0.72);
+            border-color: rgba(79, 70, 229, 0.12);
+        }
+
+        .doctor-sidebar .user-profile-sm .role {
+            color: var(--text-muted);
+        }
+
         .prescription-form-card {
             background: var(--surface-solid);
             border-radius: 24px;
@@ -77,7 +86,14 @@
             </nav>
 
             <div class="sidebar-footer">
-                <button class="btn btn-primary btn-block" style="display: flex; gap: 0.5rem; background: var(--red);" id="logoutBtn">
+                <div class="user-profile-sm">
+                    <img src="https://ui-avatars.com/api/?name=Health+Worker&background=4F46E5&color=fff" alt="Health Worker Avatar">
+                    <div class="info">
+                        <span class="name dynamic-user-name">User</span>
+                        <span class="role">Healthcare Professional</span>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-block" style="display: flex; gap: 0.5rem; background: #991B1B;" id="logoutBtn">
                     <i>🚪</i> Logout
                 </button>
             </div>
@@ -175,6 +191,21 @@
             </div>
         </main>
     </div>
+
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="footer-logo">
+                    <span class="logo-icon">💊</span>
+                    <span class="logo-text">MedTracker</span>
+                </div>
+                <p class="footer-tagline">Reminders, inventory, and care coordination in one calm, simple place.</p>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 MedTracker. Your smart companion for medication and health.</p>
+            </div>
+        </div>
+    </footer>
 
     <script src="js/script.js"></script>
     <script>

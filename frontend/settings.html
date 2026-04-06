@@ -107,6 +107,95 @@
             border: 1px solid rgba(148, 163, 184, 0.18);
         }
 
+        .identity-card {
+            margin-top: 1.25rem;
+            padding: 1rem 1.1rem;
+            border-radius: 16px;
+            background: white;
+            border: 1px solid rgba(79, 70, 229, 0.12);
+        }
+
+        .identity-code {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 14px;
+            background: rgba(79, 70, 229, 0.08);
+            color: var(--primary);
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            margin-top: 0.75rem;
+        }
+
+        .linked-workers {
+            display: grid;
+            gap: 0.85rem;
+            margin-top: 1rem;
+        }
+
+        .linked-worker {
+            padding: 0.95rem 1rem;
+            border-radius: 14px;
+            background: white;
+            border: 1px solid rgba(79, 70, 229, 0.12);
+        }
+
+        .linked-worker strong {
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .linked-worker-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .linked-worker-actions {
+            display: flex;
+            flex-shrink: 0;
+            align-items: center;
+        }
+
+        .inline-form {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .inline-form input {
+            flex: 1;
+            min-width: 220px;
+        }
+
+        .inline-form .form-control {
+            border: 1.5px solid rgba(79, 70, 229, 0.18);
+            border-radius: 14px;
+            background: #FFFFFF;
+            color: var(--text-main);
+            padding: 0.95rem 1rem;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            line-height: 1.2;
+            appearance: none;
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.04);
+        }
+
+        .inline-form .form-control:focus {
+            outline: none;
+            border-color: rgba(79, 70, 229, 0.42);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.08);
+        }
+
+        .mini-message {
+            margin-top: 0.85rem;
+            font-size: 0.84rem;
+            font-weight: 600;
+        }
+
         @media (max-width: 900px) {
             .account-grid {
                 grid-template-columns: 1fr;
@@ -188,6 +277,12 @@
                     <div class="account-panel">
                         <h3>What this page is for</h3>
                         <p id="settingsSupportCopy">Use this shared account page to handle your own password and then jump back into the correct dashboard for your role.</p>
+                        <div class="identity-card" id="settingsRoleConnectionCard">
+                            <h3 id="settingsConnectionTitle">Workspace link</h3>
+                            <p id="settingsConnectionCopy">Loading role-specific connection details...</p>
+                            <div id="settingsConnectionBody"></div>
+                            <div class="mini-message" id="settingsConnectionMessage"></div>
+                        </div>
                     </div>
                     <div class="account-panel">
                         <h3>Quick navigation</h3>
@@ -197,6 +292,21 @@
             </div>
         </main>
     </div>
+
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="footer-logo">
+                    <span class="logo-icon">💊</span>
+                    <span class="logo-text">MedTracker</span>
+                </div>
+                <p class="footer-tagline">Reminders, inventory, and care coordination in one calm, simple place.</p>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 MedTracker. Your smart companion for medication and health.</p>
+            </div>
+        </div>
+    </footer>
 
     <script src="js/script.js"></script>
     <script>
@@ -229,6 +339,8 @@
                     </a>
                 `)
                 .join('');
+
+            loadAccountContext(portal);
 
             // Confirm Logout feature
             document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
@@ -264,6 +376,212 @@
                 msg.textContent = 'Password successfully updated!';
             });
         });
+
+        async function loadAccountContext(portal) {
+            try {
+                const response = await fetch('../backend/api/get_account_context.php');
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.message || 'Unable to load account details.');
+                }
+
+                renderRoleConnection(portal, result.data || {});
+            } catch (error) {
+                const message = document.getElementById('settingsConnectionMessage');
+                message.style.color = 'var(--red)';
+                message.textContent = error.message || 'Unable to load account details.';
+            }
+        }
+
+        function renderRoleConnection(portal, payload) {
+            const user = payload.user || {};
+            const assignedWorkers = Array.isArray(payload.assigned_workers) ? payload.assigned_workers : [];
+            const assignedPatients = Array.isArray(payload.assigned_patients) ? payload.assigned_patients : [];
+            const title = document.getElementById('settingsConnectionTitle');
+            const copy = document.getElementById('settingsConnectionCopy');
+            const body = document.getElementById('settingsConnectionBody');
+            const message = document.getElementById('settingsConnectionMessage');
+
+            message.textContent = '';
+
+            if (portal.key === 'health-worker') {
+                title.textContent = 'Doctor Code';
+                copy.textContent = 'Share this code with patients so they connect to your queue. You can also release patients here when treatment is complete.';
+                body.innerHTML = `
+                    <div class="identity-code">
+                        <span id="settingsWorkerCodeValue">${user.worker_code || 'Not available yet'}</span>
+                        <button type="button" class="btn btn-secondary btn-sm" style="border:none; background:white;" onclick="copyWorkerCode()">Copy</button>
+                    </div>
+                    <p style="margin-top:0.75rem; color:var(--text-muted);">Assigned patients will appear in your dashboard and prescription desk once they use this code.</p>
+                    <div class="linked-workers">
+                        ${assignedPatients.length ? assignedPatients.map((patient) => `
+                            <div class="linked-worker">
+                                <div class="linked-worker-row">
+                                    <div>
+                                        <strong>${patient.name}</strong>
+                                        <p style="margin:0; color:var(--text-muted);">${patient.id} • ${patient.phone || 'No phone saved'}</p>
+                                    </div>
+                                    <div class="linked-worker-actions">
+                                        <button type="button" class="btn btn-secondary btn-sm" style="background:#FEF2F2; color:#DC2626; border:none;" onclick="disconnectPatient('${patient.id}', '${patient.name.replace(/'/g, "\\'")}')">Release</button>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('') : `
+                            <div class="linked-worker">
+                                <strong>No patients linked yet</strong>
+                                <p style="margin:0; color:var(--text-muted);">Once patients use your doctor code, they will appear here.</p>
+                            </div>
+                        `}
+                    </div>
+                `;
+                return;
+            }
+
+            if (portal.key === 'patient') {
+                title.textContent = 'Care Team Links';
+                copy.textContent = assignedWorkers.length
+                    ? 'Your account can stay synchronized with more than one linked doctor or health worker.'
+                    : 'Connect your account with your doctor or health worker using their MedTracker code.';
+
+                body.innerHTML = `
+                    <div class="linked-workers">
+                        ${assignedWorkers.length ? assignedWorkers.map((worker) => `
+                            <div class="linked-worker">
+                                <div class="linked-worker-row">
+                                    <div>
+                                        <strong>${worker.name}</strong>
+                                        <p style="margin:0; color:var(--text-muted);">${worker.post || 'Health Worker'} • ${worker.worker_code || ''}</p>
+                                    </div>
+                                    <div class="linked-worker-actions">
+                                        <button type="button" class="btn btn-secondary btn-sm" style="background:#FEF2F2; color:#DC2626; border:none;" onclick="disconnectWorker('${worker.id}', '${worker.name.replace(/'/g, "\\'")}')">Disconnect</button>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('') : `
+                            <div class="linked-worker">
+                                <strong>No health worker linked yet</strong>
+                                <p style="margin:0; color:var(--text-muted);">Add one or more doctor codes below so the right care team can monitor your medicines.</p>
+                            </div>
+                        `}
+                    </div>
+                    <form class="inline-form" id="workerCodeForm">
+                        <input type="text" id="workerCodeInput" class="form-control" placeholder="Enter doctor code like HW-H100">
+                        <button type="submit" class="btn btn-primary">Add Doctor</button>
+                    </form>
+                `;
+
+                document.getElementById('workerCodeForm')?.addEventListener('submit', submitWorkerCodeLink);
+                return;
+            }
+
+            title.textContent = 'Role Summary';
+            copy.textContent = 'This page manages your own account access and role workspace.';
+            body.innerHTML = `
+                <p style="color:var(--text-muted); margin-top:0.75rem;">Admins do not use doctor codes, but you can still manage passwords and return to the control panel from here.</p>
+            `;
+        }
+
+        async function submitWorkerCodeLink(event) {
+            event.preventDefault();
+
+            const input = document.getElementById('workerCodeInput');
+            const message = document.getElementById('settingsConnectionMessage');
+
+            try {
+                const response = await fetch('../backend/api/link_caregiver.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ worker_code: input.value })
+                });
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.message || 'Unable to connect to this health worker.');
+                }
+
+                message.style.color = 'var(--green)';
+                message.textContent = result.message;
+                await loadAccountContext(window.MedTrackerApp.getPortalConfig(window.MedTrackerApp.getCurrentUser().role));
+            } catch (error) {
+                message.style.color = 'var(--red)';
+                message.textContent = error.message || 'Unable to connect to this health worker.';
+            }
+        }
+
+        async function disconnectWorker(workerId, workerName) {
+            if (!confirm(`Disconnect ${workerName} from your care team?`)) {
+                return;
+            }
+
+            const message = document.getElementById('settingsConnectionMessage');
+
+            try {
+                const response = await fetch('../backend/api/unlink_caregiver.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ worker_id: workerId })
+                });
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.message || 'Unable to disconnect this doctor.');
+                }
+
+                message.style.color = 'var(--green)';
+                message.textContent = result.message;
+                await loadAccountContext(window.MedTrackerApp.getPortalConfig(window.MedTrackerApp.getCurrentUser().role));
+            } catch (error) {
+                message.style.color = 'var(--red)';
+                message.textContent = error.message || 'Unable to disconnect this doctor.';
+            }
+        }
+
+        async function disconnectPatient(patientId, patientName) {
+            if (!confirm(`Release ${patientName} from your monitoring list?`)) {
+                return;
+            }
+
+            const message = document.getElementById('settingsConnectionMessage');
+
+            try {
+                const response = await fetch('../backend/api/unlink_caregiver.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ patient_id: patientId })
+                });
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.message || 'Unable to release this patient.');
+                }
+
+                message.style.color = 'var(--green)';
+                message.textContent = result.message;
+                await loadAccountContext(window.MedTrackerApp.getPortalConfig(window.MedTrackerApp.getCurrentUser().role));
+            } catch (error) {
+                message.style.color = 'var(--red)';
+                message.textContent = error.message || 'Unable to release this patient.';
+            }
+        }
+
+        async function copyWorkerCode() {
+            const value = document.getElementById('settingsWorkerCodeValue')?.textContent?.trim();
+            const message = document.getElementById('settingsConnectionMessage');
+
+            if (!value) {
+                return;
+            }
+
+            try {
+                await navigator.clipboard.writeText(value);
+                message.style.color = 'var(--green)';
+                message.textContent = 'Doctor code copied.';
+            } catch (error) {
+                message.style.color = 'var(--red)';
+                message.textContent = 'Unable to copy the doctor code automatically.';
+            }
+        }
     </script>
 </body>
 </html>

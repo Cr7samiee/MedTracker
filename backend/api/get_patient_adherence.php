@@ -5,6 +5,7 @@ header('Content-Type: application/json');
 require_once '../config/config.php';
 require_once 'adherence_utils.php';
 require_once 'schedule_utils.php';
+require_once 'water_utils.php';
 
 $userId = $_GET['user_id'] ?? ($_SESSION['user_id'] ?? null);
 $role = $_SESSION['role'] ?? 'User';
@@ -18,9 +19,11 @@ if (!$userId || strtolower(trim($role)) !== 'user') {
 
 try {
     medtracker_ensure_schedule_schema($pdo);
+    medtracker_ensure_water_schema($pdo);
 
     $dateSeries = medtracker_build_date_series($days);
     $dateFrom = $dateSeries[0];
+    $today = date('Y-m-d');
 
     $medicineStmt = $pdo->prepare(
         "SELECT id, patient_id, frequency, start_date, duration_days, end_date
@@ -96,6 +99,12 @@ try {
         }
     }
 
+    $waterMap = medtracker_fetch_water_map($pdo, $userId, $dateFrom);
+    foreach ($chartMap as $date => &$dayData) {
+        $dayData['water_ml'] = (int) ($waterMap[$date] ?? 0);
+    }
+    unset($dayData);
+
     $takenTotal = (int) ($summary['taken_total'] ?? 0);
     $skippedTotal = (int) ($summary['skipped_total'] ?? 0);
     $pendingTotal = (int) ($summary['pending_total'] ?? 0);
@@ -134,6 +143,45 @@ try {
         return strcmp($right['created_at'], $left['created_at']);
     });
 
+    $weeklyDates = array_slice($dateSeries, -7);
+    $weekOverview = [];
+    foreach ($weeklyDates as $date) {
+        $day = $chartMap[$date] ?? ['taken' => 0, 'skipped' => 0, 'pending' => 0, 'overuse' => 0, 'water_ml' => 0];
+        $totalForDay = (int) ($day['taken'] + $day['skipped'] + $day['pending']);
+
+        if ($date > $today) {
+            $status = 'upcoming';
+        } elseif ($totalForDay === 0) {
+            $status = 'none';
+        } elseif ($day['taken'] === $totalForDay && $day['overuse'] === 0) {
+            $status = 'complete';
+        } elseif ($day['taken'] > 0 && ($day['skipped'] > 0 || $day['pending'] > 0 || $day['overuse'] > 0)) {
+            $status = 'partial';
+        } elseif ($day['skipped'] > 0 || $day['overuse'] > 0) {
+            $status = 'missed';
+        } else {
+            $status = 'pending';
+        }
+
+        $weekOverview[] = [
+            'date' => $date,
+            'day_short' => date('D', strtotime($date)),
+            'day_number' => date('j', strtotime($date)),
+            'is_today' => $date === $today,
+            'status' => $status,
+            'taken' => (int) $day['taken'],
+            'expected' => $totalForDay,
+            'water_ml' => (int) ($day['water_ml'] ?? 0),
+        ];
+    }
+
+    $waterGoal = medtracker_water_goal_ml();
+    $todayWater = (int) ($waterMap[$today] ?? 0);
+    $waterWeeklyAverage = count($weeklyDates) ? (int) round(array_sum(array_map(
+        static fn($date) => (int) ($waterMap[$date] ?? 0),
+        $weeklyDates
+    )) / count($weeklyDates)) : 0;
+
     echo json_encode([
         'success' => true,
         'summary' => [
@@ -147,6 +195,19 @@ try {
             'low_stock_total' => count($lowStockMeds),
         ],
         'chart' => array_values($chartMap),
+        'week_overview' => $weekOverview,
+        'water' => [
+            'goal_ml' => $waterGoal,
+            'today_ml' => $todayWater,
+            'today_percent' => min(100, (int) round(($todayWater / max($waterGoal, 1)) * 100)),
+            'weekly_average_ml' => $waterWeeklyAverage,
+            'series' => array_map(static function ($date) use ($chartMap) {
+                return [
+                    'label' => date('M j', strtotime($date)),
+                    'value' => (int) ($chartMap[$date]['water_ml'] ?? 0),
+                ];
+            }, $weeklyDates),
+        ],
         'alerts' => array_slice($alerts, 0, 8),
     ]);
 } catch (PDOException $e) {

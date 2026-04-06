@@ -4,6 +4,7 @@ header('Content-Type: application/json');
 
 include_once '../config/config.php';
 require_once 'schedule_utils.php';
+require_once 'assignment_utils.php';
 
 // Accept POST json or form data
 $rawInput = file_get_contents("php://input");
@@ -47,6 +48,7 @@ if (empty($patient_id) || empty($name) || empty($dosage) || empty($frequency)) {
 
 try {
     medtracker_ensure_schedule_schema($pdo);
+    medtracker_ensure_assignment_schema($pdo);
 
     $startDate = $data->start_date ?? date('Y-m-d');
     $startDateObject = date_create($startDate) ?: date_create(date('Y-m-d'));
@@ -55,6 +57,26 @@ try {
     $endDate = medtracker_calculate_end_date($startDate, $durationDays);
 
     $pdo->beginTransaction();
+
+    if ($sessionRole === 'Health Worker') {
+        $assignmentList = medtracker_get_assigned_workers($pdo, $patient_id);
+        $currentWorkerLinked = medtracker_worker_can_access_patient($pdo, $sessionUserId, $patient_id);
+
+        if ($assignmentList && !$currentWorkerLinked) {
+            $pdo->rollBack();
+            echo json_encode(['success' => false, 'message' => 'This patient has not linked your doctor code yet. Ask the patient to add your code in Settings first.']);
+            exit;
+        }
+
+        if (!$assignmentList) {
+            $assignmentResult = medtracker_assign_patient_to_worker($pdo, $patient_id, $sessionUserId);
+            if (!$assignmentResult['success']) {
+                $pdo->rollBack();
+                echo json_encode(['success' => false, 'message' => $assignmentResult['message']]);
+                exit;
+            }
+        }
+    }
 
     $stmt = $pdo->prepare("INSERT INTO medicines (patient_id, prescriber_id, name, dosage, type, quantity, frequency, start_date, duration_days, end_date, instructions) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     $stmt->execute([
