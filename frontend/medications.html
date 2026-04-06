@@ -360,8 +360,8 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <a href="#" class="sidebar-brand" style="text-decoration: none;">
-                    <span class="title">MedTracker</span>
+                <a href="javascript:void(0)" class="sidebar-brand" style="text-decoration: none;">
+                    <span class="title" style="font-size:1.25rem;">💊 MedTracker</span>
                     <span class="subtitle">Patient Portal</span>
                 </a>
             </div>
@@ -375,31 +375,34 @@
                     <i>💊</i>
                     <span>Medications</span>
                 </a>
-                <a href="#" class="nav-item">
+                <a href="schedule.html" class="nav-item">
                     <i>🗓️</i>
                     <span>Schedule</span>
                 </a>
-                <a href="#" class="nav-item">
+                <a href="reports.html" class="nav-item">
                     <i>📈</i>
                     <span>Reports</span>
                 </a>
-                <a href="#" class="nav-item">
+                <a href="settings.html" class="nav-item">
                     <i>⚙️</i>
                     <span>Settings</span>
                 </a>
             </nav>
 
             <div class="sidebar-footer">
-                <button class="btn btn-primary btn-block" style="display: flex; gap: 0.5rem;">
+                <button class="btn btn-primary btn-block" style="display: flex; gap: 0.5rem;" onclick="window.location.href='add_medication.html'">
                     <i>+</i> Add Medication
                 </button>
                 <div class="user-profile-sm">
-                    <img src="https://ui-avatars.com/api/?name=David&background=333&color=fff" alt="David">
+                    <img id="medicationsAvatar" src="https://ui-avatars.com/api/?name=User&background=333&color=fff" alt="Patient Avatar">
                     <div class="info">
-                        <span class="name">David</span>
+                        <span class="name"><span class="dynamic-user-name">User</span></span>
                         <span class="role">Patient</span>
                     </div>
                 </div>
+                <button class="btn btn-primary btn-block" style="display: flex; gap: 0.5rem; background: var(--red);" id="logoutBtn">
+                    <i>🚪</i> Logout
+                </button>
             </div>
         </aside>
 
@@ -411,7 +414,7 @@
                     <input type="text" placeholder="Filter medicines...">
                 </div>
                 <div class="top-icons">
-                    <button class="icon-btn">
+                    <button class="icon-btn" onclick="window.location.href='reports.html'">
                         🔔
                         <span class="badge"></span>
                     </button>
@@ -421,124 +424,35 @@
             <div class="page-header">
                 <div class="header-left">
                     <h1>Medications</h1>
-                    <p>Patient: Medication Manager — Tracking 8 active prescriptions.</p>
+                    <p id="medicationsSubtitle">Patient: Medication Manager.</p>
                 </div>
             </div>
 
             <div class="top-stats-grid">
                 <div class="stat-card" style="background:#F8FAFC; border:1px solid #E2E8F0;">
                     <h3>ADHERENCE RATE</h3>
-                    <h2>94%</h2>
-                    <span class="badge-trend">↗ +2% from last week</span>
+                    <h2 id="medicationsAdherence">0%</h2>
+                    <span class="badge-trend" id="medicationsAdherenceTrend">Live from today's schedule</span>
                 </div>
                 <div class="stat-card" style="background:#F8FAFC; border:1px solid #E2E8F0;">
                     <h3>LOW STOCK ALERTS</h3>
-                    <h2>02</h2>
-                    <span class="badge-alert">⚠️ Requires immediate refill</span>
+                    <h2 id="medicationsLowStock">00</h2>
+                    <span class="badge-alert" id="medicationsLowStockText">⚠️ Monitoring stock levels</span>
                 </div>
                 <div class="stat-card blue">
                     <h3>NEXT DELIVERY</h3>
-                    <h2>Tomorrow, 10:00 AM</h2>
-                    <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.5rem;">Central Pharmacy Logistics</p>
+                    <h2 id="medicationsNextDose">No pending doses</h2>
+                    <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.5rem;">Today's next scheduled medicine</p>
                 </div>
             </div>
 
             <div class="section-header">
                 <h2>Active Prescriptions</h2>
-                <button class="btn-sort"><i>≡</i> Sort by Name</button>
+                <button class="btn-sort" id="sortMedicationsBtn"><i>≡</i> Sort by Name</button>
             </div>
 
-            <div class="med-list">
-                <!-- Med 1 -->
-                <div class="med-card">
-                    <div class="med-icon-box">💊</div>
-                    <div class="med-info">
-                        <div class="med-title-row">
-                            <h3>Atorvastatin Calcium</h3>
-                            <span class="med-tag">LIPID AGENT</span>
-                        </div>
-                        <p class="med-desc">Take 20mg orally once daily in the evening for cholesterol management.</p>
-                    </div>
-                    <div class="med-freq">
-                        <span class="col-title">FREQUENCY</span>
-                        <span class="freq-val">1x daily</span>
-                    </div>
-                    <div class="med-stock">
-                        <span class="col-title">STOCK LEVEL</span>
-                        <div class="stock-bar"><div class="stock-fill" style="width: 80%;"></div></div>
-                        <span class="stock-val" style="color:var(--green)">24 Left</span>
-                    </div>
-                </div>
-
-                <!-- Med 2 -->
-                <div class="med-card">
-                    <div class="med-icon-box" style="background: #FFF7ED; color: #C2410C;">📦</div>
-                    <div class="med-info">
-                        <div class="med-title-row">
-                            <h3>Lisinopril Solution</h3>
-                            <span class="med-tag" style="background:#FFEDD5; color:#C2410C;">ACE INHIBITOR</span>
-                        </div>
-                        <p class="med-desc">5mg dosage. Take 10ml twice daily with water. Maintain consistent timing.</p>
-                    </div>
-                    <div class="med-freq">
-                        <span class="col-title">FREQUENCY</span>
-                        <span class="freq-val">2x daily</span>
-                    </div>
-                    <div class="med-stock" style="text-align: left; padding-right: 1rem;">
-                        <span class="col-title">STOCK LEVEL</span>
-                        <div class="stock-bar" style="width: 60px; display:inline-block; margin-right:10px;"><div class="stock-fill warning" style="width: 15%;"></div></div>
-                        <span class="stock-val" style="color:#C2410C">3 Days</span>
-                    </div>
-                    <div class="med-actions">
-                        <button class="btn-refill normal">Refill Now</button>
-                        <button style="border:none; background:transparent; font-size:1.2rem; cursor:pointer; color:var(--text-muted)">⋮</button>
-                    </div>
-                </div>
-
-                <!-- Med 3 -->
-                <div class="med-card">
-                    <div class="med-icon-box">💉</div>
-                    <div class="med-info">
-                        <div class="med-title-row">
-                            <h3>Metformin HCL</h3>
-                            <span class="med-tag">ANTI-DIABETIC</span>
-                        </div>
-                        <p class="med-desc">500mg. Take with meals three times per day to control blood sugar levels.</p>
-                    </div>
-                    <div class="med-freq">
-                        <span class="col-title">FREQUENCY</span>
-                        <span class="freq-val">3x daily</span>
-                    </div>
-                    <div class="med-stock">
-                        <span class="col-title">STOCK LEVEL</span>
-                        <div class="stock-bar"><div class="stock-fill" style="width: 90%;"></div></div>
-                        <span class="stock-val" style="color:var(--green)">42 Left</span>
-                    </div>
-                </div>
-
-                <!-- Med 4 -->
-                <div class="med-card alert">
-                    <div class="med-icon-box">⚠️</div>
-                    <div class="med-info">
-                        <div class="med-title-row">
-                            <h3 style="color:var(--red);">Warfarin Sodium</h3>
-                            <span class="med-tag">ANTICOAGULANT</span>
-                        </div>
-                        <p class="med-desc">2mg dosage. Strictly controlled administration schedule required.</p>
-                    </div>
-                    <div class="med-freq">
-                        <span class="col-title">FREQUENCY</span>
-                        <span class="freq-val">1x daily</span>
-                    </div>
-                    <div class="med-stock" style="text-align: left; padding-right: 1rem;">
-                        <span class="col-title">STOCK LEVEL</span>
-                        <div class="stock-bar" style="width: 60px; display:inline-block; margin-right:10px;"><div class="stock-fill danger" style="width: 0%;"></div></div>
-                        <span class="stock-val danger">OUT STOCK</span>
-                    </div>
-                    <div class="med-actions">
-                        <button class="btn-refill urgent">❄ Urgent Refill</button>
-                    </div>
-                </div>
+            <div class="med-list" id="medicationsList">
+                <p class="text-muted">Loading active prescriptions...</p>
             </div>
 
             <!-- Adherence Pulse Section -->
@@ -551,7 +465,7 @@
                 </div>
                 <div class="pulse-info">
                     <h2>Adherence Pulse</h2>
-                    <p>Your medication adherence has improved by <span class="highlight-green">12%</span> since the introduction of automated reminders. Maintaining this pace will significantly lower clinical risk indicators.</p>
+                    <p id="medicationsPulseText">Your medication adherence updates automatically from the doses you log each day.</p>
                     
                     <div style="display:flex; gap:1.5rem; margin-bottom: 2rem;">
                         <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.875rem;">
@@ -564,7 +478,7 @@
                         </div>
                     </div>
                     
-                    <button class="btn btn-secondary">View Analytics</button>
+                    <button class="btn btn-secondary" onclick="window.location.href='reports.html'">View Analytics</button>
                 </div>
             </div>
 
@@ -572,9 +486,9 @@
             <div style="margin-top: 4rem; padding: 2rem 0; border-top: 1px solid var(--glass-border); display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted);">
                 <span>© 2024 MedTracker Digital Health Sanctuary. All rights reserved.</span>
                 <div style="display:flex; gap: 1.5rem;">
-                    <a href="#" style="color:var(--text-muted); text-decoration:none;">Emergency Protocol</a>
-                    <a href="#" style="color:var(--text-muted); text-decoration:none;">Privacy Shield</a>
-                    <a href="#" style="color:var(--text-muted); text-decoration:none;">Clinical Support</a>
+                    <a href="reports.html" style="color:var(--text-muted); text-decoration:none;">Emergency Protocol</a>
+                    <a href="settings.html" style="color:var(--text-muted); text-decoration:none;">Privacy Shield</a>
+                    <a href="settings.html" style="color:var(--text-muted); text-decoration:none;">Clinical Support</a>
                 </div>
             </div>
 
@@ -582,6 +496,157 @@
     </div>
 
     <script src="js/script.js"></script>
+    <script>
+        let medicationsData = [];
+        let medicationsSortedAsc = true;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (confirm('Are you sure you want to log out?')) {
+                    window.MedTrackerApp.logout();
+                }
+            });
+
+            const user = window.MedTrackerApp.getCurrentUser();
+            document.getElementById('medicationsAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=333&color=fff`;
+            document.getElementById('medicationsAvatar').alt = `${user.name} Avatar`;
+
+            document.getElementById('sortMedicationsBtn')?.addEventListener('click', () => {
+                medicationsSortedAsc = !medicationsSortedAsc;
+                renderMedicationCards();
+            });
+
+            loadMedications();
+        });
+
+        async function loadMedications() {
+            try {
+                const response = await fetch('../backend/api/get_schedule.php');
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.message || 'Unable to load medications.');
+                }
+
+                medicationsData = Array.isArray(result.data) ? result.data : [];
+                renderMedicationStats();
+                renderMedicationCards();
+            } catch (error) {
+                document.getElementById('medicationsList').innerHTML = '<p class="text-muted">Unable to load your medications right now.</p>';
+            }
+        }
+
+        function renderMedicationStats() {
+            const uniquePrescriptions = Array.from(new Map(medicationsData.map((item) => [item.medicine_id, item])).values());
+            const total = medicationsData.length;
+            const completed = medicationsData.filter((item) => item.status === 'Taken').length;
+            const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+            const lowStockItems = uniquePrescriptions.filter((item) => Number(item.stock_remaining) <= 5);
+            const nextPending = medicationsData.find((item) => item.status !== 'Taken');
+
+            document.getElementById('medicationsSubtitle').textContent = `Patient: Medication Manager — Tracking ${uniquePrescriptions.length} active prescription${uniquePrescriptions.length === 1 ? '' : 's'}.`;
+            document.getElementById('medicationsAdherence').textContent = `${percent}%`;
+            document.getElementById('medicationsAdherenceTrend').textContent = total === 0 ? 'No doses logged yet' : `${completed} of ${total} doses completed today`;
+            document.getElementById('medicationsLowStock').textContent = String(lowStockItems.length).padStart(2, '0');
+            document.getElementById('medicationsLowStockText').textContent = lowStockItems.length
+                ? '⚠️ Requires refill planning'
+                : 'Stock levels look healthy';
+            document.getElementById('medicationsNextDose').textContent = nextPending
+                ? `${nextPending.medicine_name} at ${nextPending.scheduled_time ? new Date(nextPending.scheduled_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Anytime'}`
+                : 'No pending doses';
+            document.getElementById('medicationsPulseText').innerHTML = total === 0
+                ? 'No active prescriptions are assigned yet. Ask your health worker to add a schedule.'
+                : `Your medication adherence is currently <span class="highlight-green">${percent}%</span> for today. Keep logging doses to maintain an accurate record.`;
+        }
+
+        function renderMedicationCards() {
+            const list = document.getElementById('medicationsList');
+            const uniqueMeds = Array.from(new Map(medicationsData.map((item) => [item.medicine_id, item])).values());
+            const sorted = [...uniqueMeds].sort((a, b) => {
+                const first = (a.medicine_name || '').toLowerCase();
+                const second = (b.medicine_name || '').toLowerCase();
+                return medicationsSortedAsc ? first.localeCompare(second) : second.localeCompare(first);
+            });
+
+            document.getElementById('sortMedicationsBtn').innerHTML = medicationsSortedAsc
+                ? '<i>≡</i> Sort Z-A'
+                : '<i>≡</i> Sort A-Z';
+
+            if (!sorted.length) {
+                list.innerHTML = '<p class="text-muted">No active prescriptions available yet.</p>';
+                return;
+            }
+
+            list.innerHTML = sorted.map((med) => {
+                const stock = Number(med.stock_remaining || 0);
+                const stockClass = stock <= 0 ? 'danger' : stock <= 5 ? 'warning' : '';
+                const cardClass = stock <= 0 ? 'med-card alert' : 'med-card';
+                const stockWidth = Math.max(Math.min(stock * 4, 100), 0);
+                const statusText = med.status || 'Pending';
+                const icon = stock <= 5 ? '📦' : '💊';
+                const courseText = med.duration_days
+                    ? `Course: ${med.duration_days} day${Number(med.duration_days) === 1 ? '' : 's'} • Ends ${new Date(med.end_date).toLocaleDateString([], { month: 'short', day: 'numeric' })}`
+                    : 'Course duration not set';
+
+                return `
+                    <div class="${cardClass}">
+                        <div class="med-icon-box">${icon}</div>
+                        <div class="med-info">
+                            <div class="med-title-row">
+                                <h3>${med.medicine_name}</h3>
+                                <span class="med-tag">${med.source_type === 'patient' ? 'SELF-ADDED' : statusText}</span>
+                            </div>
+                            <p class="med-desc">${med.instructions || 'Follow your prescribed instructions.'}</p>
+                            <p class="med-desc" style="margin-top:0.35rem;">${med.source_type === 'patient' ? 'Added by you' : `Assigned by ${med.prescriber_name || 'Health Worker'}`}</p>
+                            <p class="med-desc" style="margin-top:0.35rem; color:var(--primary);">${courseText}</p>
+                        </div>
+                        <div class="med-freq">
+                            <span class="col-title">DOSAGE</span>
+                            <span class="freq-val">${med.dosage}</span>
+                            <p class="med-desc" style="margin-top:0.4rem;">${med.frequency || 'As needed'}</p>
+                        </div>
+                        <div class="med-stock">
+                            <span class="col-title">STOCK LEVEL</span>
+                            <div class="stock-bar"><div class="stock-fill ${stockClass}" style="width: ${stockWidth}%;"></div></div>
+                            <span class="stock-val ${stock <= 0 ? 'danger' : ''}">${stock <= 0 ? 'Out of stock' : `${stock} Left`}</span>
+                        </div>
+                        <div class="med-actions">
+                            <button class="btn-refill ${stock <= 5 ? 'urgent' : 'normal'}" onclick="increaseMedicationStock(${med.medicine_id})">${stock <= 5 ? 'Refill Qty' : 'Add Qty'}</button>
+                            <button class="btn-refill normal" onclick="window.location.href='schedule.html'">Schedule</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function increaseMedicationStock(medicineId) {
+            const refillAmount = prompt('How many doses are you adding?', '10');
+            if (!refillAmount || Number.isNaN(Number(refillAmount)) || Number(refillAmount) <= 0) {
+                return;
+            }
+
+            try {
+                const response = await fetch('../backend/api/update_stock.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        medicine_id: medicineId,
+                        added_stock: Number(refillAmount)
+                    })
+                });
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.message || 'Unable to update quantity.');
+                }
+
+                await loadMedications();
+            } catch (error) {
+                alert(error.message || 'Unable to increase this quantity right now.');
+            }
+        }
+    </script>
 </body>
 
 </html>

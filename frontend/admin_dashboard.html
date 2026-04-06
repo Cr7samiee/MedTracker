@@ -4,22 +4,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - System Administrator</title>
+    <title>Admin Dashboard - MedTracker</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css?v=6">
     <link rel="stylesheet" href="css/dashboard.css?v=2">
-    <!-- Chart.js for analytics graphs -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .admin-sidebar {
-            background-color: var(--surface-solid);
+            background: linear-gradient(180deg, #F8FAFC 0%, #EEF2FF 100%);
             border-right: 1px solid var(--glass-border);
         }
 
         .system-status-banner {
-            background: linear-gradient(135deg, rgba(248, 250, 252, 0.8), rgba(241, 245, 249, 0.8));
+            background: linear-gradient(135deg, rgba(248, 250, 252, 0.85), rgba(241, 245, 249, 0.85));
             border-radius: 24px;
-            padding: 2.5rem;
+            padding: 2rem;
             margin-bottom: 2rem;
             border: 1px solid var(--glass-border);
         }
@@ -41,41 +40,67 @@
             color: var(--primary);
         }
 
-        .metric-cards-2 {
+        .ops-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1rem;
         }
 
-        .metric-card {
-            background: var(--surface-solid);
-            border-radius: 20px;
-            padding: 1.5rem;
-            box-shadow: var(--shadow-sm);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .metric-card h2 {
-            font-size: 2.5rem;
-            color: var(--text-main);
-            margin: 1rem 0 0.5rem;
-        }
-
-        .metric-card p {
-            font-size: 0.875rem;
-            color: var(--text-muted);
-            font-weight: 600;
-        }
-
+        .ops-card,
+        .panel-card,
         .user-table-container {
             background: var(--surface-solid);
             border-radius: 24px;
             padding: 1.5rem;
             box-shadow: var(--shadow-sm);
+        }
+
+        .ops-item,
+        .activity-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.85rem 0;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+        }
+
+        .ops-item:last-child,
+        .activity-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .chart-card {
+            background: var(--surface-solid);
+            border-radius: 24px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
             margin-bottom: 2rem;
-            overflow-x: auto;
+        }
+
+        .chart-wrap {
+            height: 280px;
+        }
+
+        .chart-legend-summary {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .legend-pill {
+            background: #F8FAFC;
+            border: 1px solid rgba(148, 163, 184, 0.14);
+            border-radius: 14px;
+            padding: 0.85rem 1rem;
+        }
+
+        .legend-pill strong {
+            display: block;
+            font-size: 1.05rem;
+            margin-top: 0.25rem;
         }
 
         table {
@@ -104,7 +129,7 @@
             align-items: center;
             gap: 1rem;
         }
-        
+
         .avatar-initial {
             width: 40px;
             height: 40px;
@@ -114,7 +139,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
+            font-weight: 700;
         }
 
         .role-tag {
@@ -124,10 +149,40 @@
             border-radius: 999px;
             text-transform: uppercase;
         }
-        
-        .role-tag.doctor { background: #E0E7FF; color: var(--primary); }
-        .role-tag.patient { background: #D1FAE5; color: var(--green); }
-        .role-tag.pharmacist { background: #FFEDD5; color: #C2410C; }
+
+        .role-tag.admin {
+            background: #EDE9FE;
+            color: #6D28D9;
+        }
+
+        .role-tag.worker {
+            background: #FFEDD5;
+            color: #C2410C;
+        }
+
+        .role-tag.patient {
+            background: #D1FAE5;
+            color: var(--green);
+        }
+
+        .admin-action-btn {
+            border: none;
+            border-radius: 999px;
+            padding: 0.45rem 0.85rem;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.78rem;
+        }
+
+        .admin-action-btn.primary {
+            background: rgba(79, 70, 229, 0.12);
+            color: var(--primary);
+        }
+
+        .admin-action-btn.danger {
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--red);
+        }
 
         .log-box {
             background: #F8FAFC;
@@ -137,62 +192,37 @@
             font-size: 0.875rem;
             color: var(--text-muted);
             line-height: 1.8;
-            max-height: 300px;
+            max-height: 320px;
             overflow-y: auto;
         }
 
-        .log-time { color: #94A3B8; margin-right: 1rem; }
-        .log-success { color: var(--green); font-weight: bold; }
-        .log-error { color: var(--red); font-weight: bold; }
-        
-        .admin-settings-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
+        .log-time {
+            color: #94A3B8;
+            margin-right: 1rem;
         }
 
-        .setting-card {
-            background: var(--surface-solid);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            transition: all 0.2s;
-            cursor: pointer;
+        .log-success {
+            color: var(--green);
+            font-weight: 700;
         }
 
-        .setting-card:hover {
-            border-color: var(--primary);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .setting-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            background: #F1F5F9;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            color: var(--primary);
+        .log-error {
+            color: var(--red);
+            font-weight: 700;
         }
     </style>
 </head>
 
 <body>
     <div class="dashboard-layout">
-        <!-- Sidebar -->
         <aside class="sidebar admin-sidebar">
             <div class="sidebar-header">
-                <a href="#" class="sidebar-brand" style="text-decoration: none;">
+                <a href="javascript:void(0)" class="sidebar-brand" style="text-decoration: none;">
                     <div style="display:flex; align-items:center; gap:0.5rem;">
                         <span style="background:var(--primary); color:white; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:8px;">🛡️</span>
                         <div>
-                            <span class="title" style="font-size:1.15rem;">System Administrator</span>
-                            <span class="subtitle" style="display:block; font-size:0.65rem;">Digital Sanctuary</span>
+                            <span class="title" style="font-size:1.25rem;">💊 MedTracker</span>
+                            <span class="subtitle" style="display:block; font-size:0.65rem;">Admin Control</span>
                         </div>
                     </div>
                 </a>
@@ -201,81 +231,108 @@
             <nav class="sidebar-nav">
                 <a href="admin_dashboard.html" class="nav-item active">
                     <i>🎛️</i>
-                    <span>Dashboard</span>
+                    <span>Overview</span>
                 </a>
-                <a href="#" class="nav-item">
-                    <i>🗓️</i>
-                    <span>Schedule Configs</span>
+                <a href="admin_dashboard.html#adminUsageChartCard" class="nav-item">
+                    <i>📈</i>
+                    <span>Usage Analytics</span>
                 </a>
-                <a href="#" class="nav-item">
+                <a href="admin_dashboard.html#userManagementSection" class="nav-item">
                     <i>👥</i>
                     <span>User Accounts</span>
                 </a>
-                <a href="#" class="nav-item">
-                    <i>📈</i>
-                    <span>System Analytics</span>
+                <a href="admin_dashboard.html#adminPrescriptionsSection" class="nav-item">
+                    <i>🧾</i>
+                    <span>Prescription Audit</span>
                 </a>
-                <a href="#" class="nav-item">
-                    <i>⚙️</i>
-                    <span>System Params</span>
+                <a href="admin_dashboard.html#logMonitoringSection" class="nav-item">
+                    <i>🛰️</i>
+                    <span>Log Stream</span>
                 </a>
             </nav>
 
             <div class="sidebar-footer">
-                <button class="btn btn-primary" style="background:var(--primary); width:100%; border:none; border-radius:12px; padding:1rem; color:white; font-weight:bold;">
-                    <i>🚨</i> System Alert
+                <button class="btn btn-primary" style="background:var(--primary); width:100%; border:none; border-radius:12px; padding:1rem; color:white; font-weight:bold;" onclick="window.location.href='admin_dashboard.html#logMonitoringSection'">
+                    <i>🚨</i> Open Logs
                 </button>
-                <div style="margin-top: 1rem; display:flex; flex-direction:column; gap:0.5rem;">
-                    <a href="#" style="color:var(--text-muted); text-decoration:none; font-size:0.875rem; display:flex; align-items:center; gap:0.5rem;">
-                        <i>❓</i> Documentation
-                    </a>
-                    <a href="login.html" id="logoutBtn" style="color:var(--text-muted); text-decoration:none; font-size:0.875rem; display:flex; align-items:center; gap:0.5rem;">
-                        <i>🚪</i> Secure Logout
-                    </a>
-                </div>
+                <a href="login.html" id="logoutBtn" style="color:var(--text-muted); text-decoration:none; font-size:0.875rem; display:flex; align-items:center; gap:0.5rem; margin-top:1rem;">
+                    <i>🚪</i> Secure Logout
+                </a>
             </div>
         </aside>
 
-        <!-- Main Content -->
         <main class="main-content" style="background:#F8FAFC;">
-            <div class="top-bar" style="margin-bottom: 2rem; background:white; padding:1rem 2rem; border-radius:999px; box-shadow:var(--shadow-sm); display:flex; justify-content:flex-start;">
-                <div style="font-size:1.25rem; font-weight:700; color:var(--primary); margin-right:2rem;">MedTracker</div>
-                <div class="page-tabs" style="margin-top:0; border:none; gap:1.5rem;">
-                    <a href="#" class="page-tab" style="font-size:0.875rem; font-weight:400;">Infrastructure</a>
-                    <a href="#" class="page-tab" style="font-size:0.875rem; font-weight:400;">Deployment Logs</a>
-                    <a href="#" class="page-tab" style="font-size:0.875rem; font-weight:400;">API Keys</a>
-                </div>
-                
-                <div style="margin-left:auto; display:flex; align-items:center; gap:1.5rem;">
-                    <div style="background:#F1F5F9; border-radius:999px; padding:0.5rem 1rem; display:flex; align-items:center;">
-                        <span style="color:#94A3B8;">🔍</span>
-                        <input type="text" placeholder="Search system resources..." style="border:none; background:transparent; outline:none; margin-left:0.5rem; font-family:inherit; font-size:0.875rem;">
-                    </div>
-                    <img src="https://ui-avatars.com/api/?name=Admin&background=1E293B&color=fff" alt="Profile" style="width:36px; height:36px; border-radius:50%;">
+            <div class="top-bar" style="margin-bottom: 2rem; background:white; padding:1rem 2rem; border-radius:999px; box-shadow:var(--shadow-sm);">
+                <div>
+                    <p style="color:var(--text-muted); margin-bottom:0.25rem;">Monitor system usage, prescriber activity, and account management.</p>
+                    <h1 style="font-size:2rem; color:var(--text-main);">Admin Control Center</h1>
                 </div>
             </div>
 
             <div class="dashboard-grid" style="grid-template-columns: 2fr 1fr;">
-                
-                <!-- Left Column -->
                 <div class="main-column">
-                    <div class="system-status-banner" style="display: flex; gap: 2rem; align-items: stretch; margin-bottom: 2rem;">
-                        <div style="flex: 1;">
-                            <h2 style="font-size:2rem; margin-bottom:0.5rem;">Systems Operational</h2>
-                            <p style="color:var(--text-muted); line-height:1.6; margin-bottom:1.5rem;">All core medication reminder services are performing within nominal parameters. No latency detected in regional SMS gateways.</p>
-                            <div style="display:flex; gap:1rem;">
-                                <span class="status-badge"><span class="dot green"></span> Uptime: 99.98%</span>
-                                <span class="status-badge info">⏱️ Next Audit: 4h 12m</span>
+                    <div id="adminOpsBoard" class="system-status-banner">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:1.5rem;">
+                            <div>
+                                <h2 style="font-size:2rem; margin-bottom:0.5rem;">Systems Operational</h2>
+                                <p style="color:var(--text-muted); line-height:1.6;">Admin focuses on system usage, user control, and prescriber oversight. Patient adherence details stay on the patient side.</p>
+                            </div>
+                            <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+                                <span class="status-badge"><span>●</span> Uptime 99.98%</span>
+                                <span class="status-badge info">Next Audit 4h 12m</span>
                             </div>
                         </div>
-                        <div style="flex: 1; background: white; border-radius: 16px; padding: 1rem; box-shadow: var(--shadow-sm);">
-                            <canvas id="adminChart" style="width: 100%; height: 100%;"></canvas>
+                        <div class="ops-grid">
+                            <div class="ops-card">
+                                <h4 style="margin-bottom:0.75rem;">System Usage</h4>
+                                <div class="ops-item"><span>Today's activity</span><strong id="adminTodayActivity">0</strong></div>
+                                <div class="ops-item"><span>Taken today</span><strong id="adminTakenToday">0</strong></div>
+                                <div class="ops-item"><span>Skipped today</span><strong id="adminSkippedToday">0</strong></div>
+                                <div class="ops-item"><span>Pending today</span><strong id="adminPendingToday">0</strong></div>
+                            </div>
+                            <div class="ops-card">
+                                <h4 style="margin-bottom:0.75rem;">System Management</h4>
+                                <div class="ops-item"><span>Admins</span><strong id="adminCount">0</strong></div>
+                                <div class="ops-item"><span>Health workers</span><strong id="adminHealthWorkerCount">0</strong></div>
+                                <div class="ops-item"><span>Patients</span><strong id="adminPatientCount">0</strong></div>
+                                <div class="ops-item"><span>Overuse alerts</span><strong id="adminOveruseCount">0</strong></div>
+                            </div>
                         </div>
                     </div>
 
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                    <div id="adminUsageChartCard" class="chart-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                            <div>
+                                <h3 style="font-size:1.15rem;">Usage Graph</h3>
+                                <p style="font-size:0.85rem; color:var(--text-muted);">Seven-day system activity with status breakdown and overuse monitoring.</p>
+                            </div>
+                        </div>
+                        <div class="chart-wrap">
+                            <canvas id="adminUsageChart"></canvas>
+                        </div>
+                        <div class="chart-legend-summary">
+                            <div class="legend-pill">
+                                <span style="color:#10B981; font-size:0.78rem; font-weight:700; text-transform:uppercase;">Taken</span>
+                                <strong id="chartTakenTotal">0</strong>
+                            </div>
+                            <div class="legend-pill">
+                                <span style="color:#F59E0B; font-size:0.78rem; font-weight:700; text-transform:uppercase;">Skipped</span>
+                                <strong id="chartSkippedTotal">0</strong>
+                            </div>
+                            <div class="legend-pill">
+                                <span style="color:#94A3B8; font-size:0.78rem; font-weight:700; text-transform:uppercase;">Pending</span>
+                                <strong id="chartPendingTotal">0</strong>
+                            </div>
+                            <div class="legend-pill">
+                                <span style="color:#EF4444; font-size:0.78rem; font-weight:700; text-transform:uppercase;">Overuse Alerts</span>
+                                <strong id="chartOveruseTotal">0</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="userManagementSection" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
                         <h3 style="font-size:1.25rem;">User Management</h3>
-                        <button class="btn btn-secondary btn-sm" style="border-radius:999px; font-size:0.75rem;">Filter: All Roles ▾</button>
+                        <span style="font-size:0.85rem; color:var(--text-muted);">Reset passwords or remove accounts directly.</span>
                     </div>
 
                     <div class="user-table-container">
@@ -284,207 +341,356 @@
                                 <tr>
                                     <th>Identity</th>
                                     <th>Role</th>
-                                    <th>Status</th>
-                                    <th>Last Active</th>
+                                    <th>Contact</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="adminUsersTableBody">
                                 <tr>
-                                    <td>
-                                        <div class="user-identity">
-                                            <div class="avatar-initial">JD</div>
-                                            <div>
-                                                <h4 style="font-size:0.875rem; margin:0;">Dr. Julianna Dorsey</h4>
-                                                <span style="font-size:0.75rem; color:var(--text-muted);">j.dorsey@hospital.org</span>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td><span class="role-tag doctor">Doctor</span></td>
-                                    <td><span style="color:var(--green); font-size:0.8rem; font-weight:600;">● Active</span></td>
-                                    <td style="font-size:0.875rem; color:var(--text-muted);">2 mins ago</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="user-identity">
-                                            <div class="avatar-initial" style="background:#D1FAE5; color:var(--green);">MK</div>
-                                            <div>
-                                                <h4 style="font-size:0.875rem; margin:0;">Marcus Kinsley</h4>
-                                                <span style="font-size:0.75rem; color:var(--text-muted);">m.kinsley@gmail.com</span>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td><span class="role-tag patient">Patient</span></td>
-                                    <td><span style="color:var(--green); font-size:0.8rem; font-weight:600;">● Active</span></td>
-                                    <td style="font-size:0.875rem; color:var(--text-muted);">14h ago</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="user-identity">
-                                            <div class="avatar-initial" style="background:#FFEDD5; color:#C2410C;">SL</div>
-                                            <div>
-                                                <h4 style="font-size:0.875rem; margin:0;">Sarah Lopez</h4>
-                                                <span style="font-size:0.75rem; color:var(--text-muted);">s.lopez@pharmacy.net</span>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td><span class="role-tag pharmacist">Pharmacist</span></td>
-                                    <td><span style="color:var(--text-muted); font-size:0.8rem; font-weight:600;">● Disabled</span></td>
-                                    <td style="font-size:0.875rem; color:var(--text-muted);">3 days ago</td>
+                                    <td colspan="4" style="text-align:center; color:var(--text-muted);">Loading users...</td>
                                 </tr>
                             </tbody>
                         </table>
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem; font-size:0.875rem; color:var(--text-muted);">
-                            <span>Showing 3 of 1,248 users</span>
-                            <div style="display:flex; gap:0.5rem;">
-                                <button class="btn btn-secondary btn-sm" style="border:none; background:#F1F5F9;">Previous</button>
-                                <button class="btn btn-secondary btn-sm" style="border:none; background:#F1F5F9;">Next</button>
-                            </div>
-                        </div>
                     </div>
 
-                    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:1rem; margin-top:2rem;">
-                        <h3 style="font-size:1.25rem;">Active Prescriptions (System Wide)</h3>
+                    <div id="adminPrescriptionsSection" style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:1rem; margin-top:2rem;">
+                        <h3 style="font-size:1.25rem;">Prescription Oversight</h3>
                     </div>
                     <div class="user-grid" id="adminPrescriptionsGrid" style="margin-bottom:2rem;">
                         <p style="text-align:center; color: var(--text-muted); font-style:italic; padding: 1rem;">Loading system prescriptions...</p>
                     </div>
 
-                    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:1rem;">
+                    <div id="logMonitoringSection" style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:1rem;">
                         <h3 style="font-size:1.25rem;">Log Monitoring</h3>
-                        <a href="#" style="font-size:0.875rem; font-weight:600; color:var(--primary); text-decoration:none;">View Full Stream →</a>
+                        <a href="admin_dashboard.html#logMonitoringSection" style="font-size:0.875rem; font-weight:600; color:var(--primary); text-decoration:none;">View Full Stream →</a>
                     </div>
                     <div class="log-box">
-                        <div><span class="log-time">14:22:01</span> <span class="log-success">[SUCCESS]</span> SMS Gateway: ID_88291 delivered to +1-555-0122</div>
-                        <div><span class="log-time">14:21:55</span> <span class="log-success">[SUCCESS]</span> Email Dispatch: Remind_Daily_AM for user 'mk_kinsley'</div>
-                        <div><span class="log-time">14:21:40</span> <span class="log-error">[RETRIED]</span> Gateway Timeout: Attempting backup route for ID_88290</div>
-                        <div><span class="log-time">14:20:12</span> <span class="log-success">[SUCCESS]</span> System: Daily adherence summary compiled for Dr. Dorsey</div>
-                        <div><span class="log-time">14:19:58</span> <span class="log-success">[SUCCESS]</span> Identity: New token generated for pharmacist 's_lopez'</div>
+                        <div>Loading logs...</div>
                     </div>
                 </div>
 
-                <!-- Right Column -->
                 <div class="side-column">
-                    <div class="metric-cards-2" style="margin-bottom:2rem;">
-                        <div class="metric-card">
-                            <span style="font-size:1.5rem; color:var(--green);">💬</span>
-                            <div>
-                                <h2>12.4k</h2>
-                                <p>SMS Sent (Today)</p>
-                            </div>
-                        </div>
-                        <div class="metric-card">
-                            <span style="font-size:1.5rem; color:var(--primary);">✉️</span>
-                            <div>
-                                <h2>8.2k</h2>
-                                <p>Emails Sent</p>
-                            </div>
+                    <div class="panel-card" style="margin-bottom:2rem;">
+                        <h3 style="font-size:1.15rem; margin-bottom:1rem;">Which Doctor Added What</h3>
+                        <div id="adminDoctorActivityList">
+                            <p style="color:var(--text-muted);">Loading prescriber activity...</p>
                         </div>
                     </div>
 
-                    <h3 style="font-size:1.25rem; margin-bottom:1rem;">Data Supervision</h3>
-                    <div style="background:var(--surface-solid); border-radius:24px; padding:1.5rem; box-shadow:var(--shadow-sm); margin-bottom:2rem;">
-                        <div style="margin-bottom:2rem; padding-bottom:1.5rem; border-bottom:1px solid var(--glass-border);">
-                            <span style="font-size:0.65rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em;">Prescriptions Tracked</span>
-                            <div style="display:flex; align-items:baseline; gap:1rem; margin-top:0.5rem;">
-                                <h2 style="font-size:2.5rem; line-height:1;">48,291</h2>
-                                <span style="font-size:0.875rem; color:var(--green); font-weight:700;">↗ 12%</span>
-                            </div>
+                    <div class="panel-card">
+                        <h3 style="font-size:1.15rem; margin-bottom:1rem;">Data Supervision</h3>
+                        <div class="ops-item">
+                            <span>Prescriptions tracked</span>
+                            <strong id="adminPrescriptionCount">0</strong>
                         </div>
-
-                        <div>
-                            <span style="font-size:0.65rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em;">System Adherence Pulse</span>
-                            <div style="display:flex; align-items:center; gap:1.5rem; margin-top:1rem;">
-                                <div style="width:60px; height:60px; border-radius:50%; border:5px solid var(--green); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1.1rem;">88%</div>
-                                <p style="font-size:0.875rem; color:var(--text-muted); margin:0;">Patient compliance is up 4% since the last UI update.</p>
-                            </div>
+                        <div class="ops-item">
+                            <span>Usage pulse</span>
+                            <strong id="adminUsagePulse">0</strong>
                         </div>
-
-                        <div style="margin-top:2rem;">
-                            <span style="font-size:0.65rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:0.5rem;">Configuration Alerts</span>
-                            <div style="background:#FFF7ED; border:1px solid #FED7AA; border-radius:8px; padding:1rem; display:flex; align-items:flex-start; gap:0.5rem;">
-                                <span>⚠️</span>
-                                <div>
-                                    <h5 style="margin:0; font-size:0.875rem; color:#9A3412;">Storage nearing 85%</h5>
-                                    <p style="margin:0; font-size:0.75rem; color:#9A3412;">Database expansion recommended</p>
-                                </div>
-                            </div>
+                        <div class="ops-item">
+                            <span>Low stock items</span>
+                            <strong id="adminLowStockLabel">0</strong>
                         </div>
                     </div>
                 </div>
             </div>
         </main>
     </div>
+
+    <script src="js/script.js"></script>
     <script>
+        let adminUsageChart;
+
         document.addEventListener('DOMContentLoaded', () => {
-            // Temporary logout
+            if (!window.MedTrackerApp.protectRoute(['Admin'])) {
+                return;
+            }
+
             document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
                 e.preventDefault();
-                if(confirm('Are you sure you want to log out?')) {
-                    localStorage.removeItem('role');
-                    window.location.href = 'login.html';
+                if (confirm('Are you sure you want to log out?')) {
+                    window.MedTrackerApp.logout();
                 }
             });
 
+            loadAdminOverview();
+            loadAdminUsers();
             fetchAdminPrescriptions();
+        });
 
-            // Initialize Chart.js graph
-            const ctx = document.getElementById('adminChart');
-            if (ctx) {
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                        datasets: [{
-                            label: 'System Traffic (Requests/min)',
-                            data: [120, 190, 300, 250, 280, 210, 310],
-                            borderColor: '#4F46E5', // Primary
-                            backgroundColor: 'rgba(79, 70, 229, 0.1)',
-                            borderWidth: 2,
-                            fill: true,
-                            tension: 0.4
+        async function loadAdminOverview() {
+            try {
+                const res = await fetch('../backend/api/get_admin_overview.php');
+                const data = await res.json();
+
+                if (!data.success) {
+                    throw new Error(data.message || 'Unable to load admin overview.');
+                }
+
+                document.getElementById('adminTodayActivity').textContent = String(data.metrics.today_activity || 0);
+                document.getElementById('adminTakenToday').textContent = String(data.metrics.taken_today || 0);
+                document.getElementById('adminSkippedToday').textContent = String(data.metrics.skipped_today || 0);
+                document.getElementById('adminPendingToday').textContent = String(data.metrics.pending_today || 0);
+                document.getElementById('adminCount').textContent = String(data.metrics.admin_count || 0);
+                document.getElementById('adminHealthWorkerCount').textContent = String(data.metrics.health_worker_count || 0);
+                document.getElementById('adminPatientCount').textContent = String(data.metrics.patient_count || 0);
+                document.getElementById('adminOveruseCount').textContent = String(data.metrics.overuse_total || 0);
+                document.getElementById('adminPrescriptionCount').textContent = String(data.metrics.active_prescriptions || 0);
+                document.getElementById('adminUsagePulse').textContent = String(data.metrics.today_activity || 0);
+                document.getElementById('adminLowStockLabel').textContent = String(data.metrics.low_stock_total || 0);
+
+                renderAdminUsageChart(data.usage_chart || []);
+                renderAdminDoctorActivity(data.doctor_activity || []);
+
+                const logBox = document.querySelector('.log-box');
+                if (logBox && Array.isArray(data.recent_logs)) {
+                    logBox.innerHTML = data.recent_logs.length ? data.recent_logs.map((log) => `
+                        <div>
+                            <span class="log-time">${new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                            <span class="${log.status === 'ERROR' ? 'log-error' : 'log-success'}">[${log.status}]</span>
+                            ${log.message}
+                        </div>
+                    `).join('') : '<div>No recent system logs found.</div>';
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        function renderAdminUsageChart(rows) {
+            const canvas = document.getElementById('adminUsageChart');
+            if (!canvas) {
+                return;
+            }
+
+            const takenTotal = rows.reduce((sum, row) => sum + Number(row.taken || 0), 0);
+            const skippedTotal = rows.reduce((sum, row) => sum + Number(row.skipped || 0), 0);
+            const pendingTotal = rows.reduce((sum, row) => sum + Number(row.pending || 0), 0);
+            const overuseTotal = rows.reduce((sum, row) => sum + Number(row.overuse || 0), 0);
+
+            document.getElementById('chartTakenTotal').textContent = String(takenTotal);
+            document.getElementById('chartSkippedTotal').textContent = String(skippedTotal);
+            document.getElementById('chartPendingTotal').textContent = String(pendingTotal);
+            document.getElementById('chartOveruseTotal').textContent = String(overuseTotal);
+
+            if (adminUsageChart) {
+                adminUsageChart.destroy();
+            }
+
+            adminUsageChart = new Chart(canvas, {
+                type: 'bar',
+                data: {
+                    labels: rows.map((row) => new Date(row.usage_date).toLocaleDateString([], { month: 'short', day: 'numeric' })),
+                    datasets: [
+                        {
+                            label: 'Taken',
+                            data: rows.map((row) => Number(row.taken || 0)),
+                            backgroundColor: 'rgba(16, 185, 129, 0.88)',
+                            borderRadius: 10,
+                            stack: 'activity'
                         },
                         {
-                            label: 'Adherence Tracking Ping',
-                            data: [80, 90, 200, 150, 190, 150, 200],
-                            borderColor: '#10B981', // Green
-                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                            borderWidth: 2,
-                            fill: true,
-                            tension: 0.4
-                        }]
+                            label: 'Skipped',
+                            data: rows.map((row) => Number(row.skipped || 0)),
+                            backgroundColor: 'rgba(245, 158, 11, 0.88)',
+                            borderRadius: 10,
+                            stack: 'activity'
+                        },
+                        {
+                            label: 'Pending',
+                            data: rows.map((row) => Number(row.pending || 0)),
+                            backgroundColor: 'rgba(148, 163, 184, 0.9)',
+                            borderRadius: 10,
+                            stack: 'activity'
+                        },
+                        {
+                            type: 'line',
+                            label: 'Overuse Alerts',
+                            data: rows.map((row) => Number(row.overuse || 0)),
+                            borderColor: '#EF4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.18)',
+                            borderWidth: 3,
+                            pointBackgroundColor: '#EF4444',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 5,
+                            tension: 0.35,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { position: 'top' } },
-                        scales: { y: { beginAtZero: true } }
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                boxWidth: 10,
+                                color: '#475569',
+                                font: {
+                                    family: 'Outfit',
+                                    weight: '600'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.92)',
+                            titleFont: { family: 'Outfit', weight: '700' },
+                            bodyFont: { family: 'Outfit' },
+                            padding: 12
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                            grid: { display: false },
+                            ticks: { color: '#64748B' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            stacked: true,
+                            ticks: { precision: 0, color: '#64748B' },
+                            grid: { color: 'rgba(148, 163, 184, 0.18)' }
+                        },
+                        y1: {
+                            beginAtZero: true,
+                            position: 'right',
+                            ticks: { precision: 0, color: '#EF4444' },
+                            grid: { drawOnChartArea: false }
+                        }
                     }
-                });
+                }
+            });
+        }
+
+        function renderAdminDoctorActivity(rows) {
+            const container = document.getElementById('adminDoctorActivityList');
+            container.innerHTML = rows.length ? rows.map((row) => `
+                <div class="activity-item">
+                    <div>
+                        <div style="font-weight:700; color:var(--text-main);">${row.prescriber_name}</div>
+                        <div style="font-size:0.78rem; color:var(--text-muted);">${row.prescriber_id === 'SELF' ? 'Patient self-added medicines' : row.prescriber_id}</div>
+                    </div>
+                    <strong>${row.total_medicines}</strong>
+                </div>
+            `).join('') : '<p style="color:var(--text-muted);">No prescriber activity found.</p>';
+        }
+
+        async function loadAdminUsers() {
+            try {
+                const res = await fetch('../backend/api/get_admin_users.php');
+                const data = await res.json();
+                const tbody = document.getElementById('adminUsersTableBody');
+
+                if (!data.success) {
+                    throw new Error(data.message || 'Unable to load users.');
+                }
+
+                tbody.innerHTML = data.data.length ? data.data.map((user) => {
+                    const initials = user.name.split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase();
+                    const roleClass = user.role === 'Admin' ? 'admin' : user.role === 'Health Worker' ? 'worker' : 'patient';
+                    const safeName = user.name.replace(/'/g, "\\'");
+
+                    return `
+                        <tr id="admin-user-${user.id}">
+                            <td>
+                                <div class="user-identity">
+                                    <div class="avatar-initial">${initials}</div>
+                                    <div>
+                                        <h4 style="font-size:0.875rem; margin:0;">${user.name}</h4>
+                                        <span style="font-size:0.75rem; color:var(--text-muted);">${user.id}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="role-tag ${roleClass}">${user.role}</span></td>
+                            <td style="font-size:0.875rem; color:var(--text-muted);">${user.email}<br>${user.phone}</td>
+                            <td>
+                                <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                                    <button class="admin-action-btn primary" onclick="resetUserPassword('${user.id}')">Reset Password</button>
+                                    <button class="admin-action-btn danger" onclick="removeUser('${user.id}', '${safeName}')">Remove User</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('') : '<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">No users found.</td></tr>';
+            } catch (error) {
+                document.getElementById('adminUsersTableBody').innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Unable to load users right now.</td></tr>';
             }
-        });
+        }
+
+        async function resetUserPassword(userId) {
+            try {
+                const res = await fetch('../backend/api/admin_reset_user_password.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId })
+                });
+                const data = await res.json();
+
+                if (!data.success) {
+                    throw new Error(data.message || 'Unable to reset password.');
+                }
+
+                alert(`Temporary password for ${userId}: ${data.temporary_password}`);
+            } catch (error) {
+                alert(error.message || 'Unable to reset this password right now.');
+            }
+        }
+
+        async function removeUser(userId, userName) {
+            if (!confirm(`Remove ${userName} from the system?`)) {
+                return;
+            }
+
+            try {
+                const res = await fetch('../backend/api/admin_delete_user.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId })
+                });
+                const data = await res.json();
+
+                if (!data.success) {
+                    throw new Error(data.message || 'Unable to remove user.');
+                }
+
+                document.getElementById(`admin-user-${userId}`)?.remove();
+                loadAdminOverview();
+            } catch (error) {
+                alert(error.message || 'Unable to remove this user right now.');
+            }
+        }
 
         async function fetchAdminPrescriptions() {
             try {
-                // Admin role has full access
                 const res = await fetch('../backend/api/get_schedule.php?role=Admin');
                 const data = await res.json();
-                
                 const grid = document.getElementById('adminPrescriptionsGrid');
                 grid.innerHTML = '';
-                
+
                 if (data.success && data.data.length > 0) {
-                    data.data.forEach(med => {
+                    const uniqueMeds = Array.from(new Map(data.data.map((med) => [med.medicine_id, med])).values());
+                    uniqueMeds.forEach((med) => {
                         grid.innerHTML += `
-                            <div class="user-card" id="admin-med-${med.medicine_id}" style="background:var(--surface-solid); padding: 1.5rem; border-radius: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--glass-border);">
+                            <div class="user-card" id="admin-med-${med.medicine_id}" style="background:var(--surface-solid); padding:1.5rem; border-radius:16px; box-shadow:var(--shadow-sm); border:1px solid var(--glass-border);">
                                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                                     <div>
                                         <h4 style="font-size:1.125rem;">${med.medicine_name} <span style="font-size:0.8rem; font-weight:normal;">(${med.dosage})</span></h4>
-                                        <p style="color:var(--text-muted); font-size:0.875rem;">Patient ID: ${med.patient_name || med.patient_id}</p>
+                                        <p style="color:var(--text-muted); font-size:0.875rem;">Patient: ${med.patient_name || med.patient_id}</p>
                                     </div>
-                                    <span style="background:rgba(16,185,129,0.1); color:var(--green); padding:0.25rem 0.5rem; border-radius:4px; font-size:0.75rem; font-weight:700;">Active</span>
+                                    <span style="background:rgba(16,185,129,0.1); color:var(--green); padding:0.25rem 0.5rem; border-radius:4px; font-size:0.75rem; font-weight:700;">${med.source_type === 'patient' ? 'Self Added' : 'Assigned'}</span>
                                 </div>
-                                <div style="margin-top:0.5rem; font-size: 0.85rem; color: #555;">
+                                <div style="margin-top:0.5rem; font-size:0.85rem; color:#555;">
                                     <p style="margin:2px 0;">Stock Remaining: <strong>${med.stock_remaining}</strong></p>
+                                    <p style="margin:2px 0;">Added By: <strong>${med.prescriber_name || 'Patient Self Added'}</strong></p>
+                                    <p style="margin:2px 0;">Course Window: <strong>${med.start_date || 'Today'} to ${med.end_date || 'Open'}</strong></p>
                                 </div>
                                 <div style="margin-top:1.5rem; display:flex; gap:0.5rem;">
                                     <button onclick="deleteMedicine(${med.medicine_id})" style="flex:1; padding:0.5rem; border:1px solid rgba(239,68,68,0.2); color:white; background:var(--red); border-radius:8px; cursor:pointer; font-weight:600;">Delete Medicine</button>
@@ -497,29 +703,35 @@
                 }
             } catch (err) {
                 console.error(err);
+                document.getElementById('adminPrescriptionsGrid').innerHTML = '<p style="text-align:center;">Unable to load prescriptions right now.</p>';
             }
         }
 
         async function deleteMedicine(medicineId) {
-            if(!confirm("Are you sure you want to permanently delete this prescription?")) return;
+            if (!confirm('Are you sure you want to permanently delete this prescription?')) {
+                return;
+            }
 
             try {
                 const res = await fetch('../backend/api/delete_medicine.php', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ medicine_id: medicineId })
                 });
                 const data = await res.json();
-                
-                if(data.success) {
-                    document.getElementById(`admin-med-${medicineId}`).remove();
+
+                if (data.success) {
+                    document.getElementById(`admin-med-${medicineId}`)?.remove();
+                    loadAdminOverview();
                 } else {
                     alert('Error: ' + data.message);
                 }
             } catch (err) {
                 console.error(err);
+                alert('Unable to delete this medicine right now.');
             }
         }
     </script>
 </body>
+
 </html>

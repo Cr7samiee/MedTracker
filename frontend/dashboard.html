@@ -15,8 +15,8 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <a href="#" class="sidebar-brand" style="text-decoration: none;">
-                    <span class="title">MedTracker</span>
+                <a href="javascript:void(0)" class="sidebar-brand" style="text-decoration: none;">
+                    <span class="title" style="font-size:1.25rem;">💊 MedTracker</span>
                     <span class="subtitle">Patient Portal</span>
                 </a>
             </div>
@@ -44,13 +44,13 @@
             </nav>
             <div class="sidebar-footer">
                 <button class="btn btn-primary btn-block" style="display: flex; gap: 0.5rem;"
-                    onclick="window.location.href='schedule.html'">
+                    onclick="window.location.href='add_medication.html'">
                     <i>+</i> Add Medication
                 </button>
                 <div class="user-profile-sm" style="margin-top: 1rem;">
                     <img src="https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff" alt="User Portal">
                     <div class="info">
-                        <span class="name">Patient Portal</span>
+                        <span class="name dynamic-user-name">User</span>
                         <span class="role">Medication Tracking</span>
                     </div>
                 </div>
@@ -66,88 +66,47 @@
                 <div class="page-title">
                     <h1>Patient Dashboard</h1>
                     <div class="page-tabs">
-                        <a href="#" class="page-tab active">Dashboard</a>
-                        <a href="#" class="page-tab">Medications</a>
-                        <a href="#" class="page-tab">Reports</a>
+                        <a href="dashboard.html" class="page-tab active">Dashboard</a>
+                        <a href="medications.html" class="page-tab">Medications</a>
+                        <a href="reports.html" class="page-tab">Reports</a>
                     </div>
                 </div>
                 <div class="top-icons">
-                    <button class="icon-btn">
+                    <button class="icon-btn" onclick="window.location.href='reports.html'">
                         🔔
                         <span class="badge"></span>
                     </button>
-                    <button class="icon-btn" id="profileDropdownBtn">
+                    <button class="icon-btn" id="profileDropdownBtn" onclick="window.location.href='settings.html'">
                         👤
                     </button>
-                    <!-- Temporary logout for testing -->
-                    <button id="logoutBtn" class="btn btn-secondary btn-sm" style="margin-left: 10px;">Logout</button>
                 </div>
             </div>
             <div class="dashboard-grid">
                 <!-- Left Column -->
                 <div class="main-column">
                     <div class="welcome-info" style="margin-bottom: 2rem;">
-                        <h2>Hello, David</h2>
-                        <p class="text-muted">You have 4 medications scheduled for today. 2 doses completed.</p>
+                        <h2>Hello, <span class="dynamic-user-name">User</span></h2>
+                        <p class="text-muted" id="dashboardSummary">Loading your medication plan for today...</p>
                     </div>
                     <div class="overview-cards">
                         <div class="overview-card" style="background-color: var(--background);">
-                            <h3 style="color: var(--primary);">85%</h3>
+                            <h3 style="color: var(--primary);" id="dashboardAdherence">0%</h3>
                             <p class="text-muted">Adherence</p>
                         </div>
                         <div class="overview-card" style="background-color: var(--background);">
-                            <h3 style="color: var(--yellow);">2</h3>
+                            <h3 style="color: var(--yellow);" id="dashboardLowStock">0</h3>
                             <p class="text-muted">Low Stock</p>
                         </div>
                     </div>
                     <div class="section-header">
                         <h3>Today's Schedule</h3>
                         <div class="schedule-filters">
-                            <button class="schedule-filter active">ALL</button>
-                            <button class="schedule-filter">REMAINING</button>
+                            <button class="schedule-filter active" id="filterAllBtn">ALL</button>
+                            <button class="schedule-filter" id="filterRemainingBtn">REMAINING</button>
                         </div>
                     </div>
-                    <div class="schedule-list">
-                        <!-- item 1 -->
-                        <div class="schedule-item taken">
-                            <div class="item-icon">💊</div>
-                            <div class="item-details">
-                                <div class="item-time">TAKEN AT 8:15 AM</div>
-                                <div class="item-name">Lisinopril</div>
-                                <div class="item-meta">10mg • Oral Tablet • With Food</div>
-                            </div>
-                            <div class="item-actions">
-                                <span class="status-badge completed">✓ Completed</span>
-                            </div>
-                        </div>
-                        <!-- item 2 -->
-                        <div class="schedule-item next">
-                            <div class="item-icon">📦</div>
-                            <div class="item-details">
-                                <div class="item-time">NEXT: 12:30 PM</div>
-                                <div class="item-name">Atorvastatin</div>
-                                <div class="item-meta">20mg • Oral Tablet • Before Lunch</div>
-                            </div>
-                            <div class="item-actions">
-                                <button class="btn btn-primary btn-sm">✓ Log Dose</button>
-                                <button class="btn btn-secondary btn-sm"
-                                    style="border: none; background: #E2E8F0;">Skip</button>
-                            </div>
-                        </div>
-                        <!-- item 3 -->
-                        <div class="schedule-item pending">
-                            <div class="item-icon">🥄</div>
-                            <div class="item-details">
-                                <div class="item-time">TODAY: 8:00 PM</div>
-                                <div class="item-name">Metformin</div>
-                                <div class="item-meta">500mg • Extended Release</div>
-                            </div>
-                            <div class="item-actions">
-                                <button class="btn btn-secondary btn-sm"
-                                    style="border: none; background: #F1F5F9; color: var(--text-muted);"
-                                    disabled>Wait</button>
-                            </div>
-                        </div>
+                    <div class="schedule-list" id="patientDashboardSchedule">
+                        <p class="text-muted">Loading today's doses...</p>
                     </div>
                 </div>
                 <!-- Right Column (Widgets) -->
@@ -157,8 +116,8 @@
                         <h4 class="widget-title">Weekly Adherence</h4>
                         <div class="adherence-chart">
                             <div class="chart-center">
-                                <h2>85%</h2>
-                                <span>EXCELLENT</span>
+                                <h2 id="weeklyAdherenceValue">0%</h2>
+                                <span id="weeklyAdherenceStatus">STARTING</span>
                             </div>
                         </div>
                         <div class="chart-legend">
@@ -166,43 +125,29 @@
                                 <span class="legend-dot green"></span>
                                 <span>Completed</span>
                             </div>
-                            <span>18 Doses</span>
+                            <span id="completedDoseCount">0 Doses</span>
                         </div>
                         <div class="chart-legend">
                             <div class="legend-item">
                                 <span class="legend-dot light-green"></span>
-                                <span>Missed/Late</span>
+                                <span>Pending/Skipped</span>
                             </div>
-                            <span>3 Doses</span>
+                            <span id="pendingDoseCount">0 Doses</span>
                         </div>
                     </div>
                     <!-- Alerts Widget -->
                     <div class="widget widget-alert">
-                        <h4 class="widget-title">⚠️ Low-Stock Alerts</h4>
-
-                        <div class="alert-item">
-                            <div class="alert-info">
-                                <h4>Lisinopril</h4>
-                                <p>3 doses remaining</p>
-                            </div>
-                            <button class="btn-text">Order</button>
-                        </div>
-
-                        <div class="alert-item">
-                            <div class="alert-info">
-                                <h4>Metformin</h4>
-                                <p>5 doses remaining</p>
-                            </div>
-                            <button class="btn-text">Order</button>
+                        <h4 class="widget-title">⚠️ Alerts & Refill</h4>
+                        <div id="dashboardAlerts">
+                            <p class="text-muted">Checking stock levels...</p>
                         </div>
                     </div>
                     <!-- Note Widget -->
                     <div class="widget widget-note">
                         <h4 class="widget-title">Doctor's Note</h4>
-                        <p>"David, your blood pressure has stabilized significantly this week. Keep up the consistent
-                            Metformin intake!"</p>
+                        <p id="dashboardDoctorNote">"<span class="dynamic-user-name">User</span>, keep logging each dose so your care team can track your progress accurately."</p>
                         <div class="note-footer">
-                            <i>✓</i> Verified by Dr. Sarah Chen
+                            <i>✓</i> Verified for <span class="dynamic-user-name">User</span>
                         </div>
                     </div>
                 </div>
@@ -211,14 +156,234 @@
     </div>
     <script src="js/script.js"></script>
     <script>
-        // Logout functionality for the new layout
-        document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
-            e.preventDefault();
-            if (confirm('Are you sure you want to log out?')) {
-                localStorage.removeItem('role');
-                window.location.href = 'login.html';
-            }
+        let patientDashboardData = [];
+        let patientDashboardFilter = 'all';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('#logoutBtn').forEach((button) => {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (confirm('Are you sure you want to log out?')) {
+                        window.MedTrackerApp.logout();
+                    }
+                });
+            });
+
+            document.getElementById('filterAllBtn')?.addEventListener('click', () => {
+                patientDashboardFilter = 'all';
+                updateScheduleFilters();
+                renderPatientDashboardSchedule();
+            });
+
+            document.getElementById('filterRemainingBtn')?.addEventListener('click', () => {
+                patientDashboardFilter = 'remaining';
+                updateScheduleFilters();
+                renderPatientDashboardSchedule();
+            });
+
+            fetchPatientDashboard();
         });
+
+        function updateScheduleFilters() {
+            document.getElementById('filterAllBtn')?.classList.toggle('active', patientDashboardFilter === 'all');
+            document.getElementById('filterRemainingBtn')?.classList.toggle('active', patientDashboardFilter === 'remaining');
+        }
+
+        async function fetchPatientDashboard() {
+            try {
+                const response = await fetch('../backend/api/get_schedule.php');
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.message || 'Unable to load schedule.');
+                }
+
+                patientDashboardData = Array.isArray(result.data) ? result.data : [];
+                renderPatientDashboardStats(patientDashboardData);
+                renderPatientDashboardSchedule();
+                await renderPatientDashboardAlerts(patientDashboardData);
+            } catch (error) {
+                document.getElementById('dashboardSummary').textContent = 'Unable to load your dashboard right now.';
+                document.getElementById('patientDashboardSchedule').innerHTML = "<p class=\"text-muted\">We could not load today's schedule.</p>";
+                document.getElementById('dashboardAlerts').innerHTML = '<p class="text-muted">Alerts are unavailable right now.</p>';
+            }
+        }
+
+        function renderPatientDashboardStats(items) {
+            const total = items.length;
+            const completed = items.filter((item) => item.status === 'Taken').length;
+            const lowStock = new Set(items.filter((item) => Number(item.stock_remaining) <= 5).map((item) => item.medicine_id)).size;
+            const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+            const pending = total - completed;
+            const summary = total === 0
+                ? 'You have no medicines scheduled for today yet.'
+                : `You have ${total} medication${total === 1 ? '' : 's'} scheduled for today. ${completed} dose${completed === 1 ? '' : 's'} completed.`;
+
+            document.getElementById('dashboardSummary').textContent = summary;
+            document.getElementById('dashboardAdherence').textContent = `${percent}%`;
+            document.getElementById('dashboardLowStock').textContent = String(lowStock);
+            document.getElementById('weeklyAdherenceValue').textContent = `${percent}%`;
+            document.getElementById('weeklyAdherenceStatus').textContent = percent >= 80 ? 'ON TRACK' : percent >= 50 ? 'IMPROVING' : 'NEEDS FOCUS';
+            document.getElementById('completedDoseCount').textContent = `${completed} Doses`;
+            document.getElementById('pendingDoseCount').textContent = `${pending} Doses`;
+        }
+
+        function renderPatientDashboardSchedule() {
+            const scheduleList = document.getElementById('patientDashboardSchedule');
+            const filteredItems = patientDashboardFilter === 'remaining'
+                ? patientDashboardData.filter((item) => item.status !== 'Taken')
+                : patientDashboardData;
+
+            if (!filteredItems.length) {
+                scheduleList.innerHTML = '<p class="text-muted">No doses match this filter right now.</p>';
+                return;
+            }
+
+            scheduleList.innerHTML = filteredItems.map((item) => {
+                const status = item.status || 'Pending';
+                const scheduledTime = item.scheduled_time
+                    ? new Date(item.scheduled_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    : 'Anytime';
+                const timeLabel = status === 'Taken'
+                    ? `TAKEN AT ${scheduledTime}`
+                    : status === 'Skipped'
+                        ? `SKIPPED AT ${scheduledTime}`
+                        : `NEXT: ${scheduledTime}`;
+                const icon = Number(item.stock_remaining) <= 5 ? '📦' : '💊';
+                const courseLabel = item.duration_days
+                    ? `Day ${item.treatment_day || 1}/${item.duration_days}`
+                    : '';
+                const meta = [item.dosage, item.instructions || 'Follow prescription guidance', courseLabel, item.stock_remaining + ' left']
+                    .filter(Boolean)
+                    .join(' • ');
+                const cardClass = status === 'Taken' ? 'taken' : status === 'Skipped' ? 'pending' : 'next';
+
+                let actions = status === 'Taken'
+                    ? '<span class="status-badge completed">✓ Completed</span>'
+                    : '<span class="status-badge" style="background: rgba(239, 68, 68, 0.12); color: var(--red);">✕ Skipped</span>';
+
+                if (status === 'Pending') {
+                    actions = `
+                        <button class="btn btn-primary btn-sm" onclick="updateDashboardDose(${item.log_id}, ${item.medicine_id}, 'Taken')">✓ Log Dose</button>
+                        <button class="btn btn-secondary btn-sm" style="border: none; background: #E2E8F0;" onclick="updateDashboardDose(${item.log_id}, ${item.medicine_id}, 'Skipped')">Skip</button>
+                    `;
+                }
+
+                return `
+                    <div class="schedule-item ${cardClass}">
+                        <div class="item-icon">${icon}</div>
+                        <div class="item-details">
+                            <div class="item-time">${timeLabel}</div>
+                            <div class="item-name">${item.medicine_name}</div>
+                            <div class="item-meta">${meta}</div>
+                        </div>
+                        <div class="item-actions">${actions}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function renderPatientDashboardAlerts(items) {
+            const alerts = Array.from(
+                new Map(
+                    items
+                        .filter((item) => Number(item.stock_remaining) <= 5)
+                        .map((item) => [item.medicine_id, item])
+                ).values()
+            );
+            const container = document.getElementById('dashboardAlerts');
+            let overuseAlerts = [];
+
+            try {
+                const reportResponse = await fetch('../backend/api/get_patient_adherence.php');
+                const report = await reportResponse.json();
+                if (report.success) {
+                    overuseAlerts = (report.alerts || []).filter((alert) => alert.type === 'overuse').slice(0, 2);
+                }
+            } catch (error) {
+                console.error(error);
+            }
+
+            if (!alerts.length && !overuseAlerts.length) {
+                container.innerHTML = '<p class="text-muted">No active alerts right now.</p>';
+                return;
+            }
+
+            const lowStockHtml = alerts.map((item) => `
+                <div class="alert-item">
+                    <div class="alert-info">
+                        <h4>${item.medicine_name}</h4>
+                        <p>${item.stock_remaining} dose${Number(item.stock_remaining) === 1 ? '' : 's'} remaining</p>
+                    </div>
+                    <button class="btn-text" onclick="increaseDashboardStock(${item.medicine_id})">Refill</button>
+                </div>
+            `).join('');
+
+            const overuseHtml = overuseAlerts.map((alert) => `
+                <div class="alert-item">
+                    <div class="alert-info">
+                        <h4>Adherence Alert</h4>
+                        <p>${alert.message}</p>
+                    </div>
+                    <button class="btn-text" onclick="window.location.href='reports.html'">Open</button>
+                </div>
+            `).join('');
+
+            container.innerHTML = overuseHtml + lowStockHtml;
+        }
+
+        async function increaseDashboardStock(medicineId) {
+            const refillAmount = prompt('How many doses are you adding?', '10');
+            if (!refillAmount || Number.isNaN(Number(refillAmount)) || Number(refillAmount) <= 0) {
+                return;
+            }
+
+            try {
+                const response = await fetch('../backend/api/update_stock.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        medicine_id: medicineId,
+                        added_stock: Number(refillAmount)
+                    })
+                });
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.message || 'Unable to update quantity.');
+                }
+
+                await fetchPatientDashboard();
+            } catch (error) {
+                alert(error.message || 'Unable to refill this medicine right now.');
+            }
+        }
+
+        async function updateDashboardDose(logId, medicineId, status) {
+            if (status === 'Skipped' && !confirm('Are you sure you want to skip this medication?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('../backend/api/log_intake.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ log_id: logId, medicine_id: medicineId, status })
+                });
+                const result = await response.json();
+
+                if (!result.success) {
+                    if (result.overuse_alert) {
+                        await fetchPatientDashboard();
+                    }
+                    throw new Error(result.message || 'Unable to update dose.');
+                }
+
+                await fetchPatientDashboard();
+            } catch (error) {
+                alert(error.message || 'Unable to update this medication right now.');
+            }
+        }
     </script>
 </body>
 

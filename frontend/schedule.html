@@ -117,8 +117,8 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <a href="#" class="sidebar-brand" style="text-decoration: none;">
-                    <span class="title">MedTracker</span>
+                <a href="javascript:void(0)" class="sidebar-brand" style="text-decoration: none;">
+                    <span class="title" style="font-size:1.25rem;">💊 MedTracker</span>
                     <span class="subtitle">Patient Portal</span>
                 </a>
             </div>
@@ -160,8 +160,8 @@
                     <h1 style="font-size: 2rem; color: var(--text-main);">Today's Schedule</h1>
                     <p style="color: var(--text-muted);">Mark your medications as taken or skipped to maintain your adherence score.</p>
                 </div>
-                <div style="background:#F1F5F9; padding:0.5rem 1rem; border-radius:999px; font-weight:600;">
-                    🗓️ Oct 24, 2026
+                <div id="scheduleDateChip" style="background:#F1F5F9; padding:0.5rem 1rem; border-radius:999px; font-weight:600;">
+                    🗓️ Today
                 </div>
             </div>
 
@@ -172,30 +172,35 @@
         </main>
     </div>
 
+    <script src="js/script.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
                 e.preventDefault();
                 if (confirm('Are you sure you want to log out?')) {
-                    localStorage.removeItem('role');
-                    window.location.href = 'login.html';
+                    window.MedTrackerApp.logout();
                 }
             });
 
+            document.getElementById('scheduleDateChip').textContent = `🗓️ ${new Date().toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}`;
             fetchSchedule();
         });
 
         async function fetchSchedule() {
-            // Assume test_patient for prototype or fetch from localstorage
-            const res = await fetch('../backend/api/get_schedule.php?role=User&user_id=test_patient');
-            const data = await res.json();
             const grid = document.getElementById('scheduleGrid');
-            grid.innerHTML = '';
 
-            if (data.success && data.data.length > 0) {
-                data.data.forEach((med, index) => {
+            try {
+                const res = await fetch('../backend/api/get_schedule.php');
+                const data = await res.json();
+                grid.innerHTML = '';
+
+                if (data.success && data.data.length > 0) {
+                    data.data.forEach((med) => {
                     const status = med.status || 'Pending';
                     const timeDisp = med.scheduled_time ? new Date(med.scheduled_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Anytime';
+                    const courseLabel = med.duration_days
+                        ? `Course Day ${med.treatment_day || 1} of ${med.duration_days} • ${med.days_remaining || 0} day${Number(med.days_remaining) === 1 ? '' : 's'} left`
+                        : '';
                     
                     let actionHtml = '';
                     let badgeHtml = '';
@@ -220,32 +225,36 @@
                         badgeHtml = `<div class="status-badge skipped" style="display:inline-block;">✗ Skipped</div>`;
                     } else {
                         actionHtml = `
-                            <button class="btn-taken" onclick="updateStatus(${med.medicine_id}, 'Taken')">✓ Taken</button>
-                            <button class="btn-skipped" onclick="updateStatus(${med.medicine_id}, 'Skipped')">✗ Skipped</button>
+                            <button class="btn-taken" onclick="updateStatus(${med.log_id}, ${med.medicine_id}, 'Taken')">✓ Taken</button>
+                            <button class="btn-skipped" onclick="updateStatus(${med.log_id}, ${med.medicine_id}, 'Skipped')">✗ Skipped</button>
                         `;
                     }
 
                     grid.innerHTML += `
-                        <div class="schedule-item ${extraClass}" id="item-${med.medicine_id}">
+                        <div class="schedule-item ${extraClass}" id="item-${med.log_id || med.medicine_id}">
                             <div class="schedule-time">${timeDisp}</div>
                             <div class="schedule-details">
                                 <h4>${med.medicine_name} <span>💊</span></h4>
-                                <p>${med.dosage} • ${med.instructions} • <span style="font-size:0.75rem; color:#888;">Remaining: ${med.stock_remaining}</span></p>
+                                <p>${med.dosage} • ${med.instructions || 'Follow the prescription guidance.'} • <span style="font-size:0.75rem; color:#888;">Remaining: ${med.stock_remaining}</span></p>
+                                ${courseLabel ? `<p style="font-size:0.8rem; color:var(--primary); margin-top:0.45rem;">${courseLabel}</p>` : ''}
                                 ${outOfStockAlert}
                             </div>
-                            <div class="action-buttons" id="actions-${med.medicine_id}">
+                            <div class="action-buttons" id="actions-${med.log_id || med.medicine_id}">
                                 ${actionHtml}
                             </div>
                             ${badgeHtml}
                         </div>
                     `;
-                });
-            } else {
-                grid.innerHTML = '<p style="text-align:center;">No medications scheduled for today.</p>';
+                    });
+                } else {
+                    grid.innerHTML = '<p style="text-align:center;">No medications scheduled for today.</p>';
+                }
+            } catch (error) {
+                grid.innerHTML = '<p style="text-align:center;">Unable to load your schedule right now.</p>';
             }
         }
 
-        async function updateStatus(medicineId, status) {
+        async function updateStatus(logId, medicineId, status) {
             if (status === 'Skipped') {
                 if(!confirm("Are you sure you want to skip this medication? This will drop your adherence score.")) return;
             }
@@ -255,7 +264,7 @@
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
-                        patient_id: 'test_patient', 
+                        log_id: logId,
                         medicine_id: medicineId,
                         status: status
                     })
@@ -265,10 +274,14 @@
                 if (data.success) {
                     fetchSchedule(); // Refresh layout
                 } else {
+                    if (data.overuse_alert) {
+                        fetchSchedule();
+                    }
                     alert('Could not update: ' + data.message);
                 }
             } catch (err) {
                 console.error(err);
+                alert('Unable to update your schedule right now.');
             }
         }
 
@@ -294,6 +307,7 @@
                 }
             } catch (err) {
                 console.error(err);
+                alert('Failed to restock this medicine right now.');
             }
         }
     </script>

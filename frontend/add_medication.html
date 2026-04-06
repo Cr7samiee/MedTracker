@@ -3,15 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prescription Scheduler - Doctor Suite</title>
+    <title>Add Medicine - MedTracker</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css?v=6">
     <link rel="stylesheet" href="css/dashboard.css?v=2">
     <style>
-        .doctor-sidebar {
-            background: linear-gradient(180deg, #F8FAFC 0%, #EFF6FF 100%);
-        }
-
         .prescription-form-card {
             background: var(--surface-solid);
             border-radius: 24px;
@@ -43,36 +39,34 @@
 </head>
 <body>
     <div class="dashboard-layout">
-        <!-- Sidebar -->
-        <aside class="sidebar doctor-sidebar">
+        <aside class="sidebar">
             <div class="sidebar-header">
                 <a href="javascript:void(0)" class="sidebar-brand" style="text-decoration: none;">
-                    <div style="display:flex; align-items:center; gap:0.5rem;">
-                        <span style="background:var(--primary); color:white; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:8px;">+</span>
-                        <div>
-                            <span class="title" style="font-size:1.25rem;">💊 MedTracker</span>
-                            <span class="subtitle" style="display:block; font-size:0.65rem;">Healthcare Professional</span>
-                        </div>
-                    </div>
+                    <span class="title" style="font-size:1.25rem;">💊 MedTracker</span>
+                    <span class="subtitle">Patient Portal</span>
                 </a>
             </div>
 
             <nav class="sidebar-nav">
-                <a href="doctor_dashboard.html" class="nav-item">
+                <a href="dashboard.html" class="nav-item">
                     <i>📊</i>
-                    <span>Overview</span>
+                    <span>Dashboard</span>
                 </a>
-                <a href="doctor_schedule.html" class="nav-item active">
+                <a href="medications.html" class="nav-item">
+                    <i>💊</i>
+                    <span>Medications</span>
+                </a>
+                <a href="add_medication.html" class="nav-item active">
                     <i>🗓️</i>
-                    <span>Prescription Desk</span>
+                    <span>Add Medicine</span>
                 </a>
-                <a href="doctor_dashboard.html#doctorPatientSection" class="nav-item">
-                    <i>👥</i>
-                    <span>Patient Queue</span>
+                <a href="schedule.html" class="nav-item">
+                    <i>📈</i>
+                    <span>Schedule</span>
                 </a>
                 <a href="settings.html" class="nav-item">
                     <i>⚙️</i>
-                    <span>Account</span>
+                    <span>Settings</span>
                 </a>
             </nav>
 
@@ -87,8 +81,8 @@
         <main class="main-content">
             <div class="top-bar" style="margin-bottom: 2rem;">
                 <div>
-                    <h1 style="font-size: 2.5rem; color: var(--text-main); margin-bottom:0.25rem;">Prescribe & Schedule</h1>
-                    <p style="color: var(--text-muted);">Assign new medications and schedule intake times for patients.</p>
+                    <h1 style="font-size: 2.5rem; color: var(--text-main); margin-bottom:0.25rem;">Add Minor Medicine</h1>
+                    <p style="color: var(--text-muted);">Add your own minor medicine without changing prescriptions assigned by a health worker.</p>
                 </div>
             </div>
 
@@ -96,18 +90,6 @@
                 <div id="responseMessage" style="margin-bottom: 1rem; font-weight: 600; text-align: center;"></div>
                 
                 <form id="prescriptionForm">
-                    
-                    <h3 class="section-title">Patient Selection</h3>
-                    <div class="form-group">
-                        <label for="patientSelect">Select Patient</label>
-                        <!-- Note: Since this is a prototype, we're using a dummy PID 'u999' which we assume exists in DB or we use whatever actual user IDs exist. -->
-                        <!-- If you want to use a real ID from your DB, replace the value attribute with it. -->
-                        <select id="patientSelect" class="form-control" required style="width: 100%; border: 1px solid var(--glass-border); padding: 0.75rem; border-radius: 12px; font-family: 'Outfit';">
-                            <option value="">-- Choose Patient --</option>
-                            <option value="test_user_id">Loading patients...</option>
-                        </select>
-                    </div>
-
                     <h3 class="section-title">Medication Details</h3>
                     <div class="form-row">
                         <div class="form-group" style="margin: 0;">
@@ -152,24 +134,9 @@
                             <input type="text" id="instructions" class="form-control" placeholder="e.g. Take after meal">
                         </div>
                     </div>
-
-                    <div class="form-row">
-                        <div class="form-group" style="margin: 0;">
-                            <label for="durationDays">Treatment Duration (Days)</label>
-                            <input type="number" id="durationDays" class="form-control" required min="1" max="365" value="7" placeholder="e.g. 7">
-                        </div>
-                        <div class="form-group" style="margin: 0;">
-                            <label for="startDate">Start Date</label>
-                            <input type="date" id="startDate" class="form-control" required>
-                        </div>
-                    </div>
-
-                    <p style="font-size:0.85rem; color:var(--text-muted); margin-top:-0.5rem;">
-                        Adherence is calculated from the scheduled dose plan across this treatment window.
-                    </p>
                     
                     <div style="margin-top: 2rem;">
-                        <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.1rem;">Submit Prescription to System</button>
+                        <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.1rem;">Add Medicine</button>
                     </div>
                 </form>
             </div>
@@ -179,10 +146,6 @@
     <script src="js/script.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            if (!window.MedTrackerApp.protectRoute(['Health Worker', 'Doctor'])) {
-                return;
-            }
-
             document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
                 e.preventDefault();
                 if (confirm('Are you sure you want to log out?')) {
@@ -190,41 +153,17 @@
                 }
             });
 
-            document.getElementById('startDate').value = new Date().toISOString().slice(0, 10);
-
-            // Fetch and populate patients
-            const loadPatients = async () => {
-                try {
-                    const response = await fetch('../backend/api/get_patients.php');
-                    const result = await response.json();
-                    if(result.success) {
-                        const select = document.getElementById('patientSelect');
-                        select.innerHTML = '<option value="">-- Choose Patient --</option>';
-                        result.data.forEach(patient => {
-                            select.innerHTML += `<option value="${patient.id}">${patient.name} (${patient.id})</option>`;
-                        });
-                    }
-                } catch(e) {
-                    console.error("Error loading patients", e);
-                    document.getElementById('patientSelect').innerHTML = '<option value="">-- Choose Patient --</option>';
-                }
-            };
-            loadPatients();
-
             // Handle API call
             document.getElementById('prescriptionForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
                 const data = {
-                    patient_id: document.getElementById('patientSelect').value,
                     name: document.getElementById('medName').value,
                     dosage: document.getElementById('medDosage').value,
                     type: document.getElementById('medType').value,
                     quantity: document.getElementById('medQuantity').value,
                     frequency: document.getElementById('scheduleTime').value,
-                    instructions: document.getElementById('instructions').value,
-                    duration_days: document.getElementById('durationDays').value,
-                    start_date: document.getElementById('startDate').value
+                    instructions: document.getElementById('instructions').value
                 };
 
                 const msgEl = document.getElementById('responseMessage');
@@ -244,8 +183,8 @@
                         msgEl.innerText = result.message;
                         document.getElementById('prescriptionForm').reset();
                         setTimeout(() => {
-                            window.location.href = 'doctor_dashboard.html';
-                        }, 1200);
+                            window.location.href = 'medications.html';
+                        }, 1000);
                     } else {
                         msgEl.style.color = 'var(--red)';
                         msgEl.innerText = result.message;

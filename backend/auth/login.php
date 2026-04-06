@@ -23,7 +23,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['role'] = $user['role'];
             $_SESSION['name'] = $user['name'];
             
-            echo json_encode(['success' => true, 'message' => 'Login successful', 'role' => $user['role']]);
+            echo json_encode([
+                'success' => true,
+                'message' => 'Login successful',
+                'role' => $user['role'],
+                'name' => $user['name'],
+                'user_id' => $user['id']
+            ]);
         } else {
             echo json_encode(['success' => false, 'message' => 'Invalid phone or password.']);
         }

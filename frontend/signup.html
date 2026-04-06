@@ -25,7 +25,7 @@
                 <span class="logo-text">MedTracker</span>
             </a>
             <div class="nav-right" style="flex: 1; display: flex; justify-content: flex-end;">
-                <a href="#" class="nav-support-btn">Help & Support</a>
+                <a href="javascript:void(0)" class="nav-support-btn">Help & Support</a>
             </div>
         </nav>
 
@@ -125,6 +125,20 @@
     </footer>
 
     <script src="js/script.js"></script>
+<!-- DYNAMIC_NAME_SCRIPT -->
+<script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const userName = localStorage.getItem('name') || 'User';
+                document.querySelectorAll('.dynamic-user-name').forEach(el => el.textContent = userName);
+                // Also fix generic profiles
+                const profileNames = document.querySelectorAll('.name, .user-profile-sm .info .name');
+                profileNames.forEach(el => {
+                    if(el.textContent.includes('User') || el.textContent.includes('David') || el.textContent.includes('Patient Portal') || el.textContent.includes('Sarah')) {
+                        el.textContent = userName;
+                    }
+                });
+            });
+        </script>
 </body>
 
 </html>

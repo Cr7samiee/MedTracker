@@ -142,6 +142,20 @@
             </div>
         </div>
     </footer>
+<!-- DYNAMIC_NAME_SCRIPT -->
+<script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const userName = localStorage.getItem('name') || 'User';
+                document.querySelectorAll('.dynamic-user-name').forEach(el => el.textContent = userName);
+                // Also fix generic profiles
+                const profileNames = document.querySelectorAll('.name, .user-profile-sm .info .name');
+                profileNames.forEach(el => {
+                    if(el.textContent.includes('User') || el.textContent.includes('David') || el.textContent.includes('Patient Portal') || el.textContent.includes('Sarah')) {
+                        el.textContent = userName;
+                    }
+                });
+            });
+        </script>
 </body>
 
 </html>

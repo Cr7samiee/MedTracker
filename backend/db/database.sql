@@ -32,6 +32,9 @@ CREATE TABLE IF NOT EXISTS medicines (
     type VARCHAR(50) DEFAULT 'Oral Tablet', -- ERD: Type
     instructions TEXT,                     -- ERD: Instructions
     frequency VARCHAR(50) NOT NULL,        -- e.g., 2x daily
+    start_date DATE DEFAULT NULL,          -- Prescription start date
+    duration_days INT DEFAULT 7,           -- Total treatment window in days
+    end_date DATE DEFAULT NULL,            -- Calculated treatment end date
     quantity INT DEFAULT 0,                -- ERD: Quantity (Stock)
     manufacture_date DATE DEFAULT NULL,    -- ERD: Manufacture_Date
     expiry_date DATE DEFAULT NULL,         -- ERD: Expirity Date
@@ -64,6 +67,8 @@ CREATE TABLE IF NOT EXISTS caregiver_patient (
 );
 
 -- System Logs (DFD: View System Report)
+-- Message examples:
+-- OVERUSE_ATTEMPT|U101|15|Paracetamol
 CREATE TABLE IF NOT EXISTS system_logs (
     id INT AUTO_INCREMENT PRIMARY KEY,
     log_type ENUM('AUTH', 'SMS', 'EMAIL', 'SYSTEM') NOT NULL,

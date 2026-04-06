@@ -1,6 +1,157 @@
 // frontend/js/script.js
 
+window.MedTrackerApp = {
+    normalizeRole(role) {
+        return (role || '').trim().toLowerCase();
+    },
+
+    getCurrentUser() {
+        return {
+            userId: localStorage.getItem('user_id') || '',
+            role: localStorage.getItem('role') || '',
+            name: localStorage.getItem('name') || 'User'
+        };
+    },
+
+    getDashboardRoute(role) {
+        const normalizedRole = this.normalizeRole(role);
+
+        if (!normalizedRole) {
+            return 'login.html';
+        }
+
+        if (normalizedRole === 'admin') {
+            return 'admin_dashboard.html';
+        }
+
+        if (normalizedRole === 'health worker' || normalizedRole === 'doctor') {
+            return 'doctor_dashboard.html';
+        }
+
+        if (normalizedRole === 'user' || normalizedRole === 'patient') {
+            return 'dashboard.html';
+        }
+
+        return 'login.html';
+    },
+
+    getRoleLabel(role) {
+        const normalizedRole = this.normalizeRole(role);
+
+        if (normalizedRole === 'admin') {
+            return 'Admin';
+        }
+
+        if (normalizedRole === 'health worker' || normalizedRole === 'doctor') {
+            return 'Health Worker';
+        }
+
+        return 'Patient';
+    },
+
+    getPortalConfig(role) {
+        const normalizedRole = this.normalizeRole(role);
+
+        if (normalizedRole === 'admin') {
+            return {
+                key: 'admin',
+                label: 'Admin Control',
+                shortLabel: 'Admin',
+                subtitle: 'System operations and account management',
+                links: [
+                    { href: 'admin_dashboard.html', label: 'Overview', icon: '🎛️' },
+                    { href: 'admin_dashboard.html#adminUsageChartCard', label: 'Usage Analytics', icon: '📈' },
+                    { href: 'admin_dashboard.html#userManagementSection', label: 'User Accounts', icon: '👥' },
+                    { href: 'admin_dashboard.html#adminPrescriptionsSection', label: 'Prescription Audit', icon: '🧾' },
+                    { href: 'settings.html', label: 'Account', icon: '⚙️' }
+                ]
+            };
+        }
+
+        if (normalizedRole === 'health worker' || normalizedRole === 'doctor') {
+            return {
+                key: 'health-worker',
+                label: 'Healthcare Professional',
+                shortLabel: 'Health Worker',
+                subtitle: 'Patient queue, prescriptions, and follow-up',
+                links: [
+                    { href: 'doctor_dashboard.html', label: 'Overview', icon: '📊' },
+                    { href: 'doctor_schedule.html', label: 'Prescription Desk', icon: '🗓️' },
+                    { href: 'doctor_dashboard.html#doctorPatientSection', label: 'Patient Queue', icon: '👥' },
+                    { href: 'doctor_dashboard.html#doctorAlertsSection', label: 'Alerts', icon: '🔔' },
+                    { href: 'settings.html', label: 'Account', icon: '⚙️' }
+                ]
+            };
+        }
+
+        return {
+            key: 'patient',
+            label: 'Patient Portal',
+            shortLabel: 'Patient',
+            subtitle: 'Medication tracking and adherence',
+            links: [
+                { href: 'dashboard.html', label: 'Dashboard', icon: '📊' },
+                { href: 'medications.html', label: 'Medications', icon: '💊' },
+                { href: 'schedule.html', label: 'Schedule', icon: '🗓️' },
+                { href: 'reports.html', label: 'Reports', icon: '📈' },
+                { href: 'settings.html', label: 'Settings', icon: '⚙️' }
+            ]
+        };
+    },
+
+    renderRoleNav(container, currentHref) {
+        if (!container) {
+            return;
+        }
+
+        const { role } = this.getCurrentUser();
+        const config = this.getPortalConfig(role);
+        container.innerHTML = config.links.map((link) => {
+            const isActive = currentHref === link.href;
+            return `
+                <a href="${link.href}" class="nav-item${isActive ? ' active' : ''}">
+                    <i>${link.icon}</i>
+                    <span>${link.label}</span>
+                </a>
+            `;
+        }).join('');
+    },
+
+    protectRoute(allowedRoles) {
+        const normalizedRole = this.normalizeRole(this.getCurrentUser().role);
+        const allowed = (allowedRoles || []).map((role) => this.normalizeRole(role));
+
+        if (allowed.length && !allowed.includes(normalizedRole)) {
+            window.location.href = this.getDashboardRoute(normalizedRole);
+            return false;
+        }
+
+        return true;
+    },
+
+    clearSession() {
+        localStorage.removeItem('role');
+        localStorage.removeItem('name');
+        localStorage.removeItem('user_id');
+    },
+
+    logout() {
+        this.clearSession();
+        window.location.href = 'login.html';
+    },
+
+    applyDynamicUserName() {
+        const userName = this.getCurrentUser().name;
+
+        document.querySelectorAll('.dynamic-user-name').forEach((el) => {
+            el.textContent = userName;
+        });
+    }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
+    window.MedTrackerApp.applyDynamicUserName();
+
     // ---- ROLE SELECTION TO SIGNUP LOGIC ----
     const urlParams = new URLSearchParams(window.location.search);
     const role = urlParams.get('role');
@@ -106,15 +257,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     messageEl.textContent = result.message;
                     // Store user data in localStorage (simplification)
                     localStorage.setItem('role', result.role);
+                    localStorage.setItem('name', result.name || 'User');
+                    localStorage.setItem('user_id', result.user_id || '');
                     
                     setTimeout(() => {
-                        if (result.role === 'Admin') {
-                            window.location.href = 'admin_dashboard.html';
-                        } else if (result.role === 'Health Worker') {
-                            window.location.href = 'doctor_dashboard.html';
-                        } else {
-                            window.location.href = 'dashboard.html'; // Patient
-                        }
+                        window.location.href = window.MedTrackerApp.getDashboardRoute(result.role);
                     }, 1000);
                 } else {
                     messageEl.className = 'form-message error';

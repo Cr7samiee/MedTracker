@@ -8,11 +8,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css?v=6">
     <link rel="stylesheet" href="css/dashboard.css?v=2">
-    <!-- Chart.js for analytics graphs -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .doctor-sidebar {
-            background-color: #F8FAFC;
+            background: linear-gradient(180deg, #F8FAFC 0%, #EFF6FF 100%);
         }
 
         .action-card {
@@ -135,10 +133,21 @@
             color: var(--text-main);
         }
 
-        .chart-container {
-            position: relative;
-            height: 120px;
-            width: 100%;
+        .queue-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .queue-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.25rem;
+            border-radius: 16px;
+            background: #F8FAFC;
+            border: 1px solid var(--glass-border);
         }
 
         .btn-emergency {
@@ -156,6 +165,20 @@
             margin-top: 2rem;
             cursor: pointer;
         }
+
+        .role-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.45rem 0.85rem;
+            border-radius: 999px;
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--primary);
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
     </style>
 </head>
 
@@ -164,11 +187,11 @@
         <!-- Sidebar -->
         <aside class="sidebar doctor-sidebar">
             <div class="sidebar-header">
-                <a href="#" class="sidebar-brand" style="text-decoration: none;">
+                <a href="javascript:void(0)" class="sidebar-brand" style="text-decoration: none;">
                     <div style="display:flex; align-items:center; gap:0.5rem;">
                         <span style="background:var(--primary); color:white; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:8px;">+</span>
                         <div>
-                            <span class="title" style="font-size:1.25rem;">Clinical Suite</span>
+                            <span class="title" style="font-size:1.25rem;">💊 MedTracker</span>
                             <span class="subtitle" style="display:block; font-size:0.65rem;">Healthcare Professional</span>
                         </div>
                     </div>
@@ -178,33 +201,29 @@
             <nav class="sidebar-nav">
                 <a href="doctor_dashboard.html" class="nav-item active">
                     <i>📊</i>
-                    <span>Dashboard</span>
+                    <span>Overview</span>
                 </a>
-                <a href="#" class="nav-item">
+                <a href="doctor_schedule.html" class="nav-item">
                     <i>🗓️</i>
-                    <span>Schedule</span>
+                    <span>Prescription Desk</span>
                 </a>
-                <a href="#" class="nav-item">
+                <a href="doctor_dashboard.html#doctorPatientSection" class="nav-item">
                     <i>👥</i>
-                    <span>Patients</span>
+                    <span>Patient Queue</span>
                 </a>
-                <a href="#" class="nav-item">
-                    <i>📈</i>
-                    <span>Analytics</span>
-                </a>
-                <a href="#" class="nav-item">
+                <a href="settings.html" class="nav-item">
                     <i>⚙️</i>
-                    <span>System</span>
+                    <span>Account</span>
                 </a>
             </nav>
 
             <div class="sidebar-footer">
-                <button class="btn-emergency">
-                    <i>🚨</i> Emergency Alert
+                <button class="btn-emergency" onclick="window.location.href='doctor_schedule.html'">
+                    <i>➕</i> Add Prescription
                 </button>
                 <div style="margin-top: 1rem; display:flex; flex-direction:column; gap:0.5rem;">
-                    <a href="#" style="color:var(--text-muted); text-decoration:none; font-size:0.875rem; display:flex; align-items:center; gap:0.5rem;">
-                        <i>❓</i> Support
+                    <a href="doctor_dashboard.html#doctorAlertsSection" style="color:var(--text-muted); text-decoration:none; font-size:0.875rem; display:flex; align-items:center; gap:0.5rem;">
+                        <i>🔔</i> Care Alerts
                     </a>
                     <a href="login.html" id="logoutBtn" style="color:var(--text-muted); text-decoration:none; font-size:0.875rem; display:flex; align-items:center; gap:0.5rem;">
                         <i>🚪</i> Logout
@@ -217,60 +236,64 @@
         <main class="main-content">
             <div class="top-bar" style="margin-bottom: 1rem;">
                 <div>
-                    <p style="color:var(--text-muted); margin-bottom:0.25rem;">Welcome back, Dr. Sarah Chen</p>
+                    <p style="color:var(--text-muted); margin-bottom:0.25rem;">Welcome back, <span class="dynamic-user-name">User</span></p>
                     <h1 style="font-size: 2.5rem; color: var(--text-main); margin-bottom:0.25rem;">Clinical Overview</h1>
-                    <p style="color: var(--primary); font-weight:600; font-size:0.875rem;">Attending Physician | Cardiology Specialist</p>
+                    <p class="role-chip">Healthcare Dashboard</p>
                 </div>
                 <div class="top-icons">
                     <button class="icon-btn" style="background:#F1F5F9; padding:0.5rem 1rem; border-radius:999px; font-size:0.875rem; color:var(--text-main); font-weight:600; display:flex; align-items:center; gap:0.5rem;">
-                        🗓️ Monday, Oct 24
+                        <span id="doctorDateLabel">🗓️ Today</span>
                     </button>
-                    <img src="https://ui-avatars.com/api/?name=Sarah+Chen&background=0D8ABC&color=fff" alt="Profile" style="width:40px; height:40px; border-radius:50%;">
+                    <img src="https://ui-avatars.com/api/?name=Doctor&background=0D8ABC&color=fff" alt="Profile" style="width:40px; height:40px; border-radius:50%;">
                 </div>
             </div>
 
             <div class="dashboard-grid" style="grid-template-columns: 2fr 1fr;">
                 <!-- Left Column -->
                 <div class="main-column">
-                    <!-- Insights Card -->
-                    <div style="background:var(--surface-solid); border-radius:24px; padding:2rem; box-shadow:var(--shadow-sm); margin-bottom:2rem;">
+                    <div id="doctorCareBoard" style="background:var(--surface-solid); border-radius:24px; padding:2rem; box-shadow:var(--shadow-sm); margin-bottom:2rem;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
                             <div>
-                                <h3 style="font-size:1.25rem; margin-bottom:0.25rem;">Clinical Insights</h3>
-                                <p style="font-size:0.875rem; color:var(--text-muted);">Aggregate patient adherence (Last 30 Days)</p>
+                                <h3 style="font-size:1.25rem; margin-bottom:0.25rem;">Care Coordination Board</h3>
+                                <p style="font-size:0.875rem; color:var(--text-muted);">Today's patient load, risk flags, and outstanding follow-up.</p>
                             </div>
-                            <button class="btn btn-secondary btn-sm" style="font-size:0.75rem; padding:0.4rem 0.8rem;">View Detailed Report</button>
+                            <button class="btn btn-secondary btn-sm" style="font-size:0.75rem; padding:0.4rem 0.8rem;" onclick="window.location.href='doctor_schedule.html'">Open Scheduler</button>
                         </div>
                         
                         <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:1rem;">
                             <div style="background:#F8FAFC; padding:1.5rem; border-radius:16px; text-align:center;">
-                                <div style="width:80px; height:80px; border-radius:50%; border:6px solid var(--green); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.5rem; font-weight:700;">88%</div>
-                                <p style="font-size:0.875rem; font-weight:600; color:var(--text-muted);">Avg. Adherence</p>
+                                <div style="font-size:2.25rem; font-weight:700; color:var(--primary);" id="doctorPendingDoses">0</div>
+                                <p style="font-size:0.875rem; font-weight:600; color:var(--text-muted);">Pending Doses Today</p>
                             </div>
                             <div style="background:#F8FAFC; padding:1.5rem; border-radius:16px; text-align:center; display:flex; flex-direction:column; justify-content:center;">
-                                <div style="font-size:2rem; margin-bottom:1rem;">📈</div>
-                                <h2 style="font-size: 1.75rem; margin-bottom:0.5rem;">+12%</h2>
-                                <p style="font-size:0.875rem; font-weight:600; color:var(--text-muted);">Recovery Rate</p>
+                                <div style="font-size:2rem; margin-bottom:1rem;">⚠️</div>
+                                <h2 style="font-size: 1.75rem; margin-bottom:0.5rem;" id="doctorRiskCount">0</h2>
+                                <p style="font-size:0.875rem; font-weight:600; color:var(--text-muted);">At-Risk Patients</p>
                             </div>
                             <div style="background:#F8FAFC; padding:1.5rem; border-radius:16px; text-align:center; display:flex; flex-direction:column; justify-content:center;">
                                 <div style="font-size:2rem; margin-bottom:1rem; color:var(--primary);">👥</div>
-                                <h2 style="font-size: 1.75rem; margin-bottom:0.5rem;">142</h2>
+                                <h2 style="font-size: 1.75rem; margin-bottom:0.5rem;" id="doctorPatientCount">0</h2>
                                 <p style="font-size:0.875rem; font-weight:600; color:var(--text-muted);">Active Patients</p>
                             </div>
                         </div>
-                        <div style="margin-top: 2rem; background: white; border-radius: 12px; padding: 1rem; border: 1px solid var(--glass-border); height: 250px;">
-                            <canvas id="doctorChart"></canvas>
+                        <div class="queue-list" id="doctorQueueList">
+                            <div class="queue-item">
+                                <div>
+                                    <div style="font-weight:700;">Loading care queue...</div>
+                                    <p style="font-size:0.875rem; color:var(--text-muted);">Preparing today's follow-up priorities.</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- My Patients -->
-                    <div style="background:var(--surface-solid); border-radius:24px; padding:2rem; box-shadow:var(--shadow-sm);">
+                    <div id="doctorPatientSection" style="background:var(--surface-solid); border-radius:24px; padding:2rem; box-shadow:var(--shadow-sm);">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <h3 style="font-size:1.25rem;">My Patients</h3>
+                            <h3 style="font-size:1.25rem;">Patient Queue</h3>
                             <div class="schedule-filters">
-                                <button class="schedule-filter active">All</button>
-                                <button class="schedule-filter">At Risk</button>
-                                <button class="schedule-filter">Critical</button>
+                                <button class="schedule-filter active" id="doctorFilterAll">All</button>
+                                <button class="schedule-filter" id="doctorFilterRisk">At Risk</button>
+                                <button class="schedule-filter" id="doctorFilterCritical">Critical</button>
                             </div>
                         </div>
 
@@ -288,16 +311,13 @@
                         <div class="action-card" onclick="window.location.href='doctor_schedule.html'">
                             <span style="font-size:1.25rem;">+</span> New Prescription
                         </div>
-                        <div class="action-card light">
-                            <span style="font-size:1.25rem;">✉️</span> Message Patient
-                        </div>
-                        <div class="action-card light">
-                            <span style="font-size:1.25rem;">📄</span> Upload Lab Results
+                        <div class="action-card light" onclick="document.getElementById('doctorPatientList')?.scrollIntoView({ behavior: 'smooth' })">
+                            <span style="font-size:1.25rem;">👥</span> Review Patients
                         </div>
                     </div>
 
                     <!-- Alerts Widget -->
-                    <div class="widget">
+                    <div class="widget" id="doctorAlertsSection">
                         <h4 class="widget-title" style="color:var(--red); display:flex; align-items:center; gap:0.5rem;">
                             🔔 Recent Alerts
                         </h4>
@@ -318,7 +338,7 @@
                             </div>
                         </div>
 
-                        <button class="btn btn-secondary btn-block" style="background:white; border:none; margin-top:1rem;">Review Full History</button>
+                        <button class="btn btn-secondary btn-block" style="background:white; border:none; margin-top:1rem;" onclick="document.getElementById('doctorPatientSection')?.scrollIntoView({ behavior: 'smooth' })">Review Patient Queue</button>
                     </div>
 
                 </div>
@@ -326,107 +346,141 @@
         </main>
     </div>
 
+    <script src="js/script.js"></script>
     <script>
+        let doctorPatientData = [];
+        let doctorFilter = 'all';
+
         document.addEventListener('DOMContentLoaded', () => {
+            if (!window.MedTrackerApp.protectRoute(['Health Worker', 'Doctor'])) {
+                return;
+            }
+
             // Logout
             document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
                 e.preventDefault();
                 if (confirm('Are you sure you want to log out?')) {
-                    localStorage.removeItem('role');
-                    window.location.href = 'login.html';
+                    window.MedTrackerApp.logout();
                 }
+            });
+
+            document.getElementById('doctorDateLabel').textContent = `🗓️ ${new Date().toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' })}`;
+
+            document.getElementById('doctorFilterAll')?.addEventListener('click', () => {
+                doctorFilter = 'all';
+                renderDoctorPatients();
+            });
+            document.getElementById('doctorFilterRisk')?.addEventListener('click', () => {
+                doctorFilter = 'risk';
+                renderDoctorPatients();
+            });
+            document.getElementById('doctorFilterCritical')?.addEventListener('click', () => {
+                doctorFilter = 'critical';
+                renderDoctorPatients();
             });
 
             // Fetch list
             fetchDoctorPatients();
-
-            // Initialize Doctor Chart.js graph
-            const ctx = document.getElementById('doctorChart');
-            if (ctx) {
-                new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-                        datasets: [{
-                            label: 'Avg Adherence Rate (%)',
-                            data: [75, 82, 85, 88],
-                            backgroundColor: '#4F46E5', // Primary
-                            borderRadius: 6
-                        },
-                        {
-                            label: 'Critical Patients Missed Dose',
-                            data: [12, 8, 5, 2],
-                            backgroundColor: '#EF4444', // Red
-                            borderRadius: 6
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { position: 'top' } },
-                        scales: { y: { beginAtZero: true, max: 100 } }
-                    }
-                });
-            }
         });
 
         async function fetchDoctorPatients() {
             try {
-                // Dummy doctor ID
-                const res = await fetch('../backend/api/get_schedule.php?role=Health Worker&user_id=dr_sarah');
+                const res = await fetch('../backend/api/get_schedule.php');
                 const data = await res.json();
-                
-                const list = document.getElementById('doctorPatientList');
-                const alerts = document.getElementById('doctorAlertsContainer');
-                list.innerHTML = '';
-                alerts.innerHTML = '';
-                
-                if (data.success && data.data.length > 0) {
-                    data.data.forEach(med => {
-                        let alertHtml = '';
-                        // Generate Alerts for empty stock or missed dose
-                        if (med.stock_remaining <= 0) {
-                            alertHtml += `
-                                <div style="border-left: 3px solid var(--red); padding-left:1rem; margin-bottom:1.5rem;">
-                                    <h5 style="font-size:0.95rem; margin-bottom:0.25rem;">Empty Stock: ${med.patient_name || 'Patient'}</h5>
-                                    <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.5rem;">${med.medicine_name} (${med.dosage}) is finished. Patient must refill immediately.</p>
-                                </div>
-                            `;
-                        } else if (med.status === 'Skipped') {
-                            alertHtml += `
-                                <div style="border-left: 3px solid var(--yellow); padding-left:1rem; margin-bottom:1.5rem;">
-                                    <h5 style="font-size:0.95rem; margin-bottom:0.25rem;">Missed Dose: ${med.patient_name || 'Patient'}</h5>
-                                    <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.5rem;">Failed to take ${med.medicine_name}. Adherence drop predicted.</p>
-                                </div>
-                            `;
-                        }
-                        alerts.innerHTML += alertHtml;
 
-                        // Add to main list
-                        list.innerHTML += `
-                            <div class="patient-card">
-                                <div class="patient-info">
-                                    <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(med.patient_name || 'Patient')}&background=random" class="patient-avatar" alt="pic">
-                                    <div class="patient-details">
-                                        <h4>${med.patient_name || 'Patient'}</h4>
-                                        <p>${med.medicine_name} (${med.dosage})</p>
-                                    </div>
-                                </div>
-                                <div class="patient-adherence">
-                                    <div class="adherence-label">Status</div>
-                                    <div class="adherence-val" style="color:var(--text-main); font-size:0.9rem;">
-                                        ${med.status || 'Pending'}
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    });
+                if (data.success && data.data.length > 0) {
+                    doctorPatientData = data.data;
+                    renderDoctorPatients();
                 } else {
-                    list.innerHTML = '<p style="text-align:center;">No active prescriptions tracked.</p>';
+                    doctorPatientData = [];
+                    renderDoctorPatients();
                 }
             } catch (err) {
                 console.error(err);
+                document.getElementById('doctorPatientList').innerHTML = '<p style="text-align:center;">Unable to load assigned patients right now.</p>';
+                document.getElementById('doctorAlertsContainer').innerHTML = '<p style="font-size:0.85rem; color:var(--text-muted);">Alerts are temporarily unavailable.</p>';
             }
+        }
+
+        function renderDoctorPatients() {
+            const list = document.getElementById('doctorPatientList');
+            const alerts = document.getElementById('doctorAlertsContainer');
+            const filtered = doctorPatientData.filter((med) => {
+                if (doctorFilter === 'critical') {
+                    return Number(med.stock_remaining) <= 0;
+                }
+
+                if (doctorFilter === 'risk') {
+                    return Number(med.stock_remaining) <= 5 || med.status === 'Skipped';
+                }
+
+                return true;
+            });
+
+            document.getElementById('doctorFilterAll')?.classList.toggle('active', doctorFilter === 'all');
+            document.getElementById('doctorFilterRisk')?.classList.toggle('active', doctorFilter === 'risk');
+            document.getElementById('doctorFilterCritical')?.classList.toggle('active', doctorFilter === 'critical');
+
+            if (!doctorPatientData.length) {
+                list.innerHTML = '<p style="text-align:center;">No active prescriptions tracked.</p>';
+                alerts.innerHTML = '<p style="font-size:0.85rem; color:var(--text-muted);">No critical alerts right now.</p>';
+                document.getElementById('doctorPatientCount').textContent = '0';
+                return;
+            }
+
+            const uniquePatients = new Set(doctorPatientData.map((med) => med.patient_id));
+            const alertItems = doctorPatientData.filter((med) => Number(med.stock_remaining) <= 0 || med.status === 'Skipped');
+            const pendingDoses = doctorPatientData.filter((med) => med.status === 'Pending').length;
+            document.getElementById('doctorPatientCount').textContent = String(uniquePatients.size);
+            document.getElementById('doctorPendingDoses').textContent = String(pendingDoses);
+            document.getElementById('doctorRiskCount').textContent = String(alertItems.length);
+
+            list.innerHTML = filtered.length ? filtered.map((med) => `
+                <div class="patient-card">
+                    <div class="patient-info">
+                        <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(med.patient_name || 'Patient')}&background=random" class="patient-avatar" alt="pic">
+                        <div class="patient-details">
+                            <h4>${med.patient_name || 'Patient'}</h4>
+                            <p>${med.medicine_name} (${med.dosage})</p>
+                        </div>
+                    </div>
+                    <div class="patient-adherence">
+                        <div class="adherence-label">Status</div>
+                        <div class="adherence-val" style="color:var(--text-main); font-size:0.9rem;">
+                            ${med.status || 'Pending'}
+                        </div>
+                    </div>
+                </div>
+            `).join('') : '<p style="text-align:center;">No patients match this filter.</p>';
+
+            alerts.innerHTML = alertItems.length ? alertItems.map((med) => `
+                <div style="border-left: 3px solid ${Number(med.stock_remaining) <= 0 ? 'var(--red)' : 'var(--yellow)'}; padding-left:1rem; margin-bottom:1.5rem;">
+                    <h5 style="font-size:0.95rem; margin-bottom:0.25rem;">${Number(med.stock_remaining) <= 0 ? 'Empty Stock' : 'Missed Dose'}: ${med.patient_name || 'Patient'}</h5>
+                    <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.5rem;">${Number(med.stock_remaining) <= 0 ? `${med.medicine_name} (${med.dosage}) is finished. Patient must refill immediately.` : `Failed to take ${med.medicine_name}. Adherence drop predicted.`}</p>
+                </div>
+            `).join('') : '<p style="font-size:0.85rem; color:var(--text-muted);">No critical alerts right now.</p>';
+
+            const queueList = document.getElementById('doctorQueueList');
+            const queueItems = doctorPatientData
+                .filter((med) => med.status === 'Pending' || med.status === 'Skipped' || Number(med.stock_remaining) <= 5)
+                .slice(0, 5);
+
+            queueList.innerHTML = queueItems.length ? queueItems.map((med) => `
+                <div class="queue-item">
+                    <div>
+                        <div style="font-weight:700; color:var(--text-main);">${med.patient_name || 'Patient'} · ${med.medicine_name}</div>
+                        <p style="font-size:0.875rem; color:var(--text-muted);">${med.status || 'Pending'} · ${med.dosage} · Stock ${med.stock_remaining}</p>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="window.location.href='doctor_schedule.html'">Review</button>
+                </div>
+            `).join('') : `
+                <div class="queue-item">
+                    <div>
+                        <div style="font-weight:700;">No urgent follow-up right now.</div>
+                        <p style="font-size:0.875rem; color:var(--text-muted);">All current prescriptions look stable.</p>
+                    </div>
+                </div>
+            `;
         }
     </script>
 </body>
