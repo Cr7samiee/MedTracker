@@ -8,10 +8,10 @@ $db_name = 'medtracker_db';
 
 $smtp_host = 'smtp.gmail.com';
 $smtp_port = 587; // or 465 for SSL
-$smtp_username = 'brooskings661@gmail.com';
-$smtp_password = 'rcha tqxx iwzp axpl';   
-$smtp_from_email = 'brooskings661@gmail.com'; 
-$smtp_from_name = 'MedTracker Alerts';
+$smtp_username = '';
+$smtp_password = '';   
+$smtp_from_email = ''; 
+$smtp_from_name = '';
 
 try {
     $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass);
