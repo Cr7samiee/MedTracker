@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prescription Scheduler - Doctor Suite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=6">
+    <link rel="stylesheet" href="css/dashboard.css?v=2">
+    <style>
+        .doctor-sidebar {
+            background-color: #F8FAFC;
+        }
+
+        .prescription-form-card {
+            background: var(--surface-solid);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow-sm);
+            max-width: 800px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            color: var(--primary);
+            border-bottom: 2px solid var(--glass-border);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .section-title:first-child {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar doctor-sidebar">
+            <div class="sidebar-header">
+                <a href="#" class="sidebar-brand" style="text-decoration: none;">
+                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                        <span style="background:var(--primary); color:white; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:8px;">+</span>
+                        <div>
+                            <span class="title" style="font-size:1.25rem;">Clinical Suite</span>
+                            <span class="subtitle" style="display:block; font-size:0.65rem;">Healthcare Professional</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="doctor_dashboard.html" class="nav-item">
+                    <i>📊</i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="doctor_schedule.html" class="nav-item active">
+                    <i>🗓️</i>
+                    <span>Schedule</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i>👥</i>
+                    <span>Patients</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i>📈</i>
+                    <span>Analytics</span>
+                </a>
+                <a href="settings.html" class="nav-item">
+                    <i>⚙️</i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="btn btn-primary btn-block" style="display: flex; gap: 0.5rem; background: var(--red);" id="logoutBtn">
+                    <i>🚪</i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="top-bar" style="margin-bottom: 2rem;">
+                <div>
+                    <h1 style="font-size: 2.5rem; color: var(--text-main); margin-bottom:0.25rem;">Prescribe & Schedule</h1>
+                    <p style="color: var(--text-muted);">Assign new medications and schedule intake times for patients.</p>
+                </div>
+            </div>
+
+            <div class="prescription-form-card">
+                <div id="responseMessage" style="margin-bottom: 1rem; font-weight: 600; text-align: center;"></div>
+                
+                <form id="prescriptionForm">
+                    
+                    <h3 class="section-title">Patient Selection</h3>
+                    <div class="form-group">
+                        <label for="patientSelect">Select Patient</label>
+                        <!-- Note: Since this is a prototype, we're using a dummy PID 'u999' which we assume exists in DB or we use whatever actual user IDs exist. -->
+                        <!-- If you want to use a real ID from your DB, replace the value attribute with it. -->
+                        <select id="patientSelect" class="form-control" required style="width: 100%; border: 1px solid var(--glass-border); padding: 0.75rem; border-radius: 12px; font-family: 'Outfit';">
+                            <option value="">-- Choose Patient --</option>
+                            <option value="test_user_id">David (Test Patient)</option>
+                            <option value="p1">Sarah J. Miller</option>
+                        </select>
+                    </div>
+
+                    <h3 class="section-title">Medication Details</h3>
+                    <div class="form-row">
+                        <div class="form-group" style="margin: 0;">
+                            <label for="medName">Medicine Name</label>
+                            <input type="text" id="medName" class="form-control" required placeholder="e.g. Amoxicillin">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label for="medDosage">Dosage</label>
+                            <input type="text" id="medDosage" class="form-control" required placeholder="e.g. 500mg">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group" style="margin: 0;">
+                            <label for="medType">Medicine Type</label>
+                            <select id="medType" class="form-control" style="width: 100%; border: 1px solid var(--glass-border); padding: 0.75rem; border-radius: 12px; font-family: 'Outfit';">
+                                <option value="Oral Tablet">Oral Tablet</option>
+                                <option value="Capsule">Capsule</option>
+                                <option value="Liquid / Syrup">Liquid / Syrup</option>
+                                <option value="Injection">Injection</option>
+                                <option value="Inhaler">Inhaler</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label for="medQuantity">Total Quantity Prescribed</label>
+                            <input type="number" id="medQuantity" class="form-control" required placeholder="e.g. 30" min="1">
+                        </div>
+                    </div>
+
+                    <h3 class="section-title">Scheduling Settings</h3>
+                    <div class="form-row">
+                        <div class="form-group" style="margin: 0;">
+                            <label for="scheduleTime">Daily Intake Frequency</label>
+                            <select id="scheduleTime" class="form-control" required style="width: 100%; border: 1px solid var(--glass-border); padding: 0.75rem; border-radius: 12px; font-family: 'Outfit';">
+                                <option value="1x daily">Once a day (Morning)</option>
+                                <option value="2x daily">Twice a day (Morning & Evening)</option>
+                                <option value="3x daily">Three times a day (With Meals)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label for="instructions">Instructions</label>
+                            <input type="text" id="instructions" class="form-control" placeholder="e.g. Take after meal">
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 2rem;">
+                        <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.1rem;">Submit Prescription to System</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (confirm('Are you sure you want to log out?')) {
+                    localStorage.removeItem('role');
+                    window.location.href = 'login.html';
+                }
+            });
+
+            // Handle API call
+            document.getElementById('prescriptionForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const data = {
+                    patient_id: document.getElementById('patientSelect').value,
+                    name: document.getElementById('medName').value,
+                    dosage: document.getElementById('medDosage').value,
+                    type: document.getElementById('medType').value,
+                    quantity: document.getElementById('medQuantity').value,
+                    frequency: document.getElementById('scheduleTime').value,
+                    instructions: document.getElementById('instructions').value
+                };
+
+                const msgEl = document.getElementById('responseMessage');
+
+                try {
+                    // For local development, assume backend lives one level up
+                    const response = await fetch('../backend/api/add_prescription.php', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(data)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        msgEl.style.color = 'var(--green)';
+                        msgEl.innerText = result.message;
+                        document.getElementById('prescriptionForm').reset();
+                    } else {
+                        msgEl.style.color = 'var(--red)';
+                        msgEl.innerText = result.message;
+                    }
+                } catch (error) {
+                    msgEl.style.color = 'var(--red)';
+                    msgEl.innerText = "Check your connection to XAMPP.";
+                }
+            });
+        });
+    </script>
+</body>
+</html>

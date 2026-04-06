@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard - Clinical Suite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=6">
+    <link rel="stylesheet" href="css/dashboard.css?v=2">
+    <!-- Chart.js for analytics graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .doctor-sidebar {
+            background-color: #F8FAFC;
+        }
+
+        .action-card {
+            background: var(--primary);
+            color: white;
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .action-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .action-card.light {
+            background: #E2E8F0;
+            color: var(--text-main);
+        }
+
+        .patient-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .patient-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--surface-solid);
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .patient-card:hover {
+            border-color: var(--primary);
+        }
+
+        .patient-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .patient-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .patient-details h4 {
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .patient-details p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        .patient-adherence {
+            text-align: right;
+        }
+
+        .adherence-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .adherence-val {
+            font-size: 1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            justify-content: flex-end;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .dot.green { background: var(--green); }
+        .dot.yellow { background: var(--yellow); }
+        .dot.red { background: var(--red); }
+
+        .patient-focus-card {
+            background: #E0E7FF;
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .focus-content {
+            background: rgba(255, 255, 255, 0.6);
+            padding: 1rem;
+            border-radius: 12px;
+            margin-top: 1rem;
+        }
+
+        .focus-content p {
+            font-size: 0.875rem;
+            color: var(--text-main);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 120px;
+            width: 100%;
+        }
+
+        .btn-emergency {
+            background: var(--red);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 1rem;
+            border-radius: 12px;
+            font-weight: 700;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar doctor-sidebar">
+            <div class="sidebar-header">
+                <a href="#" class="sidebar-brand" style="text-decoration: none;">
+                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                        <span style="background:var(--primary); color:white; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:8px;">+</span>
+                        <div>
+                            <span class="title" style="font-size:1.25rem;">Clinical Suite</span>
+                            <span class="subtitle" style="display:block; font-size:0.65rem;">Healthcare Professional</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="doctor_dashboard.html" class="nav-item active">
+                    <i>📊</i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i>🗓️</i>
+                    <span>Schedule</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i>👥</i>
+                    <span>Patients</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i>📈</i>
+                    <span>Analytics</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i>⚙️</i>
+                    <span>System</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="btn-emergency">
+                    <i>🚨</i> Emergency Alert
+                </button>
+                <div style="margin-top: 1rem; display:flex; flex-direction:column; gap:0.5rem;">
+                    <a href="#" style="color:var(--text-muted); text-decoration:none; font-size:0.875rem; display:flex; align-items:center; gap:0.5rem;">
+                        <i>❓</i> Support
+                    </a>
+                    <a href="login.html" id="logoutBtn" style="color:var(--text-muted); text-decoration:none; font-size:0.875rem; display:flex; align-items:center; gap:0.5rem;">
+                        <i>🚪</i> Logout
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="top-bar" style="margin-bottom: 1rem;">
+                <div>
+                    <p style="color:var(--text-muted); margin-bottom:0.25rem;">Welcome back, Dr. Sarah Chen</p>
+                    <h1 style="font-size: 2.5rem; color: var(--text-main); margin-bottom:0.25rem;">Clinical Overview</h1>
+                    <p style="color: var(--primary); font-weight:600; font-size:0.875rem;">Attending Physician | Cardiology Specialist</p>
+                </div>
+                <div class="top-icons">
+                    <button class="icon-btn" style="background:#F1F5F9; padding:0.5rem 1rem; border-radius:999px; font-size:0.875rem; color:var(--text-main); font-weight:600; display:flex; align-items:center; gap:0.5rem;">
+                        🗓️ Monday, Oct 24
+                    </button>
+                    <img src="https://ui-avatars.com/api/?name=Sarah+Chen&background=0D8ABC&color=fff" alt="Profile" style="width:40px; height:40px; border-radius:50%;">
+                </div>
+            </div>
+
+            <div class="dashboard-grid" style="grid-template-columns: 2fr 1fr;">
+                <!-- Left Column -->
+                <div class="main-column">
+                    <!-- Insights Card -->
+                    <div style="background:var(--surface-solid); border-radius:24px; padding:2rem; box-shadow:var(--shadow-sm); margin-bottom:2rem;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                            <div>
+                                <h3 style="font-size:1.25rem; margin-bottom:0.25rem;">Clinical Insights</h3>
+                                <p style="font-size:0.875rem; color:var(--text-muted);">Aggregate patient adherence (Last 30 Days)</p>
+                            </div>
+                            <button class="btn btn-secondary btn-sm" style="font-size:0.75rem; padding:0.4rem 0.8rem;">View Detailed Report</button>
+                        </div>
+                        
+                        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:1rem;">
+                            <div style="background:#F8FAFC; padding:1.5rem; border-radius:16px; text-align:center;">
+                                <div style="width:80px; height:80px; border-radius:50%; border:6px solid var(--green); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.5rem; font-weight:700;">88%</div>
+                                <p style="font-size:0.875rem; font-weight:600; color:var(--text-muted);">Avg. Adherence</p>
+                            </div>
+                            <div style="background:#F8FAFC; padding:1.5rem; border-radius:16px; text-align:center; display:flex; flex-direction:column; justify-content:center;">
+                                <div style="font-size:2rem; margin-bottom:1rem;">📈</div>
+                                <h2 style="font-size: 1.75rem; margin-bottom:0.5rem;">+12%</h2>
+                                <p style="font-size:0.875rem; font-weight:600; color:var(--text-muted);">Recovery Rate</p>
+                            </div>
+                            <div style="background:#F8FAFC; padding:1.5rem; border-radius:16px; text-align:center; display:flex; flex-direction:column; justify-content:center;">
+                                <div style="font-size:2rem; margin-bottom:1rem; color:var(--primary);">👥</div>
+                                <h2 style="font-size: 1.75rem; margin-bottom:0.5rem;">142</h2>
+                                <p style="font-size:0.875rem; font-weight:600; color:var(--text-muted);">Active Patients</p>
+                            </div>
+                        </div>
+                        <div style="margin-top: 2rem; background: white; border-radius: 12px; padding: 1rem; border: 1px solid var(--glass-border); height: 250px;">
+                            <canvas id="doctorChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- My Patients -->
+                    <div style="background:var(--surface-solid); border-radius:24px; padding:2rem; box-shadow:var(--shadow-sm);">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3 style="font-size:1.25rem;">My Patients</h3>
+                            <div class="schedule-filters">
+                                <button class="schedule-filter active">All</button>
+                                <button class="schedule-filter">At Risk</button>
+                                <button class="schedule-filter">Critical</button>
+                            </div>
+                        </div>
+
+                        <div class="patient-list" id="doctorPatientList">
+                            <p style="text-align:center; color: var(--text-muted); font-style:italic;">Loading active patient scripts...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="side-column">
+                    <!-- Quick Actions -->
+                    <div style="background:var(--surface-solid); border-radius:24px; padding:1.5rem; box-shadow:var(--shadow-sm); margin-bottom:1.5rem;">
+                        <h4 style="font-size: 1.125rem; margin-bottom: 1rem;">Quick Actions</h4>
+                        <div class="action-card" onclick="window.location.href='doctor_schedule.html'">
+                            <span style="font-size:1.25rem;">+</span> New Prescription
+                        </div>
+                        <div class="action-card light">
+                            <span style="font-size:1.25rem;">✉️</span> Message Patient
+                        </div>
+                        <div class="action-card light">
+                            <span style="font-size:1.25rem;">📄</span> Upload Lab Results
+                        </div>
+                    </div>
+
+                    <!-- Alerts Widget -->
+                    <div class="widget">
+                        <h4 class="widget-title" style="color:var(--red); display:flex; align-items:center; gap:0.5rem;">
+                            🔔 Recent Alerts
+                        </h4>
+                        
+                        <div id="doctorAlertsContainer">
+                            <p style="font-size:0.85rem; color:var(--text-muted);">Monitoring patients...</p>
+                        </div>
+                    </div>
+
+                    <!-- Patient Focus -->
+                    <div class="patient-focus-card">
+                        <h4 style="font-size: 1.125rem; color:var(--primary); margin-bottom:1rem;">Patient Focus: Overview</h4>
+                        
+                        <div class="focus-content">
+                            <span style="font-size:0.65rem; color:var(--primary); font-weight:700; text-transform:uppercase;">System Note</span>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.25rem;">
+                                <p style="font-weight:600; font-size: 0.9rem;">Review pending adherence rates securely.</p>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-secondary btn-block" style="background:white; border:none; margin-top:1rem;">Review Full History</button>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Logout
+            document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (confirm('Are you sure you want to log out?')) {
+                    localStorage.removeItem('role');
+                    window.location.href = 'login.html';
+                }
+            });
+
+            // Fetch list
+            fetchDoctorPatients();
+
+            // Initialize Doctor Chart.js graph
+            const ctx = document.getElementById('doctorChart');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                        datasets: [{
+                            label: 'Avg Adherence Rate (%)',
+                            data: [75, 82, 85, 88],
+                            backgroundColor: '#4F46E5', // Primary
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Critical Patients Missed Dose',
+                            data: [12, 8, 5, 2],
+                            backgroundColor: '#EF4444', // Red
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'top' } },
+                        scales: { y: { beginAtZero: true, max: 100 } }
+                    }
+                });
+            }
+        });
+
+        async function fetchDoctorPatients() {
+            try {
+                // Dummy doctor ID
+                const res = await fetch('../backend/api/get_schedule.php?role=Health Worker&user_id=dr_sarah');
+                const data = await res.json();
+                
+                const list = document.getElementById('doctorPatientList');
+                const alerts = document.getElementById('doctorAlertsContainer');
+                list.innerHTML = '';
+                alerts.innerHTML = '';
+                
+                if (data.success && data.data.length > 0) {
+                    data.data.forEach(med => {
+                        let alertHtml = '';
+                        // Generate Alerts for empty stock or missed dose
+                        if (med.stock_remaining <= 0) {
+                            alertHtml += `
+                                <div style="border-left: 3px solid var(--red); padding-left:1rem; margin-bottom:1.5rem;">
+                                    <h5 style="font-size:0.95rem; margin-bottom:0.25rem;">Empty Stock: ${med.patient_name || 'Patient'}</h5>
+                                    <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.5rem;">${med.medicine_name} (${med.dosage}) is finished. Patient must refill immediately.</p>
+                                </div>
+                            `;
+                        } else if (med.status === 'Skipped') {
+                            alertHtml += `
+                                <div style="border-left: 3px solid var(--yellow); padding-left:1rem; margin-bottom:1.5rem;">
+                                    <h5 style="font-size:0.95rem; margin-bottom:0.25rem;">Missed Dose: ${med.patient_name || 'Patient'}</h5>
+                                    <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.5rem;">Failed to take ${med.medicine_name}. Adherence drop predicted.</p>
+                                </div>
+                            `;
+                        }
+                        alerts.innerHTML += alertHtml;
+
+                        // Add to main list
+                        list.innerHTML += `
+                            <div class="patient-card">
+                                <div class="patient-info">
+                                    <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(med.patient_name || 'Patient')}&background=random" class="patient-avatar" alt="pic">
+                                    <div class="patient-details">
+                                        <h4>${med.patient_name || 'Patient'}</h4>
+                                        <p>${med.medicine_name} (${med.dosage})</p>
+                                    </div>
+                                </div>
+                                <div class="patient-adherence">
+                                    <div class="adherence-label">Status</div>
+                                    <div class="adherence-val" style="color:var(--text-main); font-size:0.9rem;">
+                                        ${med.status || 'Pending'}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    list.innerHTML = '<p style="text-align:center;">No active prescriptions tracked.</p>';
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+    </script>
+</body>
+</html>

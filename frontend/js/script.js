@@ -106,7 +106,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     messageEl.textContent = result.message;
                     // Store user data in localStorage (simplification)
                     localStorage.setItem('role', result.role);
-                    setTimeout(() => window.location.href = 'dashboard.html', 1000);
+                    
+                    setTimeout(() => {
+                        if (result.role === 'Admin') {
+                            window.location.href = 'admin_dashboard.html';
+                        } else if (result.role === 'Health Worker') {
+                            window.location.href = 'doctor_dashboard.html';
+                        } else {
+                            window.location.href = 'dashboard.html'; // Patient
+                        }
+                    }, 1000);
                 } else {
                     messageEl.className = 'form-message error';
                     messageEl.textContent = result.message;

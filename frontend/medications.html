@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medications - MedTracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=6">
+    <link rel="stylesheet" href="css/dashboard.css?v=1">
+    <style>
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .header-left h1 {
+            font-size: 2rem;
+            color: var(--text-main);
+            margin-bottom: 0.25rem;
+        }
+
+        .header-left p {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background: var(--surface-solid);
+            border: 1px solid var(--glass-border);
+            border-radius: 9999px;
+            padding: 0.5rem 1rem;
+            width: 300px;
+        }
+
+        .search-bar input {
+            border: none;
+            background: transparent;
+            outline: none;
+            flex: 1;
+            margin-left: 0.5rem;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+        }
+
+        .top-stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background: var(--surface-solid);
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .stat-card.blue {
+            background: var(--primary);
+            color: white;
+        }
+
+        .stat-card.blue .text-muted {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+
+        .stat-card h3 {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+        }
+
+        .stat-card.blue h3 {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .stat-card h2 {
+            font-size: 2.5rem;
+            color: var(--green);
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card:nth-child(2) h2 {
+            color: #C2410C; /* Dark orange */
+        }
+
+        .stat-card.blue h2 {
+            color: white;
+            font-size: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .badge-trend {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--green);
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-alert {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: rgba(245, 158, 11, 0.1);
+            color: #D97706;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .section-header h2 {
+            font-size: 1.25rem;
+        }
+
+        .btn-sort {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .med-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .med-card {
+            display: flex;
+            align-items: center;
+            background: var(--surface-solid);
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: var(--shadow-sm);
+            gap: 1.5rem;
+            border: 1px solid transparent;
+        }
+
+        .med-card.alert {
+            background: #FEF2F2;
+            border-color: #FECACA;
+        }
+
+        .med-icon-box {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            background: #F1F5F9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .med-card.alert .med-icon-box {
+            background: #FEE2E2;
+            color: var(--red);
+        }
+
+        .med-info {
+            flex: 2;
+        }
+
+        .med-title-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .med-title-row h3 {
+            font-size: 1.125rem;
+            margin: 0;
+        }
+
+        .med-tag {
+            font-size: 0.65rem;
+            background: #E2E8F0;
+            color: var(--text-muted);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .med-card.alert .med-tag {
+            background: #FECACA;
+            color: var(--red);
+        }
+
+        .med-desc {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        .med-freq, .med-stock {
+            flex: 1;
+            text-align: center;
+        }
+
+        .col-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .freq-val {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .stock-bar {
+            width: 100%;
+            height: 6px;
+            background: #E2E8F0;
+            border-radius: 3px;
+            margin: 0.5rem 0;
+            overflow: hidden;
+        }
+
+        .stock-fill {
+            height: 100%;
+            background: var(--green);
+            border-radius: 3px;
+        }
+
+        .stock-fill.warning { background: var(--yellow); }
+        .stock-fill.danger { background: var(--red); }
+
+        .stock-val {
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .stock-val.danger { color: var(--red); }
+
+        .med-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .btn-refill {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-refill.urgent {
+            background: var(--red);
+            color: white;
+        }
+
+        .btn-refill.normal {
+            background: #FED7AA;
+            color: #9A3412;
+        }
+
+        .adherence-pulse {
+            margin-top: 3rem;
+            background: #F8FAFC;
+            border-radius: 24px;
+            padding: 2.5rem;
+            display: flex;
+            align-items: center;
+            gap: 3rem;
+            border: 1px solid var(--glass-border);
+        }
+
+        .pulse-chart {
+            width: 200px;
+            height: 200px;
+            position: relative;
+            border-radius: 50%;
+            background: conic-gradient(var(--green) 85%, #E2E8F0 0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pulse-chart::before {
+            content: "";
+            position: absolute;
+            inset: 15px;
+            background: #F8FAFC;
+            border-radius: 50%;
+        }
+
+        .pulse-center {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        .pulse-center h2 {
+            font-size: 2.5rem;
+            color: var(--text-main);
+            line-height: 1;
+            margin-bottom: 0.25rem;
+        }
+
+        .pulse-center span {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 700;
+        }
+
+        .pulse-info h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .pulse-info p {
+            color: var(--text-muted);
+            max-width: 500px;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .pulse-info .highlight-green {
+            color: var(--green);
+            font-weight: 700;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="#" class="sidebar-brand" style="text-decoration: none;">
+                    <span class="title">MedTracker</span>
+                    <span class="subtitle">Patient Portal</span>
+                </a>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <i>📊</i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="medications.html" class="nav-item active">
+                    <i>💊</i>
+                    <span>Medications</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i>🗓️</i>
+                    <span>Schedule</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i>📈</i>
+                    <span>Reports</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i>⚙️</i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="btn btn-primary btn-block" style="display: flex; gap: 0.5rem;">
+                    <i>+</i> Add Medication
+                </button>
+                <div class="user-profile-sm">
+                    <img src="https://ui-avatars.com/api/?name=David&background=333&color=fff" alt="David">
+                    <div class="info">
+                        <span class="name">David</span>
+                        <span class="role">Patient</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content" style="background-color: #FFFFFF;">
+            <div class="top-bar">
+                <div class="search-bar">
+                    <i>🔍</i>
+                    <input type="text" placeholder="Filter medicines...">
+                </div>
+                <div class="top-icons">
+                    <button class="icon-btn">
+                        🔔
+                        <span class="badge"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="page-header">
+                <div class="header-left">
+                    <h1>Medications</h1>
+                    <p>Patient: Medication Manager — Tracking 8 active prescriptions.</p>
+                </div>
+            </div>
+
+            <div class="top-stats-grid">
+                <div class="stat-card" style="background:#F8FAFC; border:1px solid #E2E8F0;">
+                    <h3>ADHERENCE RATE</h3>
+                    <h2>94%</h2>
+                    <span class="badge-trend">↗ +2% from last week</span>
+                </div>
+                <div class="stat-card" style="background:#F8FAFC; border:1px solid #E2E8F0;">
+                    <h3>LOW STOCK ALERTS</h3>
+                    <h2>02</h2>
+                    <span class="badge-alert">⚠️ Requires immediate refill</span>
+                </div>
+                <div class="stat-card blue">
+                    <h3>NEXT DELIVERY</h3>
+                    <h2>Tomorrow, 10:00 AM</h2>
+                    <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.5rem;">Central Pharmacy Logistics</p>
+                </div>
+            </div>
+
+            <div class="section-header">
+                <h2>Active Prescriptions</h2>
+                <button class="btn-sort"><i>≡</i> Sort by Name</button>
+            </div>
+
+            <div class="med-list">
+                <!-- Med 1 -->
+                <div class="med-card">
+                    <div class="med-icon-box">💊</div>
+                    <div class="med-info">
+                        <div class="med-title-row">
+                            <h3>Atorvastatin Calcium</h3>
+                            <span class="med-tag">LIPID AGENT</span>
+                        </div>
+                        <p class="med-desc">Take 20mg orally once daily in the evening for cholesterol management.</p>
+                    </div>
+                    <div class="med-freq">
+                        <span class="col-title">FREQUENCY</span>
+                        <span class="freq-val">1x daily</span>
+                    </div>
+                    <div class="med-stock">
+                        <span class="col-title">STOCK LEVEL</span>
+                        <div class="stock-bar"><div class="stock-fill" style="width: 80%;"></div></div>
+                        <span class="stock-val" style="color:var(--green)">24 Left</span>
+                    </div>
+                </div>
+
+                <!-- Med 2 -->
+                <div class="med-card">
+                    <div class="med-icon-box" style="background: #FFF7ED; color: #C2410C;">📦</div>
+                    <div class="med-info">
+                        <div class="med-title-row">
+                            <h3>Lisinopril Solution</h3>
+                            <span class="med-tag" style="background:#FFEDD5; color:#C2410C;">ACE INHIBITOR</span>
+                        </div>
+                        <p class="med-desc">5mg dosage. Take 10ml twice daily with water. Maintain consistent timing.</p>
+                    </div>
+                    <div class="med-freq">
+                        <span class="col-title">FREQUENCY</span>
+                        <span class="freq-val">2x daily</span>
+                    </div>
+                    <div class="med-stock" style="text-align: left; padding-right: 1rem;">
+                        <span class="col-title">STOCK LEVEL</span>
+                        <div class="stock-bar" style="width: 60px; display:inline-block; margin-right:10px;"><div class="stock-fill warning" style="width: 15%;"></div></div>
+                        <span class="stock-val" style="color:#C2410C">3 Days</span>
+                    </div>
+                    <div class="med-actions">
+                        <button class="btn-refill normal">Refill Now</button>
+                        <button style="border:none; background:transparent; font-size:1.2rem; cursor:pointer; color:var(--text-muted)">⋮</button>
+                    </div>
+                </div>
+
+                <!-- Med 3 -->
+                <div class="med-card">
+                    <div class="med-icon-box">💉</div>
+                    <div class="med-info">
+                        <div class="med-title-row">
+                            <h3>Metformin HCL</h3>
+                            <span class="med-tag">ANTI-DIABETIC</span>
+                        </div>
+                        <p class="med-desc">500mg. Take with meals three times per day to control blood sugar levels.</p>
+                    </div>
+                    <div class="med-freq">
+                        <span class="col-title">FREQUENCY</span>
+                        <span class="freq-val">3x daily</span>
+                    </div>
+                    <div class="med-stock">
+                        <span class="col-title">STOCK LEVEL</span>
+                        <div class="stock-bar"><div class="stock-fill" style="width: 90%;"></div></div>
+                        <span class="stock-val" style="color:var(--green)">42 Left</span>
+                    </div>
+                </div>
+
+                <!-- Med 4 -->
+                <div class="med-card alert">
+                    <div class="med-icon-box">⚠️</div>
+                    <div class="med-info">
+                        <div class="med-title-row">
+                            <h3 style="color:var(--red);">Warfarin Sodium</h3>
+                            <span class="med-tag">ANTICOAGULANT</span>
+                        </div>
+                        <p class="med-desc">2mg dosage. Strictly controlled administration schedule required.</p>
+                    </div>
+                    <div class="med-freq">
+                        <span class="col-title">FREQUENCY</span>
+                        <span class="freq-val">1x daily</span>
+                    </div>
+                    <div class="med-stock" style="text-align: left; padding-right: 1rem;">
+                        <span class="col-title">STOCK LEVEL</span>
+                        <div class="stock-bar" style="width: 60px; display:inline-block; margin-right:10px;"><div class="stock-fill danger" style="width: 0%;"></div></div>
+                        <span class="stock-val danger">OUT STOCK</span>
+                    </div>
+                    <div class="med-actions">
+                        <button class="btn-refill urgent">❄ Urgent Refill</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Adherence Pulse Section -->
+            <div class="adherence-pulse">
+                <div class="pulse-chart">
+                    <div class="pulse-center">
+                        <h2>85%</h2>
+                        <span>MONTHLY GOAL</span>
+                    </div>
+                </div>
+                <div class="pulse-info">
+                    <h2>Adherence Pulse</h2>
+                    <p>Your medication adherence has improved by <span class="highlight-green">12%</span> since the introduction of automated reminders. Maintaining this pace will significantly lower clinical risk indicators.</p>
+                    
+                    <div style="display:flex; gap:1.5rem; margin-bottom: 2rem;">
+                        <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.875rem;">
+                            <div style="width:12px; height:12px; border-radius:50%; background:var(--green);"></div>
+                            Completed Doses
+                        </div>
+                        <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.875rem;">
+                            <div style="width:12px; height:12px; border-radius:50%; background:#E2E8F0;"></div>
+                            Remaining Doses
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-secondary">View Analytics</button>
+                </div>
+            </div>
+
+            <!-- Simple Footer at bottom of main content area, keeping styling inline for briefness as shown in mockup -->
+            <div style="margin-top: 4rem; padding: 2rem 0; border-top: 1px solid var(--glass-border); display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted);">
+                <span>© 2024 MedTracker Digital Health Sanctuary. All rights reserved.</span>
+                <div style="display:flex; gap: 1.5rem;">
+                    <a href="#" style="color:var(--text-muted); text-decoration:none;">Emergency Protocol</a>
+                    <a href="#" style="color:var(--text-muted); text-decoration:none;">Privacy Shield</a>
+                    <a href="#" style="color:var(--text-muted); text-decoration:none;">Clinical Support</a>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+
+</html>

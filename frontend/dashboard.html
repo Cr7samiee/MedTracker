@@ -4,74 +4,220 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - MedTracker</title>
+    <title>Patient Dashboard - MedTracker</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=4">
+    <link rel="stylesheet" href="css/style.css?v=6">
+    <link rel="stylesheet" href="css/dashboard.css?v=1">
 </head>
 
 <body>
-    <div class="landing-container">
-        <nav class="navbar solid-nav">
-            <a href="index.html" class="logo" style="text-decoration:none;">
-                <span class="logo-icon">💊</span>
-                <span class="logo-text">MedTracker</span>
-            </a>
-            <div class="nav-links">
-                <span id="userRoleBadge" class="badge">Role</span>
-                <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="#" class="sidebar-brand" style="text-decoration: none;">
+                    <span class="title">MedTracker</span>
+                    <span class="subtitle">Patient Portal</span>
+                </a>
             </div>
-        </nav>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item active">
+                    <i>📊</i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="medications.html" class="nav-item">
+                    <i>💊</i>
+                    <span>Medications</span>
+                </a>
+                <a href="schedule.html" class="nav-item">
+                    <i>🗓️</i>
+                    <span>Schedule</span>
+                </a>
+                <a href="reports.html" class="nav-item">
+                    <i>📈</i>
+                    <span>Reports</span>
+                </a>
+                <a href="settings.html" class="nav-item">
+                    <i>⚙️</i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="btn btn-primary btn-block" style="display: flex; gap: 0.5rem;"
+                    onclick="window.location.href='schedule.html'">
+                    <i>+</i> Add Medication
+                </button>
+                <div class="user-profile-sm" style="margin-top: 1rem;">
+                    <img src="https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff" alt="User Portal">
+                    <div class="info">
+                        <span class="name">Patient Portal</span>
+                        <span class="role">Medication Tracking</span>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-block"
+                    style="display: flex; gap: 0.5rem; background: var(--red); margin-top: 1rem;" id="logoutBtn">
+                    <i>🚪</i> Logout
+                </button>
+            </div>
+        </aside>
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>Patient Dashboard</h1>
+                    <div class="page-tabs">
+                        <a href="#" class="page-tab active">Dashboard</a>
+                        <a href="#" class="page-tab">Medications</a>
+                        <a href="#" class="page-tab">Reports</a>
+                    </div>
+                </div>
+                <div class="top-icons">
+                    <button class="icon-btn">
+                        🔔
+                        <span class="badge"></span>
+                    </button>
+                    <button class="icon-btn" id="profileDropdownBtn">
+                        👤
+                    </button>
+                    <!-- Temporary logout for testing -->
+                    <button id="logoutBtn" class="btn btn-secondary btn-sm" style="margin-left: 10px;">Logout</button>
+                </div>
+            </div>
+            <div class="dashboard-grid">
+                <!-- Left Column -->
+                <div class="main-column">
+                    <div class="welcome-info" style="margin-bottom: 2rem;">
+                        <h2>Hello, David</h2>
+                        <p class="text-muted">You have 4 medications scheduled for today. 2 doses completed.</p>
+                    </div>
+                    <div class="overview-cards">
+                        <div class="overview-card" style="background-color: var(--background);">
+                            <h3 style="color: var(--primary);">85%</h3>
+                            <p class="text-muted">Adherence</p>
+                        </div>
+                        <div class="overview-card" style="background-color: var(--background);">
+                            <h3 style="color: var(--yellow);">2</h3>
+                            <p class="text-muted">Low Stock</p>
+                        </div>
+                    </div>
+                    <div class="section-header">
+                        <h3>Today's Schedule</h3>
+                        <div class="schedule-filters">
+                            <button class="schedule-filter active">ALL</button>
+                            <button class="schedule-filter">REMAINING</button>
+                        </div>
+                    </div>
+                    <div class="schedule-list">
+                        <!-- item 1 -->
+                        <div class="schedule-item taken">
+                            <div class="item-icon">💊</div>
+                            <div class="item-details">
+                                <div class="item-time">TAKEN AT 8:15 AM</div>
+                                <div class="item-name">Lisinopril</div>
+                                <div class="item-meta">10mg • Oral Tablet • With Food</div>
+                            </div>
+                            <div class="item-actions">
+                                <span class="status-badge completed">✓ Completed</span>
+                            </div>
+                        </div>
+                        <!-- item 2 -->
+                        <div class="schedule-item next">
+                            <div class="item-icon">📦</div>
+                            <div class="item-details">
+                                <div class="item-time">NEXT: 12:30 PM</div>
+                                <div class="item-name">Atorvastatin</div>
+                                <div class="item-meta">20mg • Oral Tablet • Before Lunch</div>
+                            </div>
+                            <div class="item-actions">
+                                <button class="btn btn-primary btn-sm">✓ Log Dose</button>
+                                <button class="btn btn-secondary btn-sm"
+                                    style="border: none; background: #E2E8F0;">Skip</button>
+                            </div>
+                        </div>
+                        <!-- item 3 -->
+                        <div class="schedule-item pending">
+                            <div class="item-icon">🥄</div>
+                            <div class="item-details">
+                                <div class="item-time">TODAY: 8:00 PM</div>
+                                <div class="item-name">Metformin</div>
+                                <div class="item-meta">500mg • Extended Release</div>
+                            </div>
+                            <div class="item-actions">
+                                <button class="btn btn-secondary btn-sm"
+                                    style="border: none; background: #F1F5F9; color: var(--text-muted);"
+                                    disabled>Wait</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Right Column (Widgets) -->
+                <div class="side-column">
+                    <!-- Adherence Widget -->
+                    <div class="widget">
+                        <h4 class="widget-title">Weekly Adherence</h4>
+                        <div class="adherence-chart">
+                            <div class="chart-center">
+                                <h2>85%</h2>
+                                <span>EXCELLENT</span>
+                            </div>
+                        </div>
+                        <div class="chart-legend">
+                            <div class="legend-item">
+                                <span class="legend-dot green"></span>
+                                <span>Completed</span>
+                            </div>
+                            <span>18 Doses</span>
+                        </div>
+                        <div class="chart-legend">
+                            <div class="legend-item">
+                                <span class="legend-dot light-green"></span>
+                                <span>Missed/Late</span>
+                            </div>
+                            <span>3 Doses</span>
+                        </div>
+                    </div>
+                    <!-- Alerts Widget -->
+                    <div class="widget widget-alert">
+                        <h4 class="widget-title">⚠️ Low-Stock Alerts</h4>
 
-        <main class="hero-section" style="padding-top: 100px; display: block;">
-            <div class="glass-card" style="max-width: 800px; margin: 0 auto; text-align: center;">
-                <h2>Welcome to your <span class="highlight">Dashboard</span></h2>
-                <p class="mt-4 text-muted">This is a placeholder for the post-login dashboard.</p>
-                <p class="mt-2 text-muted">You have successfully authenticated via Vanilla PHP and JS!</p>
+                        <div class="alert-item">
+                            <div class="alert-info">
+                                <h4>Lisinopril</h4>
+                                <p>3 doses remaining</p>
+                            </div>
+                            <button class="btn-text">Order</button>
+                        </div>
 
-                <div class="mt-4">
-                    <div class="med-item success text-left" style="max-width: 400px; margin: 1rem auto;">
-                        <div class="med-icon">🎉</div>
-                        <div class="med-info">
-                            <h4>Authentication Success</h4>
-                            <span>Your session is active</span>
+                        <div class="alert-item">
+                            <div class="alert-info">
+                                <h4>Metformin</h4>
+                                <p>5 doses remaining</p>
+                            </div>
+                            <button class="btn-text">Order</button>
+                        </div>
+                    </div>
+                    <!-- Note Widget -->
+                    <div class="widget widget-note">
+                        <h4 class="widget-title">Doctor's Note</h4>
+                        <p>"David, your blood pressure has stabilized significantly this week. Keep up the consistent
+                            Metformin intake!"</p>
+                        <div class="note-footer">
+                            <i>✓</i> Verified by Dr. Sarah Chen
                         </div>
                     </div>
                 </div>
             </div>
         </main>
     </div>
-
-
-
-    <!-- Footer -->
-    <footer class="main-footer">
-        <div class="footer-content">
-            <div class="footer-brand">
-                <div class="footer-logo">
-                    <span class="logo-icon">💊</span>
-                    <span class="logo-text">MedTracker</span>
-                </div>
-                <p class="footer-tagline">Reminders, inventory, and care coordination in one calm, simple place.</p>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2026 MedTracker. Your smart companion for medication and health.</p>
-            </div>
-        </div>
-    </footer>
-
+    <script src="js/script.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Very simple frontend check to see if role exists in DB/Storage
-            const storedRole = localStorage.getItem('role');
-            if (storedRole) {
-                document.getElementById('userRoleBadge').textContent = storedRole;
-            }
-
-            document.getElementById('logoutBtn').addEventListener('click', () => {
+        // Logout functionality for the new layout
+        document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (confirm('Are you sure you want to log out?')) {
                 localStorage.removeItem('role');
-                // You would typically make a fetch call to complete logout in PHP
                 window.location.href = 'login.html';
-            });
+            }
         });
     </script>
 </body>

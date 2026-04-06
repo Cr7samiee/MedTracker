@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - System Administrator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=6">
+    <link rel="stylesheet" href="css/dashboard.css?v=2">
+    <!-- Chart.js for analytics graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .admin-sidebar {
+            background-color: var(--surface-solid);
+            border-right: 1px solid var(--glass-border);
+        }
+
+        .system-status-banner {
+            background: linear-gradient(135deg, rgba(248, 250, 252, 0.8), rgba(241, 245, 249, 0.8));
+            border-radius: 24px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--glass-border);
+        }
+
+        .status-badge {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--green);
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-badge.info {
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--primary);
+        }
+
+        .metric-cards-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .metric-card {
+            background: var(--surface-solid);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .metric-card h2 {
+            font-size: 2.5rem;
+            color: var(--text-main);
+            margin: 1rem 0 0.5rem;
+        }
+
+        .metric-card p {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .user-table-container {
+            background: var(--surface-solid);
+            border-radius: 24px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 2rem;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 1rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--glass-border);
+            vertical-align: middle;
+        }
+
+        .user-identity {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .avatar-initial {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #E2E8F0;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .role-tag {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            text-transform: uppercase;
+        }
+        
+        .role-tag.doctor { background: #E0E7FF; color: var(--primary); }
+        .role-tag.patient { background: #D1FAE5; color: var(--green); }
+        .role-tag.pharmacist { background: #FFEDD5; color: #C2410C; }
+
+        .log-box {
+            background: #F8FAFC;
+            border-radius: 20px;
+            padding: 1.5rem;
+            font-family: monospace;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            line-height: 1.8;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .log-time { color: #94A3B8; margin-right: 1rem; }
+        .log-success { color: var(--green); font-weight: bold; }
+        .log-error { color: var(--red); font-weight: bold; }
+        
+        .admin-settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .setting-card {
+            background: var(--surface-solid);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .setting-card:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .setting-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: #F1F5F9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar admin-sidebar">
+            <div class="sidebar-header">
+                <a href="#" class="sidebar-brand" style="text-decoration: none;">
+                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                        <span style="background:var(--primary); color:white; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:8px;">🛡️</span>
+                        <div>
+                            <span class="title" style="font-size:1.15rem;">System Administrator</span>
+                            <span class="subtitle" style="display:block; font-size:0.65rem;">Digital Sanctuary</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="admin_dashboard.html" class="nav-item active">
+                    <i>🎛️</i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i>🗓️</i>
+                    <span>Schedule Configs</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i>👥</i>
+                    <span>User Accounts</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i>📈</i>
+                    <span>System Analytics</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i>⚙️</i>
+                    <span>System Params</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="btn btn-primary" style="background:var(--primary); width:100%; border:none; border-radius:12px; padding:1rem; color:white; font-weight:bold;">
+                    <i>🚨</i> System Alert
+                </button>
+                <div style="margin-top: 1rem; display:flex; flex-direction:column; gap:0.5rem;">
+                    <a href="#" style="color:var(--text-muted); text-decoration:none; font-size:0.875rem; display:flex; align-items:center; gap:0.5rem;">
+                        <i>❓</i> Documentation
+                    </a>
+                    <a href="login.html" id="logoutBtn" style="color:var(--text-muted); text-decoration:none; font-size:0.875rem; display:flex; align-items:center; gap:0.5rem;">
+                        <i>🚪</i> Secure Logout
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content" style="background:#F8FAFC;">
+            <div class="top-bar" style="margin-bottom: 2rem; background:white; padding:1rem 2rem; border-radius:999px; box-shadow:var(--shadow-sm); display:flex; justify-content:flex-start;">
+                <div style="font-size:1.25rem; font-weight:700; color:var(--primary); margin-right:2rem;">MedTracker</div>
+                <div class="page-tabs" style="margin-top:0; border:none; gap:1.5rem;">
+                    <a href="#" class="page-tab" style="font-size:0.875rem; font-weight:400;">Infrastructure</a>
+                    <a href="#" class="page-tab" style="font-size:0.875rem; font-weight:400;">Deployment Logs</a>
+                    <a href="#" class="page-tab" style="font-size:0.875rem; font-weight:400;">API Keys</a>
+                </div>
+                
+                <div style="margin-left:auto; display:flex; align-items:center; gap:1.5rem;">
+                    <div style="background:#F1F5F9; border-radius:999px; padding:0.5rem 1rem; display:flex; align-items:center;">
+                        <span style="color:#94A3B8;">🔍</span>
+                        <input type="text" placeholder="Search system resources..." style="border:none; background:transparent; outline:none; margin-left:0.5rem; font-family:inherit; font-size:0.875rem;">
+                    </div>
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=1E293B&color=fff" alt="Profile" style="width:36px; height:36px; border-radius:50%;">
+                </div>
+            </div>
+
+            <div class="dashboard-grid" style="grid-template-columns: 2fr 1fr;">
+                
+                <!-- Left Column -->
+                <div class="main-column">
+                    <div class="system-status-banner" style="display: flex; gap: 2rem; align-items: stretch; margin-bottom: 2rem;">
+                        <div style="flex: 1;">
+                            <h2 style="font-size:2rem; margin-bottom:0.5rem;">Systems Operational</h2>
+                            <p style="color:var(--text-muted); line-height:1.6; margin-bottom:1.5rem;">All core medication reminder services are performing within nominal parameters. No latency detected in regional SMS gateways.</p>
+                            <div style="display:flex; gap:1rem;">
+                                <span class="status-badge"><span class="dot green"></span> Uptime: 99.98%</span>
+                                <span class="status-badge info">⏱️ Next Audit: 4h 12m</span>
+                            </div>
+                        </div>
+                        <div style="flex: 1; background: white; border-radius: 16px; padding: 1rem; box-shadow: var(--shadow-sm);">
+                            <canvas id="adminChart" style="width: 100%; height: 100%;"></canvas>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                        <h3 style="font-size:1.25rem;">User Management</h3>
+                        <button class="btn btn-secondary btn-sm" style="border-radius:999px; font-size:0.75rem;">Filter: All Roles ▾</button>
+                    </div>
+
+                    <div class="user-table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Identity</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Last Active</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="user-identity">
+                                            <div class="avatar-initial">JD</div>
+                                            <div>
+                                                <h4 style="font-size:0.875rem; margin:0;">Dr. Julianna Dorsey</h4>
+                                                <span style="font-size:0.75rem; color:var(--text-muted);">j.dorsey@hospital.org</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="role-tag doctor">Doctor</span></td>
+                                    <td><span style="color:var(--green); font-size:0.8rem; font-weight:600;">● Active</span></td>
+                                    <td style="font-size:0.875rem; color:var(--text-muted);">2 mins ago</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="user-identity">
+                                            <div class="avatar-initial" style="background:#D1FAE5; color:var(--green);">MK</div>
+                                            <div>
+                                                <h4 style="font-size:0.875rem; margin:0;">Marcus Kinsley</h4>
+                                                <span style="font-size:0.75rem; color:var(--text-muted);">m.kinsley@gmail.com</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="role-tag patient">Patient</span></td>
+                                    <td><span style="color:var(--green); font-size:0.8rem; font-weight:600;">● Active</span></td>
+                                    <td style="font-size:0.875rem; color:var(--text-muted);">14h ago</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="user-identity">
+                                            <div class="avatar-initial" style="background:#FFEDD5; color:#C2410C;">SL</div>
+                                            <div>
+                                                <h4 style="font-size:0.875rem; margin:0;">Sarah Lopez</h4>
+                                                <span style="font-size:0.75rem; color:var(--text-muted);">s.lopez@pharmacy.net</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="role-tag pharmacist">Pharmacist</span></td>
+                                    <td><span style="color:var(--text-muted); font-size:0.8rem; font-weight:600;">● Disabled</span></td>
+                                    <td style="font-size:0.875rem; color:var(--text-muted);">3 days ago</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem; font-size:0.875rem; color:var(--text-muted);">
+                            <span>Showing 3 of 1,248 users</span>
+                            <div style="display:flex; gap:0.5rem;">
+                                <button class="btn btn-secondary btn-sm" style="border:none; background:#F1F5F9;">Previous</button>
+                                <button class="btn btn-secondary btn-sm" style="border:none; background:#F1F5F9;">Next</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:1rem; margin-top:2rem;">
+                        <h3 style="font-size:1.25rem;">Active Prescriptions (System Wide)</h3>
+                    </div>
+                    <div class="user-grid" id="adminPrescriptionsGrid" style="margin-bottom:2rem;">
+                        <p style="text-align:center; color: var(--text-muted); font-style:italic; padding: 1rem;">Loading system prescriptions...</p>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:1rem;">
+                        <h3 style="font-size:1.25rem;">Log Monitoring</h3>
+                        <a href="#" style="font-size:0.875rem; font-weight:600; color:var(--primary); text-decoration:none;">View Full Stream →</a>
+                    </div>
+                    <div class="log-box">
+                        <div><span class="log-time">14:22:01</span> <span class="log-success">[SUCCESS]</span> SMS Gateway: ID_88291 delivered to +1-555-0122</div>
+                        <div><span class="log-time">14:21:55</span> <span class="log-success">[SUCCESS]</span> Email Dispatch: Remind_Daily_AM for user 'mk_kinsley'</div>
+                        <div><span class="log-time">14:21:40</span> <span class="log-error">[RETRIED]</span> Gateway Timeout: Attempting backup route for ID_88290</div>
+                        <div><span class="log-time">14:20:12</span> <span class="log-success">[SUCCESS]</span> System: Daily adherence summary compiled for Dr. Dorsey</div>
+                        <div><span class="log-time">14:19:58</span> <span class="log-success">[SUCCESS]</span> Identity: New token generated for pharmacist 's_lopez'</div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="side-column">
+                    <div class="metric-cards-2" style="margin-bottom:2rem;">
+                        <div class="metric-card">
+                            <span style="font-size:1.5rem; color:var(--green);">💬</span>
+                            <div>
+                                <h2>12.4k</h2>
+                                <p>SMS Sent (Today)</p>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <span style="font-size:1.5rem; color:var(--primary);">✉️</span>
+                            <div>
+                                <h2>8.2k</h2>
+                                <p>Emails Sent</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 style="font-size:1.25rem; margin-bottom:1rem;">Data Supervision</h3>
+                    <div style="background:var(--surface-solid); border-radius:24px; padding:1.5rem; box-shadow:var(--shadow-sm); margin-bottom:2rem;">
+                        <div style="margin-bottom:2rem; padding-bottom:1.5rem; border-bottom:1px solid var(--glass-border);">
+                            <span style="font-size:0.65rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em;">Prescriptions Tracked</span>
+                            <div style="display:flex; align-items:baseline; gap:1rem; margin-top:0.5rem;">
+                                <h2 style="font-size:2.5rem; line-height:1;">48,291</h2>
+                                <span style="font-size:0.875rem; color:var(--green); font-weight:700;">↗ 12%</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <span style="font-size:0.65rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em;">System Adherence Pulse</span>
+                            <div style="display:flex; align-items:center; gap:1.5rem; margin-top:1rem;">
+                                <div style="width:60px; height:60px; border-radius:50%; border:5px solid var(--green); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1.1rem;">88%</div>
+                                <p style="font-size:0.875rem; color:var(--text-muted); margin:0;">Patient compliance is up 4% since the last UI update.</p>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:2rem;">
+                            <span style="font-size:0.65rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:0.5rem;">Configuration Alerts</span>
+                            <div style="background:#FFF7ED; border:1px solid #FED7AA; border-radius:8px; padding:1rem; display:flex; align-items:flex-start; gap:0.5rem;">
+                                <span>⚠️</span>
+                                <div>
+                                    <h5 style="margin:0; font-size:0.875rem; color:#9A3412;">Storage nearing 85%</h5>
+                                    <p style="margin:0; font-size:0.75rem; color:#9A3412;">Database expansion recommended</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Temporary logout
+            document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                if(confirm('Are you sure you want to log out?')) {
+                    localStorage.removeItem('role');
+                    window.location.href = 'login.html';
+                }
+            });
+
+            fetchAdminPrescriptions();
+
+            // Initialize Chart.js graph
+            const ctx = document.getElementById('adminChart');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        datasets: [{
+                            label: 'System Traffic (Requests/min)',
+                            data: [120, 190, 300, 250, 280, 210, 310],
+                            borderColor: '#4F46E5', // Primary
+                            backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Adherence Tracking Ping',
+                            data: [80, 90, 200, 150, 190, 150, 200],
+                            borderColor: '#10B981', // Green
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'top' } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            }
+        });
+
+        async function fetchAdminPrescriptions() {
+            try {
+                // Admin role has full access
+                const res = await fetch('../backend/api/get_schedule.php?role=Admin');
+                const data = await res.json();
+                
+                const grid = document.getElementById('adminPrescriptionsGrid');
+                grid.innerHTML = '';
+                
+                if (data.success && data.data.length > 0) {
+                    data.data.forEach(med => {
+                        grid.innerHTML += `
+                            <div class="user-card" id="admin-med-${med.medicine_id}" style="background:var(--surface-solid); padding: 1.5rem; border-radius: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--glass-border);">
+                                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                                    <div>
+                                        <h4 style="font-size:1.125rem;">${med.medicine_name} <span style="font-size:0.8rem; font-weight:normal;">(${med.dosage})</span></h4>
+                                        <p style="color:var(--text-muted); font-size:0.875rem;">Patient ID: ${med.patient_name || med.patient_id}</p>
+                                    </div>
+                                    <span style="background:rgba(16,185,129,0.1); color:var(--green); padding:0.25rem 0.5rem; border-radius:4px; font-size:0.75rem; font-weight:700;">Active</span>
+                                </div>
+                                <div style="margin-top:0.5rem; font-size: 0.85rem; color: #555;">
+                                    <p style="margin:2px 0;">Stock Remaining: <strong>${med.stock_remaining}</strong></p>
+                                </div>
+                                <div style="margin-top:1.5rem; display:flex; gap:0.5rem;">
+                                    <button onclick="deleteMedicine(${med.medicine_id})" style="flex:1; padding:0.5rem; border:1px solid rgba(239,68,68,0.2); color:white; background:var(--red); border-radius:8px; cursor:pointer; font-weight:600;">Delete Medicine</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    grid.innerHTML = '<p style="text-align:center;">No active prescriptions in the system.</p>';
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function deleteMedicine(medicineId) {
+            if(!confirm("Are you sure you want to permanently delete this prescription?")) return;
+
+            try {
+                const res = await fetch('../backend/api/delete_medicine.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ medicine_id: medicineId })
+                });
+                const data = await res.json();
+                
+                if(data.success) {
+                    document.getElementById(`admin-med-${medicineId}`).remove();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+    </script>
+</body>
+</html>

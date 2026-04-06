@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - MedTracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=6">
+    <link rel="stylesheet" href="css/dashboard.css?v=1">
+    <style>
+        .settings-container {
+            background: var(--surface-solid);
+            padding: 2rem;
+            border-radius: 24px;
+            box-shadow: var(--shadow-sm);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .settings-header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .settings-header h2 {
+            font-size: 1.75rem;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        .settings-header p {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="#" class="sidebar-brand" style="text-decoration: none;">
+                    <span class="title">MedTracker</span>
+                    <span class="subtitle">Settings</span>
+                </a>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <i>📊</i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="medications.html" class="nav-item">
+                    <i>💊</i>
+                    <span>Medications</span>
+                </a>
+                <a href="schedule.html" class="nav-item">
+                    <i>🗓️</i>
+                    <span>Schedule</span>
+                </a>
+                <a href="reports.html" class="nav-item">
+                    <i>📈</i>
+                    <span>Reports</span>
+                </a>
+                <a href="settings.html" class="nav-item active">
+                    <i>⚙️</i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="btn btn-primary btn-block" style="display: flex; gap: 0.5rem; background: var(--red);" id="logoutBtn">
+                    <i>🚪</i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="settings-container">
+                <div class="settings-header">
+                    <h2>Change Password</h2>
+                    <p>Ensure your account is using a long, random password to stay secure.</p>
+                </div>
+                
+                <form id="changePasswordForm">
+                    <div class="form-group">
+                        <label for="currentPassword">Current Password</label>
+                        <input type="password" id="currentPassword" class="form-control" required placeholder="Enter current password">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="newPassword">New Password</label>
+                        <input type="password" id="newPassword" class="form-control" required placeholder="Enter new password">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirmNewPassword">Confirm New Password</label>
+                        <input type="password" id="confirmNewPassword" class="form-control" required placeholder="Confirm new password">
+                    </div>
+
+                    <div id="passwordMessage" style="text-align: center; margin-bottom: 1rem; font-size: 0.875rem; font-weight: 600;"></div>
+                    
+                    <button type="submit" class="btn btn-primary btn-block">Update Password</button>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Confirm Logout feature
+            document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (confirm('Are you sure you want to log out?')) {
+                    localStorage.removeItem('role');
+                    window.location.href = 'login.html';
+                }
+            });
+
+            // Handle Password Change Mockup
+            const form = document.getElementById('changePasswordForm');
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const current = document.getElementById('currentPassword').value;
+                const newPass = document.getElementById('newPassword').value;
+                const confirmPass = document.getElementById('confirmNewPassword').value;
+                const msg = document.getElementById('passwordMessage');
+
+                if (newPass !== confirmPass) {
+                    msg.style.color = 'var(--red)';
+                    msg.textContent = 'New passwords do not match!';
+                    return;
+                }
+
+                if (newPass.length < 8) {
+                    msg.style.color = 'var(--red)';
+                    msg.textContent = 'Password must be at least 8 characters long.';
+                    return;
+                }
+
+                form.reset();
+                msg.style.color = 'var(--green)';
+                msg.textContent = 'Password successfully updated!';
+            });
+        });
+    </script>
+</body>
+</html>
