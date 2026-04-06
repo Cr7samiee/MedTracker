@@ -79,6 +79,24 @@ CREATE TABLE IF NOT EXISTS water_logs (
     FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- Notification delivery logs for reminder dedupe and audit trail
+CREATE TABLE IF NOT EXISTS notification_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(50) NOT NULL,
+    medicine_id INT DEFAULT NULL,
+    intake_log_id INT DEFAULT NULL,
+    notification_type VARCHAR(60) NOT NULL,
+    channel ENUM('email', 'sms') NOT NULL,
+    event_key VARCHAR(150) DEFAULT NULL,
+    recipient VARCHAR(150) DEFAULT NULL,
+    status ENUM('SENT', 'FAILED', 'SKIPPED') DEFAULT 'SENT',
+    response_message TEXT DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uniq_event_channel (event_key, channel),
+    INDEX idx_notification_user (user_id),
+    INDEX idx_notification_log (intake_log_id)
+);
+
 -- System Logs (DFD: View System Report)
 -- Message examples:
 -- OVERUSE_ATTEMPT|U101|15|Paracetamol

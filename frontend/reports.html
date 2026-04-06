@@ -10,11 +10,50 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <style>
+        :root {
+            --report-accent-start: #4F46E5;
+            --report-accent-end: #EC4899;
+            --report-soft-tint: linear-gradient(135deg, rgba(79, 70, 229, 0.08), rgba(236, 72, 153, 0.08));
+            --report-soft-border: rgba(173, 123, 219, 0.24);
+        }
+
         .report-header {
             margin-bottom: 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+
+        .report-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .export-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+            padding: 0.9rem 1.25rem;
+            border-radius: 999px;
+            border: none;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .export-btn.primary {
+            background: linear-gradient(135deg, var(--report-accent-start), var(--report-accent-end));
+            color: white;
+        }
+
+        .export-btn.secondary {
+            background: white;
+            color: var(--text-main);
+            border: 1px solid rgba(79, 70, 229, 0.16);
         }
 
         .chart-container {
@@ -103,6 +142,7 @@
             padding: 1.5rem;
             margin-bottom: 2rem;
             color: white;
+            box-shadow: 0 22px 44px rgba(149, 76, 186, 0.18);
         }
 
         .week-overview-grid {
@@ -183,9 +223,10 @@
         }
 
         .water-summary-card {
-            background: #F8FAFC;
+            background: var(--report-soft-tint);
             border-radius: 18px;
             padding: 1rem 1.1rem;
+            border: 1px solid var(--report-soft-border);
         }
 
         .water-summary-card span {
@@ -210,10 +251,40 @@
             margin-top: 1rem;
             padding: 0.9rem 1rem;
             border-radius: 14px;
-            background: #F8FAFC;
-            color: var(--text-muted);
+            background: var(--report-soft-tint);
+            color: #6B4F90;
             font-size: 0.86rem;
-            border: 1px solid rgba(148, 163, 184, 0.16);
+            border: 1px solid var(--report-soft-border);
+        }
+
+        .chart-index-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.85rem;
+            margin-top: 1rem;
+        }
+
+        .index-card {
+            background: var(--report-soft-tint);
+            border: 1px solid var(--report-soft-border);
+            border-radius: 16px;
+            padding: 1rem 1.05rem;
+        }
+
+        .index-card strong {
+            display: block;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #7C3AED;
+            margin-bottom: 0.35rem;
+        }
+
+        .index-card p {
+            margin: 0;
+            color: #6B4F90;
+            font-size: 0.86rem;
+            line-height: 1.55;
         }
 
         @media (max-width: 980px) {
@@ -224,6 +295,12 @@
         }
 
         @media (max-width: 680px) {
+            .report-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
             .summary-grid,
             .week-overview-grid,
             .water-summary-row {
@@ -280,7 +357,6 @@
                     <h1 style="font-size: 2rem; color: var(--text-main);">Adherence Analytics</h1>
                     <p style="color: var(--text-muted);">Visual tracking of your medication intake over time.</p>
                 </div>
-                <button class="btn btn-secondary" id="downloadReportBtn">Download PDF Report</button>
             </div>
 
             <div class="report-hero">
@@ -293,6 +369,13 @@
                         <div style="font-size:0.78rem; color:rgba(255,255,255,0.62); text-transform:uppercase; letter-spacing:0.08em;">Expected Doses</div>
                         <div id="reportExpectedDoses" style="font-size:1.8rem; font-weight:800;">0</div>
                     </div>
+                </div>
+                <div style="display:flex; justify-content:space-between; gap:1rem; align-items:center; margin-top:1rem; flex-wrap:wrap;">
+                    <p style="margin:0; color:rgba(255,255,255,0.76);">Export this report as a PDF with summary cards, charts, alerts, and daily breakdown.</p>
+                    <button class="export-btn primary" id="downloadReportBtnHero">
+                        <span>⬇</span>
+                        <span>Export PDF Report</span>
+                    </button>
                 </div>
                 <div class="week-overview-grid" id="reportWeekOverview">
                     <div class="week-overview-day today">
@@ -339,6 +422,16 @@
                     <canvas id="adherenceChart"></canvas>
                 </div>
                 <div class="chart-context-note" id="reportChartContext">This chart updates from the actual doses scheduled in your treatment window.</div>
+                <div class="chart-index-grid">
+                    <div class="index-card">
+                        <strong>Overuse Detection Index</strong>
+                        <p id="reportOveruseIndexText">Overuse is recorded when the same scheduled dose is marked as taken again after it was already logged as taken on the same day.</p>
+                    </div>
+                    <div class="index-card">
+                        <strong>Adherence Index</strong>
+                        <p id="reportAdherenceIndexText">Good: 80-100%. Watch: 50-79%. Risk: below 50%. Percent is based on taken doses out of all expected doses in the treatment window.</p>
+                    </div>
+                </div>
             </div>
 
             <div class="summary-grid" style="grid-template-columns: repeat(2, 1fr);">
@@ -382,6 +475,16 @@
                 <div class="water-chart-stage">
                     <canvas id="hydrationChart"></canvas>
                 </div>
+                <div class="chart-index-grid">
+                    <div class="index-card">
+                        <strong>Hydration Goal Index</strong>
+                        <p id="reportHydrationIndexText">Daily hydration target is 2000 ml. Progress is shown as current intake divided by this goal.</p>
+                    </div>
+                    <div class="index-card">
+                        <strong>Low Stock Index</strong>
+                        <p id="reportStockIndexText">Low stock alert triggers at 5 doses or fewer. Critical stock means 0 doses remaining.</p>
+                    </div>
+                </div>
             </div>
 
             <div class="alerts-panel">
@@ -422,6 +525,17 @@
             week_overview: [],
             water: {}
         };
+        const REPORT_INDEX = {
+            lowStockThreshold: 5,
+            criticalStockThreshold: 0,
+            hydrationGoalMl: 2000,
+            adherenceBands: {
+                good: '80-100%',
+                watch: '50-79%',
+                risk: 'Below 50%'
+            },
+            overuseRule: 'Same scheduled dose marked as taken more than once on the same day'
+        };
 
         document.addEventListener('DOMContentLoaded', () => {
             if (!window.MedTrackerApp.protectRoute(['User'])) {
@@ -436,7 +550,7 @@
                 }
             });
 
-            document.getElementById('downloadReportBtn')?.addEventListener('click', async () => {
+            document.getElementById('downloadReportBtnHero')?.addEventListener('click', async () => {
                 await downloadPatientReportPdf();
             });
 
@@ -465,9 +579,22 @@
                 renderReportAlerts(reportPayload.alerts);
                 renderReportChart(reportPayload.chart);
                 renderWaterPanel(reportPayload.water);
+                renderReportIndexes(reportPayload.summary, reportPayload.water);
             } catch (error) {
                 document.getElementById('reportAlertsList').innerHTML = '<p style="color:var(--text-muted);">Unable to load adherence alerts right now.</p>';
             }
+        }
+
+        function renderReportIndexes(summary, water) {
+            const lowStockCount = Number(summary.low_stock_total || 0);
+            document.getElementById('reportOveruseIndexText').textContent =
+                `Overuse is recorded when ${REPORT_INDEX.overuseRule.toLowerCase()}. Each repeated taken-log creates one overuse alert in the graph and report.`;
+            document.getElementById('reportAdherenceIndexText').textContent =
+                `Good: ${REPORT_INDEX.adherenceBands.good}. Watch: ${REPORT_INDEX.adherenceBands.watch}. Risk: ${REPORT_INDEX.adherenceBands.risk}. Percent is calculated from taken doses out of expected doses.`;
+            document.getElementById('reportHydrationIndexText').textContent =
+                `Daily hydration target is ${Number(water.goal_ml || REPORT_INDEX.hydrationGoalMl)} ml. Progress is current intake divided by that goal.`;
+            document.getElementById('reportStockIndexText').textContent =
+                `Low stock alert triggers at ${REPORT_INDEX.lowStockThreshold} doses or fewer. Critical stock means ${REPORT_INDEX.criticalStockThreshold} doses left. Current low-stock count: ${lowStockCount}.`;
         }
 
         function renderReportSummary(summary) {
@@ -737,7 +864,7 @@
         }
 
         async function downloadPatientReportPdf() {
-            const button = document.getElementById('downloadReportBtn');
+            const buttons = [document.getElementById('downloadReportBtnHero')].filter(Boolean);
 
             if (!window.jspdf?.jsPDF) {
                 alert('PDF generator is unavailable right now.');
@@ -749,11 +876,11 @@
                 return;
             }
 
-            const originalText = button?.textContent || 'Download PDF Report';
-            if (button) {
+            const originalLabels = buttons.map((button) => button.innerHTML);
+            buttons.forEach((button) => {
                 button.disabled = true;
-                button.textContent = 'Generating PDF...';
-            }
+                button.innerHTML = '<span>⏳</span><span>Generating PDF...</span>';
+            });
 
             try {
                 const { jsPDF } = window.jspdf;
@@ -768,164 +895,271 @@
                 const alerts = reportPayload.alerts || [];
                 const water = reportPayload.water || {};
                 const generatedAt = new Date();
+                const activeChartRows = chartRows.filter((row) => Number(row.taken || 0) + Number(row.skipped || 0) + Number(row.pending || 0) + Number(row.overuse || 0) > 0);
+                const reportRows = activeChartRows.length ? activeChartRows : chartRows;
                 let y = 18;
 
+                const ensureSpace = (required) => {
+                    if (y + required > pageHeight - margin) {
+                        doc.addPage();
+                        y = 18;
+                    }
+                };
+
+                const drawSectionHeader = (title, subtitle = '') => {
+                    ensureSpace(20);
+                    doc.setFillColor(248, 245, 255);
+                    doc.setDrawColor(224, 214, 255);
+                    doc.roundedRect(margin, y - 2, usableWidth, subtitle ? 16 : 10, 3, 3, 'FD');
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(13);
+                    doc.setTextColor(79, 70, 229);
+                    doc.text(title, margin + 4, y + 4);
+                    if (subtitle) {
+                        doc.setFont('helvetica', 'normal');
+                        doc.setFontSize(9.5);
+                        doc.setTextColor(100, 116, 139);
+                        doc.text(subtitle, margin + 4, y + 10);
+                    }
+                    y += subtitle ? 19 : 12;
+                };
+
+                const drawInfoCard = (title, body, options = {}) => {
+                    const width = options.width || usableWidth;
+                    const x = options.x || margin;
+                    const accent = options.accent || [79, 70, 229];
+                    const background = options.background || [250, 250, 252];
+                    const titleLines = doc.splitTextToSize(title, width - 12);
+                    const bodyLines = doc.splitTextToSize(body, width - 12);
+                    const height = 8 + (titleLines.length * 5) + (bodyLines.length * 4.8) + 6;
+
+                    if (options.ensure !== false) {
+                        ensureSpace(height + 2);
+                    }
+
+                    doc.setFillColor(...background);
+                    doc.setDrawColor(226, 232, 240);
+                    doc.roundedRect(x, y, width, height, 3, 3, 'FD');
+                    doc.setFillColor(...accent);
+                    doc.roundedRect(x + 3, y + 3, 2.5, height - 6, 1, 1, 'F');
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(10);
+                    doc.setTextColor(15, 23, 42);
+                    doc.text(titleLines, x + 9, y + 6);
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(9.5);
+                    doc.setTextColor(71, 85, 105);
+                    doc.text(bodyLines, x + 9, y + 11 + ((titleLines.length - 1) * 5));
+                    y += height + 4;
+                };
+
+                const drawMetricCards = (cards) => {
+                    const columns = 2;
+                    const gap = 6;
+                    const cardWidth = (usableWidth - gap) / columns;
+                    const cardHeight = 21;
+                    const startY = y;
+
+                    ensureSpace((Math.ceil(cards.length / columns) * (cardHeight + 5)) + 2);
+
+                    cards.forEach((card, index) => {
+                        const col = index % columns;
+                        const row = Math.floor(index / columns);
+                        const x = margin + (col * (cardWidth + gap));
+                        const cardY = startY + (row * (cardHeight + 5));
+
+                        doc.setFillColor(255, 255, 255);
+                        doc.setDrawColor(226, 232, 240);
+                        doc.roundedRect(x, cardY, cardWidth, cardHeight, 3, 3, 'FD');
+                        doc.setFillColor(...card.color);
+                        doc.roundedRect(x + 3, cardY + 3, 3, cardHeight - 6, 1, 1, 'F');
+                        doc.setFont('helvetica', 'normal');
+                        doc.setFontSize(8.5);
+                        doc.setTextColor(100, 116, 139);
+                        doc.text(card.label, x + 10, cardY + 7);
+                        doc.setFont('helvetica', 'bold');
+                        doc.setFontSize(13);
+                        doc.setTextColor(15, 23, 42);
+                        doc.text(card.value, x + 10, cardY + 15);
+                    });
+
+                    y = startY + (Math.ceil(cards.length / columns) * (cardHeight + 5));
+                };
+
+                const adherenceTone = Number(summary.adherence_rate || 0) >= 80
+                    ? 'strong'
+                    : Number(summary.adherence_rate || 0) >= 50
+                        ? 'watch'
+                        : 'risk';
+                const overviewSentence = Number(summary.expected_doses || 0) === 0
+                    ? 'No scheduled doses were detected in the current report window, so the report is focused on setup status and monitoring rules.'
+                    : `This report shows ${summary.adherence_rate || 0}% adherence with ${summary.taken_total || 0} completed doses out of ${summary.expected_doses || 0} expected doses. Current status is ${adherenceTone}.`;
+
                 doc.setFillColor(79, 70, 229);
-                doc.roundedRect(margin, y - 6, usableWidth, 24, 4, 4, 'F');
+                doc.roundedRect(margin, y - 6, usableWidth, 32, 5, 5, 'F');
+                doc.setFillColor(236, 72, 153);
+                doc.roundedRect(margin + (usableWidth * 0.52), y - 6, usableWidth * 0.48, 32, 5, 5, 'F');
                 doc.setTextColor(255, 255, 255);
                 doc.setFont('helvetica', 'bold');
-                doc.setFontSize(18);
+                doc.setFontSize(19);
                 doc.text('MedTracker Adherence Report', margin + 6, y + 2);
                 doc.setFontSize(10);
                 doc.setFont('helvetica', 'normal');
-                doc.text(`Patient: ${currentUser.name || 'User'}`, margin + 6, y + 9);
-                doc.text(`Generated: ${generatedAt.toLocaleString()}`, margin + 6, y + 15);
-                y += 30;
-
-                doc.setTextColor(31, 41, 55);
+                doc.text(`Patient: ${currentUser.name || 'User'}`, margin + 6, y + 10);
+                doc.text(`Generated: ${generatedAt.toLocaleString()}`, margin + 6, y + 16);
                 doc.setFont('helvetica', 'bold');
-                doc.setFontSize(13);
-                doc.text('Summary', margin, y);
-                y += 6;
+                doc.setFontSize(24);
+                doc.text(`${summary.adherence_rate || 0}%`, pageWidth - margin - 28, y + 10, { align: 'right' });
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(9);
+                doc.text('Current adherence', pageWidth - margin - 6, y + 16, { align: 'right' });
+                y += 36;
 
-                const summaryCards = [
+                drawInfoCard(
+                    'Executive Summary',
+                    overviewSentence,
+                    { accent: [236, 72, 153], background: [252, 244, 250] }
+                );
+
+                drawSectionHeader('Summary Snapshot', 'Key metrics from the current treatment window');
+                drawMetricCards([
                     { label: 'Overall Adherence', value: `${summary.adherence_rate || 0}%`, color: [16, 185, 129] },
+                    { label: 'Expected Doses', value: String(summary.expected_doses || 0), color: [59, 130, 246] },
+                    { label: 'Completed Doses', value: String(summary.taken_total || 0), color: [79, 70, 229] },
                     { label: 'Missed Doses', value: String(summary.skipped_total || 0), color: [245, 158, 11] },
                     { label: 'Overuse Alerts', value: String(summary.overuse_total || 0), color: [239, 68, 68] },
-                    { label: 'Safe Streak', value: `${summary.streak_days || 0} Days`, color: [79, 70, 229] },
-                    { label: 'Low Stock Alerts', value: String(summary.low_stock_total || 0), color: [100, 116, 139] },
-                    { label: 'Expected Doses', value: String(summary.expected_doses || 0), color: [59, 130, 246] },
-                    { label: 'Water Today', value: `${water.today_ml || 0} ml`, color: [14, 165, 233] }
-                ];
+                    { label: 'Water Today', value: `${water.today_ml || 0} ml`, color: [14, 165, 233] },
+                ]);
 
-                const cardWidth = (usableWidth - 8) / 2;
-                const cardHeight = 18;
-                summaryCards.forEach((card, index) => {
-                    const col = index % 2;
-                    const row = Math.floor(index / 2);
-                    const x = margin + (col * (cardWidth + 8));
-                    const cardY = y + (row * (cardHeight + 6));
-                    doc.setFillColor(248, 250, 252);
-                    doc.setDrawColor(226, 232, 240);
-                    doc.roundedRect(x, cardY, cardWidth, cardHeight, 3, 3, 'FD');
-                    doc.setFillColor(...card.color);
-                    doc.roundedRect(x + 3, cardY + 3, 3, cardHeight - 6, 1, 1, 'F');
-                    doc.setFont('helvetica', 'normal');
-                    doc.setFontSize(9);
-                    doc.setTextColor(100, 116, 139);
-                    doc.text(card.label, x + 10, cardY + 7);
-                    doc.setFont('helvetica', 'bold');
-                    doc.setFontSize(12);
-                    doc.setTextColor(15, 23, 42);
-                    doc.text(card.value, x + 10, cardY + 13);
+                drawSectionHeader('Detection Index', 'Thresholds used by MedTracker in this report');
+                [
+                    {
+                        title: 'Overuse Index',
+                        body: `${REPORT_INDEX.overuseRule}. Each repeated taken-log creates one overuse alert entry.`,
+                        accent: [239, 68, 68],
+                        background: [254, 242, 242]
+                    },
+                    {
+                        title: 'Low Stock Index',
+                        body: `Low stock alert starts at ${REPORT_INDEX.lowStockThreshold} doses or fewer. Critical stock means ${REPORT_INDEX.criticalStockThreshold} doses remaining.`,
+                        accent: [245, 158, 11],
+                        background: [255, 247, 237]
+                    },
+                    {
+                        title: 'Adherence Index',
+                        body: `Good ${REPORT_INDEX.adherenceBands.good}, Watch ${REPORT_INDEX.adherenceBands.watch}, Risk ${REPORT_INDEX.adherenceBands.risk}. This is based on taken doses out of expected doses.`,
+                        accent: [79, 70, 229],
+                        background: [245, 243, 255]
+                    },
+                    {
+                        title: 'Hydration Index',
+                        body: `Daily hydration target is ${Number(water.goal_ml || REPORT_INDEX.hydrationGoalMl)} ml. Progress is current intake divided by this target.`,
+                        accent: [14, 165, 233],
+                        background: [240, 249, 255]
+                    }
+                ].forEach((item) => {
+                    drawInfoCard(item.title, item.body, {
+                        accent: item.accent,
+                        background: item.background
+                    });
                 });
-                y += (Math.ceil(summaryCards.length / 2) * (cardHeight + 6)) + 2;
 
                 if (adherenceChart) {
                     const chartImage = adherenceChart.toBase64Image('image/png', 1);
                     if (chartImage) {
-                        if (y + 78 > pageHeight - margin) {
-                            doc.addPage();
-                            y = 18;
-                        }
-
-                        doc.setFont('helvetica', 'bold');
-                        doc.setFontSize(13);
-                        doc.setTextColor(31, 41, 55);
-                        doc.text('Adherence Trend', margin, y);
-                        y += 5;
-                        doc.addImage(chartImage, 'PNG', margin, y, usableWidth, 68);
-                        y += 76;
+                        drawSectionHeader('Adherence Trend', 'Daily dose completion with adherence percentage overlay');
+                        ensureSpace(76);
+                        doc.setFillColor(255, 255, 255);
+                        doc.setDrawColor(226, 232, 240);
+                        doc.roundedRect(margin, y, usableWidth, 72, 4, 4, 'FD');
+                        doc.addImage(chartImage, 'PNG', margin + 4, y + 4, usableWidth - 8, 64);
+                        y += 78;
                     }
                 }
 
                 if (hydrationChart) {
                     const hydrationImage = hydrationChart.toBase64Image('image/png', 1);
                     if (hydrationImage) {
-                        if (y + 78 > pageHeight - margin) {
-                            doc.addPage();
-                            y = 18;
-                        }
-
-                        doc.setFont('helvetica', 'bold');
-                        doc.setFontSize(13);
-                        doc.setTextColor(31, 41, 55);
-                        doc.text('Hydration Trend', margin, y);
-                        y += 5;
-                        doc.addImage(hydrationImage, 'PNG', margin, y, usableWidth, 52);
-                        y += 60;
-                    }
-                }
-
-                if (y + 20 > pageHeight - margin) {
-                    doc.addPage();
-                    y = 18;
-                }
-
-                doc.setFont('helvetica', 'bold');
-                doc.setFontSize(13);
-                doc.setTextColor(31, 41, 55);
-                doc.text('Adherence Alerts', margin, y);
-                y += 6;
-
-                if (!alerts.length) {
-                    doc.setFont('helvetica', 'normal');
-                    doc.setFontSize(10);
-                    doc.setTextColor(100, 116, 139);
-                    doc.text('No adherence alerts were detected in the selected report window.', margin, y);
-                    y += 8;
-                } else {
-                    alerts.forEach((alert, index) => {
-                        const alertTitle = `${index + 1}. ${(alert.type || 'alert').replace('_', ' ').toUpperCase()}`;
-                        const alertMessage = `${alert.message || ''} (${new Date(alert.created_at).toLocaleString()})`;
-                        const wrappedMessage = doc.splitTextToSize(alertMessage, usableWidth - 6);
-                        const requiredHeight = 10 + (wrappedMessage.length * 5);
-
-                        if (y + requiredHeight > pageHeight - margin) {
-                            doc.addPage();
-                            y = 18;
-                        }
-
-                        doc.setFillColor(248, 250, 252);
+                        drawSectionHeader('Hydration Trend', 'Water intake performance against the daily goal');
+                        ensureSpace(62);
+                        doc.setFillColor(255, 255, 255);
                         doc.setDrawColor(226, 232, 240);
-                        doc.roundedRect(margin, y - 1, usableWidth, requiredHeight, 3, 3, 'FD');
-                        doc.setFont('helvetica', 'bold');
-                        doc.setFontSize(10);
-                        doc.setTextColor(alert.type === 'overuse' ? 239 : 245, alert.type === 'overuse' ? 68 : 158, alert.type === 'overuse' ? 68 : 11);
-                        doc.text(alertTitle, margin + 4, y + 4);
-                        doc.setFont('helvetica', 'normal');
-                        doc.setTextColor(51, 65, 85);
-                        doc.text(wrappedMessage, margin + 4, y + 9);
-                        y += requiredHeight + 4;
-                    });
-                }
-
-                if (chartRows.length) {
-                    if (y + 24 > pageHeight - margin) {
-                        doc.addPage();
-                        y = 18;
+                        doc.roundedRect(margin, y, usableWidth, 58, 4, 4, 'FD');
+                        doc.addImage(hydrationImage, 'PNG', margin + 4, y + 4, usableWidth - 8, 50);
+                        y += 64;
                     }
+                }
 
-                    doc.setFont('helvetica', 'bold');
-                    doc.setFontSize(13);
-                    doc.setTextColor(31, 41, 55);
-                    doc.text('Daily Breakdown', margin, y);
-                    y += 6;
-
-                    chartRows.slice(0, 7).forEach((row) => {
-                        const line = `${row.label}: Taken ${row.taken || 0}, Skipped ${row.skipped || 0}, Pending ${row.pending || 0}, Overuse ${row.overuse || 0}`;
-                        if (y > pageHeight - margin) {
-                            doc.addPage();
-                            y = 18;
-                        }
-
-                        doc.setFont('helvetica', 'normal');
-                        doc.setFontSize(10);
-                        doc.setTextColor(71, 85, 105);
-                        doc.text(line, margin, y);
-                        y += 5;
+                drawSectionHeader('Adherence Alerts', 'Recent alert history for low stock and overuse review');
+                if (!alerts.length) {
+                    drawInfoCard(
+                        'No Active Alerts',
+                        'No adherence alerts were detected in the selected report window.',
+                        { accent: [16, 185, 129], background: [240, 253, 244] }
+                    );
+                } else {
+                    alerts.slice(0, 6).forEach((alert, index) => {
+                        drawInfoCard(
+                            `${index + 1}. ${(alert.type || 'alert').replace('_', ' ').toUpperCase()}`,
+                            `${alert.message || ''} Logged at ${new Date(alert.created_at).toLocaleString()}.`,
+                            {
+                                accent: alert.type === 'overuse' ? [239, 68, 68] : [245, 158, 11],
+                                background: alert.type === 'overuse' ? [254, 242, 242] : [255, 247, 237]
+                            }
+                        );
                     });
                 }
+
+                drawSectionHeader('Daily Breakdown', 'Compact table for day-by-day presentation reference');
+                const tableRows = reportRows.slice(0, 7);
+                const tableColumns = [
+                    { label: 'Date', width: 42 },
+                    { label: 'Taken', width: 22 },
+                    { label: 'Skipped', width: 24 },
+                    { label: 'Pending', width: 24 },
+                    { label: 'Overuse', width: 26 },
+                    { label: 'Water', width: 24 },
+                ];
+                const tableWidth = tableColumns.reduce((sum, col) => sum + col.width, 0);
+                const tableX = margin + ((usableWidth - tableWidth) / 2);
+
+                ensureSpace(14 + (tableRows.length * 8));
+                doc.setFillColor(79, 70, 229);
+                doc.setTextColor(255, 255, 255);
+                doc.roundedRect(tableX, y, tableWidth, 9, 2, 2, 'F');
+                let colX = tableX;
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(9);
+                tableColumns.forEach((column) => {
+                    doc.text(column.label, colX + 2, y + 6);
+                    colX += column.width;
+                });
+                y += 9;
+
+                tableRows.forEach((row, index) => {
+                    ensureSpace(9);
+                    const background = index % 2 === 0 ? [250, 250, 252] : [255, 255, 255];
+                    doc.setFillColor(...background);
+                    doc.setDrawColor(226, 232, 240);
+                    doc.rect(tableX, y, tableWidth, 8, 'FD');
+                    const values = [
+                        row.label,
+                        String(row.taken || 0),
+                        String(row.skipped || 0),
+                        String(row.pending || 0),
+                        String(row.overuse || 0),
+                        `${row.water_ml || 0}ml`
+                    ];
+                    let valueX = tableX;
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(9);
+                    doc.setTextColor(51, 65, 85);
+                    values.forEach((value, valueIndex) => {
+                        doc.text(String(value), valueX + 2, y + 5.4);
+                        valueX += tableColumns[valueIndex].width;
+                    });
+                    y += 8;
+                });
 
                 const fileDate = generatedAt.toISOString().slice(0, 10);
                 const safeName = (currentUser.name || 'patient').replace(/[^a-z0-9]+/gi, '_').replace(/^_+|_+$/g, '');
@@ -934,10 +1168,10 @@
                 console.error(error);
                 alert('Unable to generate the PDF report right now.');
             } finally {
-                if (button) {
+                buttons.forEach((button, index) => {
                     button.disabled = false;
-                    button.textContent = originalText;
-                }
+                    button.innerHTML = originalLabels[index];
+                });
             }
         }
     </script>

@@ -116,6 +116,36 @@
             margin-top: 0.25rem;
         }
 
+        .index-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.85rem;
+            margin-top: 1rem;
+        }
+
+        .index-panel {
+            background: #F8FAFC;
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            border-radius: 16px;
+            padding: 0.95rem 1rem;
+        }
+
+        .index-panel strong {
+            display: block;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--primary);
+            margin-bottom: 0.35rem;
+        }
+
+        .index-panel p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.84rem;
+            line-height: 1.55;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -348,6 +378,16 @@
                                 <strong id="chartOveruseTotal">0</strong>
                             </div>
                         </div>
+                        <div class="index-grid">
+                            <div class="index-panel">
+                                <strong>Low Stock Index</strong>
+                                <p id="adminLowStockIndex">Low stock is flagged at 5 doses or fewer. Critical stock is 0 doses remaining.</p>
+                            </div>
+                            <div class="index-panel">
+                                <strong>Overuse Index</strong>
+                                <p id="adminOveruseIndex">Overuse alert is recorded when the same scheduled dose is marked as taken again after already being logged as taken on that day.</p>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="chart-card">
@@ -371,6 +411,16 @@
                         </div>
                         <div class="chart-wrap compact">
                             <canvas id="adminActiveUsersChart"></canvas>
+                        </div>
+                        <div class="index-grid">
+                            <div class="index-panel">
+                                <strong>Active User Index</strong>
+                                <p id="adminActiveUserIndex">Active user means any unique patient, health worker, or self-add interaction recorded through medicine logs, water logs, or prescription creation on that date.</p>
+                            </div>
+                            <div class="index-panel">
+                                <strong>Usage Graph Index</strong>
+                                <p id="adminUsageGraphIndex">Bars show taken, skipped, and pending dose totals. The red line shows overuse alerts for the same seven-day window.</p>
+                            </div>
                         </div>
                     </div>
 
@@ -464,6 +514,12 @@
     <script>
         let adminUsageChart;
         let adminActiveUsersChart;
+        const ADMIN_INDEX = {
+            lowStockThreshold: 5,
+            criticalStockThreshold: 0,
+            activeUserRule: 'Any unique medicine log, water log, prescribed medicine event, or self-added medicine event for that day',
+            overuseRule: 'Same scheduled dose marked Taken more than once on the same day'
+        };
 
         document.addEventListener('DOMContentLoaded', () => {
             if (!window.MedTrackerApp.protectRoute(['Admin'])) {
@@ -505,6 +561,10 @@
                 document.getElementById('adminActiveUsersToday').textContent = String(data.metrics.active_users_today || 0);
                 document.getElementById('adminWeeklyActivePeak').textContent = String(data.metrics.weekly_active_peak || 0);
                 document.getElementById('adminTotalUsersLabel').textContent = String(data.metrics.total_user_count || 0);
+                document.getElementById('adminLowStockIndex').textContent = `Low stock is flagged at ${ADMIN_INDEX.lowStockThreshold} doses or fewer. Critical stock is ${ADMIN_INDEX.criticalStockThreshold} doses remaining.`;
+                document.getElementById('adminOveruseIndex').textContent = `Overuse alert is recorded when ${ADMIN_INDEX.overuseRule.toLowerCase()}.`;
+                document.getElementById('adminActiveUserIndex').textContent = `Active user means ${ADMIN_INDEX.activeUserRule.toLowerCase()}.`;
+                document.getElementById('adminUsageGraphIndex').textContent = 'Bars show taken, skipped, and pending dose totals. The red line shows overuse alerts over the same seven-day window.';
 
                 renderAdminUsageChart(data.usage_chart || []);
                 renderAdminActiveUsersChart(data.active_users_chart || []);

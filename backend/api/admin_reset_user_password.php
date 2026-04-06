@@ -3,6 +3,7 @@ session_start();
 header('Content-Type: application/json');
 
 require_once '../config/config.php';
+require_once 'notification_utils.php';
 
 $role = strtolower(trim($_SESSION['role'] ?? ''));
 
@@ -20,6 +21,11 @@ if (!$userId) {
 }
 
 try {
+    medtracker_ensure_notification_schema($pdo);
+
+    $targetUser = medtracker_fetch_user_contact($pdo, $userId);
+    $adminUser = medtracker_fetch_user_contact($pdo, $_SESSION['user_id'] ?? '');
+
     $tempPassword = 'Med@' . random_int(1000, 9999);
     $hash = password_hash($tempPassword, PASSWORD_DEFAULT);
 
@@ -29,6 +35,47 @@ try {
     if ($stmt->rowCount() === 0) {
         echo json_encode(['success' => false, 'message' => 'User not found.']);
         exit;
+    }
+
+    if ($targetUser) {
+        medtracker_send_user_notifications($pdo, $targetUser, [
+            'channels' => ['email'],
+            'notification_type' => 'ADMIN_PASSWORD_RESET',
+            'event_key' => 'ADMIN_PASSWORD_RESET|' . $userId . '|' . date('YmdHis'),
+            'email_subject' => 'MedTracker account password reset',
+            'email_html' => sprintf(
+                'Hello %s,<br><br>An administrator reset your MedTracker password.<br><br>Your temporary password is: <b>%s</b><br><br>Please sign in and change it as soon as possible.',
+                htmlspecialchars($targetUser['name'] ?? 'User', ENT_QUOTES),
+                htmlspecialchars($tempPassword, ENT_QUOTES)
+            ),
+            'email_text' => sprintf(
+                'Hello %s, an administrator reset your MedTracker password. Your temporary password is: %s. Please sign in and change it as soon as possible.',
+                $targetUser['name'] ?? 'User',
+                $tempPassword
+            ),
+        ]);
+    }
+
+    if ($adminUser) {
+        medtracker_send_user_notifications($pdo, $adminUser, [
+            'channels' => ['email'],
+            'notification_type' => 'ADMIN_PASSWORD_RESET_AUDIT',
+            'event_key' => 'ADMIN_PASSWORD_RESET_AUDIT|' . $userId . '|' . date('YmdHis'),
+            'email_subject' => 'MedTracker admin action confirmation',
+            'email_html' => sprintf(
+                'Hello %s,<br><br>You reset the password for user <b>%s</b> (%s).<br><br>The temporary password issued was: <b>%s</b>.',
+                htmlspecialchars($adminUser['name'] ?? 'Admin', ENT_QUOTES),
+                htmlspecialchars($targetUser['name'] ?? $userId, ENT_QUOTES),
+                htmlspecialchars($userId, ENT_QUOTES),
+                htmlspecialchars($tempPassword, ENT_QUOTES)
+            ),
+            'email_text' => sprintf(
+                'You reset the password for user %s (%s). Temporary password: %s.',
+                $targetUser['name'] ?? $userId,
+                $userId,
+                $tempPassword
+            ),
+        ]);
     }
 
     echo json_encode([

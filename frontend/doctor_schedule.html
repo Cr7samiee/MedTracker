@@ -183,6 +183,9 @@
                     <p style="font-size:0.85rem; color:var(--text-muted); margin-top:-0.5rem;">
                         Adherence is calculated from the scheduled dose plan across this treatment window.
                     </p>
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0.5rem;">
+                        Patients receive an immediate medicine notice after you assign the prescription, plus automatic reminders 30 minutes before the dose and missed-dose alerts if the dose stays pending.
+                    </p>
                     
                     <div style="margin-top: 2rem;">
                         <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.1rem;">Submit Prescription to System</button>
@@ -272,7 +275,9 @@
                     
                     if (result.success) {
                         msgEl.style.color = 'var(--green)';
-                        msgEl.innerText = result.message;
+                        msgEl.innerText = result.notification_summary
+                            ? `${result.message} ${result.notification_summary}`
+                            : result.message;
                         document.getElementById('prescriptionForm').reset();
                         setTimeout(() => {
                             window.location.href = 'doctor_dashboard.html';

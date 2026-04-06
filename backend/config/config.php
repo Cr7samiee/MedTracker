@@ -13,6 +13,12 @@ $smtp_password = 'rcha tqxx iwzp axpl';
 $smtp_from_email = 'brooskings661@gmail.com'; 
 $smtp_from_name = 'MedTracker Alerts';
 
+// --- Twilio SMS Configuration ---
+// Fill these values to enable SMS reminders.
+$twilio_account_sid = '';
+$twilio_auth_token = '';
+$twilio_from_number = '';
+
 try {
     $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass);
     // Set PDO error mode to exception
