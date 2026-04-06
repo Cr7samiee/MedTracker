@@ -23,44 +23,6 @@
     --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
 }
 
-[data-theme="dark"] {
-    --primary: #818CF8;
-    --primary-hover: #6366F1;
-    --secondary: #34D399;
-    --secondary-hover: #10B981;
-    --background: #0F172A;
-    --surface: rgba(30, 41, 59, 0.85);
-    --surface-solid: #1E293B;
-    --footer-bg: #020617;
-    --footer-text: #94A3B8;
-    --footer-border: rgba(148, 163, 184, 0.12);
-    --text-main: #F8FAFC;
-    --text-muted: #94A3B8;
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
-    --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-}
-
-.theme-toggle {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    padding: 0.5rem;
-    border-radius: 50%;
-    color: var(--text-main);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.3s ease, background 0.3s ease;
-}
-
-.theme-toggle:hover {
-    background: var(--surface-solid);
-    transform: rotate(15deg);
-}
-
 * {
     margin: 0;
     padding: 0;
@@ -73,6 +35,9 @@ body {
     background-color: var(--background);
     line-height: 1.6;
     overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 /* Typography */
@@ -161,6 +126,10 @@ p {
     position: relative;
     overflow: hidden;
     padding-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    width: 100%;
 }
 
 /* Navbar */
@@ -272,7 +241,7 @@ p {
     grid-template-columns: 1fr 1fr;
     gap: 3rem;
     align-items: center;
-    padding: 6.5rem 5% 2.5rem;
+    padding: 11rem 5% 4rem;
     max-width: 1400px;
     margin: 0 auto;
 }
@@ -531,8 +500,77 @@ p {
 
 /* Auth & Forms Styles */
 .center-content {
+    /* Rules removed */
+}
+
+.auth-wrapper {
+    display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    min-height: calc(100vh - 120px);
+    padding-top: 100px; /* Ensures content clears the fixed navbar */
+    padding-bottom: 3rem;
+    padding-inline: 1rem;
+    width: 100%;
+}
+
+/* Back Button Styles */
+.glass-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-main);
+    background: var(--surface-solid);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    text-decoration: none !important;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+.glass-back-btn:hover {
+    background: var(--background);
+    transform: translateX(-3px);
+    box-shadow: var(--shadow-md);
+    color: var(--primary);
+}
+
+.glass-back-btn svg {
+    width: 16px;
+    height: 16px;
+    fill: none !important;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    overflow: visible;
+    flex-shrink: 0;
+}
+
+.glass-back-btn svg path {
+    fill: none !important;
+    stroke: currentColor;
+}
+
+
+.nav-support-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 0.4rem 1rem;
+    font-size: 0.9rem;
+    text-decoration: none;
+    color: var(--text-main);
+    transition: all 0.3s ease;
+}
+
+.nav-support-btn:hover {
+    background: rgba(255, 255, 255, 0.4);
+    color: var(--primary);
 }
 
 .solid-nav {
@@ -540,14 +578,7 @@ p {
     box-shadow: var(--shadow-sm);
 }
 
-.auth-wrapper {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 6rem 1rem 2rem;
-    width: 100%;
-}
+
 
 .auth-card {
     width: 100%;
@@ -854,7 +885,7 @@ p {
 
 /* ---- Home Page Sections ---- */
 .section-padding {
-    padding: 3.5rem 5% 4.5rem;
+    padding: 5rem 5% 6rem;
     max-width: 1400px;
     margin: 0 auto;
 }
@@ -862,7 +893,7 @@ p {
 .section-alt {
     background: var(--surface-solid);
     width: 100%;
-    padding: 4rem 5%;
+    padding: 6rem 5%;
 }
 
 .section-alt .section-padding {
@@ -1008,7 +1039,7 @@ p {
     background: var(--footer-bg);
     color: var(--text-main);
     padding: 3rem 5% 1.75rem;
-    margin-top: 0;
+    margin-top: auto;
     border-top: 1px solid var(--footer-border);
 }
 
@@ -1017,20 +1048,19 @@ p {
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    align-items: stretch;
-    gap: 2rem;
-}
-
-.footer-top {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    justify-content: space-between;
+    align-items: center;
+    text-align: center;
     gap: 2rem;
 }
 
 .footer-brand {
-    max-width: 320px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    max-width: 450px;
+    margin: 0 auto;
 }
 
 .footer-brand .footer-tagline {
@@ -1041,40 +1071,24 @@ p {
 }
 
 .footer-logo {
-    display: flex;
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
     font-size: 1.35rem;
     font-weight: 700;
-    color: var(--text-main);
+    color: #F8FAFC;
+    margin: 0 auto;
 }
 
 .footer-logo .logo-icon {
     font-size: 1.85rem;
+    line-height: 1;
 }
 
-.footer-links {
-    display: flex;
-    gap: 1.75rem;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: flex-end;
-}
-
-.footer-links a {
-    color: var(--footer-text);
-    text-decoration: none;
-    font-size: 0.9375rem;
-    font-weight: 500;
-    transition: color 0.2s ease;
-}
-
-.footer-links a:hover {
-    color: var(--primary);
-}
-
-[data-theme="dark"] .footer-links a:hover {
-    color: var(--secondary);
+.footer-logo .logo-text {
+    color: #F8FAFC;
+    font-weight: 700;
 }
 
 .footer-bottom {
@@ -1087,17 +1101,7 @@ p {
 }
 
 @media (max-width: 768px) {
-    .footer-top {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-
     .footer-brand {
         max-width: none;
-    }
-
-    .footer-links {
-        justify-content: center;
     }
 }
