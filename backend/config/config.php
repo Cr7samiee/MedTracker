@@ -18,20 +18,19 @@ $db_fallback_port = medtracker_env('DB_FALLBACK_PORT', '3307');
 $db_fallback_user = medtracker_env('DB_FALLBACK_USER', 'medtracker_user');
 $db_fallback_pass = medtracker_env('DB_FALLBACK_PASS', 'medtracker_password');
 $db_fallback_name = medtracker_env('DB_FALLBACK_NAME', $db_name);
-// --- SMTP Email Configuration ---
 
-$smtp_host = 'smtp.gmail.com';
-$smtp_port = 587; // or 465 for SSL
-$smtp_username = '';
-$smtp_password = '';   
-$smtp_from_email = ''; 
-$smtp_from_name = 'MedTracker Alerts';
+// --- SMTP Email Configuration ---
+$smtp_host = medtracker_env('SMTP_HOST', 'smtp.gmail.com');
+$smtp_port = (int) medtracker_env('SMTP_PORT', '587'); // or 465 for SSL
+$smtp_username = medtracker_env('SMTP_USERNAME');
+$smtp_password = medtracker_env('SMTP_PASSWORD');
+$smtp_from_email = medtracker_env('SMTP_FROM_EMAIL', $smtp_username);
+$smtp_from_name = medtracker_env('SMTP_FROM_NAME', 'MedTracker Alerts');
 
 // --- Twilio SMS Configuration ---
-// Fill these values to enable SMS reminders.
-$twilio_account_sid = '';
-$twilio_auth_token = '';
-$twilio_from_number = '';
+$twilio_account_sid = medtracker_env('TWILIO_ACCOUNT_SID');
+$twilio_auth_token = medtracker_env('TWILIO_AUTH_TOKEN');
+$twilio_from_number = medtracker_env('TWILIO_FROM_NUMBER');
 
 if (file_exists(__DIR__ . '/config.local.php')) {
     require __DIR__ . '/config.local.php';
@@ -49,6 +48,5 @@ try {
     $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
     $pdo->exec("SET time_zone = '+05:45'");
 } catch (PDOException $e) {
-    die(json_encode(['success' => false, 'message' => "Database connection failed."]));
+    die(json_encode(['success' => false, 'message' => 'Database connection failed.']));
 }
-?>
