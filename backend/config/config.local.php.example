@@ -1,0 +1,25 @@
+<?php
+// Copy this file to config.local.php and fill your real local secrets.
+
+$db_host = 'localhost';
+$db_port = '3306';
+$db_user = 'root';
+$db_pass = '';
+$db_name = 'medtracker_db';
+
+$db_fallback_host = '127.0.0.1';
+$db_fallback_port = '3307';
+$db_fallback_user = 'medtracker_user';
+$db_fallback_pass = 'medtracker_password';
+$db_fallback_name = 'medtracker_db';
+
+$smtp_host = 'smtp.gmail.com';
+$smtp_port = 587;
+$smtp_username = 'your-email@gmail.com';
+$smtp_password = 'your-gmail-app-password';
+$smtp_from_email = 'your-email@gmail.com';
+$smtp_from_name = 'MedTracker Alerts';
+
+$twilio_account_sid = 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
+$twilio_auth_token = 'your-twilio-auth-token';
+$twilio_from_number = '+1xxxxxxxxxx';

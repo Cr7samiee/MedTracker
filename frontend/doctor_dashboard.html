@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard - Clinical Suite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=6">
+    <link rel="stylesheet" href="css/dashboard.css?v=2">
+    <style>
+        .doctor-sidebar {
+            background: linear-gradient(180deg, #F8FAFC 0%, #EFF6FF 100%);
+        }
+
+        .doctor-sidebar .user-profile-sm {
+            background: rgba(255, 255, 255, 0.72);
+            border-color: rgba(79, 70, 229, 0.12);
+        }
+
+        .doctor-sidebar .user-profile-sm .role {
+            color: var(--text-muted);
+        }
+
+        .action-card {
+            background: var(--primary);
+            color: white;
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .action-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .action-card.light {
+            background: #E2E8F0;
+            color: var(--text-main);
+        }
+
+        .patient-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .patient-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--surface-solid);
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .patient-card:hover {
+            border-color: var(--primary);
+        }
+
+        .patient-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .patient-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .patient-details h4 {
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .patient-details p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        .patient-adherence {
+            text-align: right;
+        }
+
+        .patient-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            justify-content: flex-end;
+            margin-top: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .tiny-action {
+            border: none;
+            border-radius: 999px;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.74rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .tiny-action.edit {
+            background: rgba(79, 70, 229, 0.12);
+            color: var(--primary);
+        }
+
+        .tiny-action.delete {
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--red);
+        }
+
+        .tiny-action.pause {
+            background: rgba(148, 163, 184, 0.16);
+            color: #475569;
+        }
+
+        .tiny-action.resume {
+            background: rgba(16, 185, 129, 0.14);
+            color: var(--green);
+        }
+
+        .tiny-action.stop {
+            background: rgba(245, 158, 11, 0.14);
+            color: #B45309;
+        }
+
+        .adherence-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .adherence-val {
+            font-size: 1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            justify-content: flex-end;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .dot.green { background: var(--green); }
+        .dot.yellow { background: var(--yellow); }
+        .dot.red { background: var(--red); }
+
+        .patient-focus-card {
+            background: #E0E7FF;
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .focus-content {
+            background: rgba(255, 255, 255, 0.6);
+            padding: 1rem;
+            border-radius: 12px;
+            margin-top: 1rem;
+        }
+
+        .focus-content p {
+            font-size: 0.875rem;
+            color: var(--text-main);
+        }
+
+        .queue-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .queue-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.25rem;
+            border-radius: 16px;
+            background: #F8FAFC;
+            border: 1px solid var(--glass-border);
+        }
+
+        .profile-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            z-index: 1000;
+        }
+
+        .profile-overlay.active {
+            display: flex;
+        }
+
+        .profile-modal {
+            width: min(560px, 100%);
+            background: #FFFFFF;
+            border-radius: 24px;
+            padding: 1.6rem;
+            box-shadow: 0 25px 50px rgba(15, 23, 42, 0.22);
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.9rem;
+            margin-top: 1.2rem;
+        }
+
+        .profile-item {
+            background: #F8FAFC;
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 0.9rem 1rem;
+        }
+
+        .profile-item span {
+            display: block;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-bottom: 0.35rem;
+        }
+
+        .profile-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            margin-top: 1.2rem;
+        }
+
+        .role-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.45rem 0.85rem;
+            border-radius: 999px;
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--primary);
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .doctor-search-bar {
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            background: #F8FAFC;
+            border: 1px solid var(--glass-border);
+            border-radius: 999px;
+            padding: 0.7rem 1rem;
+        }
+
+        .doctor-search-bar input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            outline: none;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+            color: var(--text-main);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar doctor-sidebar">
+            <div class="sidebar-header">
+                <a href="javascript:void(0)" class="sidebar-brand sidebar-brand--with-logo" style="text-decoration: none;">
+                    <span class="logo-icon sidebar-brand-mark" aria-hidden="true">💊</span>
+                    <span class="sidebar-brand-copy">
+                        <span class="title" style="font-size:1.25rem;">MedTracker</span>
+                        <span class="subtitle" style="font-size:0.65rem;">Healthcare Professional</span>
+                    </span>
+                </a>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="doctor_dashboard.html" class="nav-item active">
+                    <i>📊</i>
+                    <span>Overview</span>
+                </a>
+                <a href="doctor_schedule.html" class="nav-item">
+                    <i>🗓️</i>
+                    <span>Prescription Desk</span>
+                </a>
+                <a href="doctor_dashboard.html#doctorPatientSection" class="nav-item">
+                    <i>👥</i>
+                    <span>Patient Queue</span>
+                </a>
+                <a href="settings.html" class="nav-item">
+                    <i>⚙️</i>
+                    <span>Account</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="btn btn-primary btn-block" style="display:flex; gap:0.5rem;" onclick="window.location.href='doctor_schedule.html'">
+                    <i>➕</i> Add Prescription
+                </button>
+                <div class="user-profile-sm" style="margin-top:1rem;">
+                    <img src="https://ui-avatars.com/api/?name=Health+Worker&background=4F46E5&color=fff" alt="Health Worker Avatar">
+                    <div class="info">
+                        <span class="name dynamic-user-name">User</span>
+                        <span class="role">Healthcare Professional</span>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-block" style="display:flex; gap:0.5rem; background:#991B1B; margin-top:1rem;" id="logoutBtn">
+                    <i>🚪</i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="top-bar" style="margin-bottom: 1rem;">
+                <div>
+                    <p style="color:var(--text-muted); margin-bottom:0.25rem;">Welcome back, <span class="dynamic-user-name">User</span></p>
+                    <h1 style="font-size: 2.5rem; color: var(--text-main); margin-bottom:0.25rem;">Clinical Overview</h1>
+                    <p class="role-chip">Healthcare Dashboard</p>
+                </div>
+                <div class="top-icons">
+                    <button class="icon-btn" style="background:#F1F5F9; padding:0.5rem 1rem; border-radius:999px; font-size:0.875rem; color:var(--text-main); font-weight:600; display:flex; align-items:center; gap:0.5rem;">
+                        <span id="doctorDateLabel">🗓️ Today</span>
+                    </button>
+                    <img src="https://ui-avatars.com/api/?name=Doctor&background=0D8ABC&color=fff" alt="Profile" style="width:40px; height:40px; border-radius:50%;">
+                </div>
+            </div>
+
+            <div class="dashboard-grid" style="grid-template-columns: 2fr 1fr;">
+                <!-- Left Column -->
+                <div class="main-column">
+                    <div id="doctorCareBoard" style="background:var(--surface-solid); border-radius:24px; padding:2rem; box-shadow:var(--shadow-sm); margin-bottom:2rem;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                            <div>
+                                <h3 style="font-size:1.25rem; margin-bottom:0.25rem;">Care Coordination Board</h3>
+                                <p style="font-size:0.875rem; color:var(--text-muted);">Today's patient load, risk flags, and outstanding follow-up.</p>
+                            </div>
+                            <button class="btn btn-secondary btn-sm" style="font-size:0.75rem; padding:0.4rem 0.8rem;" onclick="window.location.href='doctor_schedule.html'">Open Scheduler</button>
+                        </div>
+                        
+                        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:1rem;">
+                            <div style="background:#F8FAFC; padding:1.5rem; border-radius:16px; text-align:center;">
+                                <div style="font-size:2.25rem; font-weight:700; color:var(--primary);" id="doctorPendingDoses">0</div>
+                                <p style="font-size:0.875rem; font-weight:600; color:var(--text-muted);">Pending Doses Today</p>
+                            </div>
+                            <div style="background:#F8FAFC; padding:1.5rem; border-radius:16px; text-align:center; display:flex; flex-direction:column; justify-content:center;">
+                                <div style="font-size:2rem; margin-bottom:1rem;">⚠️</div>
+                                <h2 style="font-size: 1.75rem; margin-bottom:0.5rem;" id="doctorRiskCount">0</h2>
+                                <p style="font-size:0.875rem; font-weight:600; color:var(--text-muted);">At-Risk Patients</p>
+                            </div>
+                            <div style="background:#F8FAFC; padding:1.5rem; border-radius:16px; text-align:center; display:flex; flex-direction:column; justify-content:center;">
+                                <div style="font-size:2rem; margin-bottom:1rem; color:var(--primary);">👥</div>
+                                <h2 style="font-size: 1.75rem; margin-bottom:0.5rem;" id="doctorPatientCount">0</h2>
+                                <p style="font-size:0.875rem; font-weight:600; color:var(--text-muted);">Active Patients</p>
+                            </div>
+                        </div>
+                        <div class="queue-list" id="doctorQueueList">
+                            <div class="queue-item">
+                                <div>
+                                    <div style="font-weight:700;">Loading care queue...</div>
+                                    <p style="font-size:0.875rem; color:var(--text-muted);">Preparing today's follow-up priorities.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- My Patients -->
+                    <div id="doctorPatientSection" style="background:var(--surface-solid); border-radius:24px; padding:2rem; box-shadow:var(--shadow-sm);">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3 style="font-size:1.25rem;">Patient Queue</h3>
+                            <div class="schedule-filters">
+                                <button class="schedule-filter active" id="doctorFilterAll">All</button>
+                                <button class="schedule-filter" id="doctorFilterRisk">At Risk</button>
+                                <button class="schedule-filter" id="doctorFilterCritical">Critical</button>
+                            </div>
+                        </div>
+                        <div class="doctor-search-bar">
+                            <span>🔍</span>
+                            <input type="text" id="doctorPatientSearchInput" placeholder="Search patient, ID, medicine, or dosage...">
+                        </div>
+
+                        <div class="patient-list" id="doctorPatientList">
+                            <div class="mt-skeleton-list" aria-hidden="true">
+                                <div class="mt-skeleton-card">
+                                    <div class="mt-skeleton-row">
+                                        <div class="mt-skeleton-avatar"></div>
+                                        <div class="mt-skeleton-meta">
+                                            <div class="mt-skeleton-line" style="width: 48%;"></div>
+                                            <div class="mt-skeleton-line" style="width: 76%;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-skeleton-line" style="width: 90%;"></div>
+                                </div>
+                                <div class="mt-skeleton-card">
+                                    <div class="mt-skeleton-row">
+                                        <div class="mt-skeleton-avatar"></div>
+                                        <div class="mt-skeleton-meta">
+                                            <div class="mt-skeleton-line" style="width: 42%;"></div>
+                                            <div class="mt-skeleton-line" style="width: 70%;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-skeleton-line" style="width: 84%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="side-column">
+                    <!-- Quick Actions -->
+                    <div style="background:var(--surface-solid); border-radius:24px; padding:1.5rem; box-shadow:var(--shadow-sm); margin-bottom:1.5rem;">
+                        <h4 style="font-size: 1.125rem; margin-bottom: 1rem;">Quick Actions</h4>
+                        <div class="action-card" onclick="window.location.href='doctor_schedule.html'">
+                            <span style="font-size:1.25rem;">+</span> New Prescription
+                        </div>
+                        <div class="action-card light" onclick="document.getElementById('doctorPatientList')?.scrollIntoView({ behavior: 'smooth' })">
+                            <span style="font-size:1.25rem;">👥</span> Review Patients
+                        </div>
+                    </div>
+
+                    <!-- Alerts Widget -->
+                    <div class="widget" id="doctorAlertsSection">
+                        <h4 class="widget-title" style="color:var(--red); display:flex; align-items:center; gap:0.5rem;">
+                            🔔 Recent Alerts
+                        </h4>
+                        
+                        <div id="doctorAlertsContainer">
+                            <div class="mt-skeleton-list" aria-hidden="true">
+                                <div class="mt-skeleton-card mt-skeleton-card--compact">
+                                    <div class="mt-skeleton-line" style="width: 44%;"></div>
+                                    <div class="mt-skeleton-line" style="width: 78%;"></div>
+                                </div>
+                                <div class="mt-skeleton-card mt-skeleton-card--compact">
+                                    <div class="mt-skeleton-line" style="width: 36%;"></div>
+                                    <div class="mt-skeleton-line" style="width: 66%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Patient Focus -->
+                    <div class="patient-focus-card">
+                        <h4 style="font-size: 1.125rem; color:var(--primary); margin-bottom:1rem;">Patient Focus: Overview</h4>
+                        
+                        <div class="focus-content">
+                            <span style="font-size:0.65rem; color:var(--primary); font-weight:700; text-transform:uppercase;">System Note</span>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.25rem;">
+                                <p style="font-weight:600; font-size: 0.9rem;">Review pending adherence rates securely.</p>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-secondary btn-block" style="background:white; border:none; margin-top:1rem;" onclick="document.getElementById('doctorPatientSection')?.scrollIntoView({ behavior: 'smooth' })">Review Patient Queue</button>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="profile-overlay" id="doctorProfileOverlay">
+        <div class="profile-modal">
+            <h3 id="doctorProfileTitle" style="margin:0; font-size:1.35rem; color:var(--text-main);">Patient Profile</h3>
+            <p id="doctorProfileSubtitle" style="margin:0.45rem 0 0; color:var(--text-muted);">Review patient identity details shared with your care queue.</p>
+            <div class="profile-grid" id="doctorProfileGrid"></div>
+            <div class="profile-actions">
+                <button class="btn btn-secondary" type="button" id="doctorProfileCloseBtn" style="border:none; background:#EEF2FF; color:var(--primary);">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="footer-logo">
+                    <span class="logo-icon" aria-hidden="true">💊</span>
+                    <span class="logo-text">MedTracker</span>
+                </div>
+                <p class="footer-tagline">Reminders, inventory, and care coordination in one calm, simple place.</p>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 MedTracker. Your smart companion for medication and health.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/script.js?v=8"></script>
+    <script>
+        let doctorPatientData = [];
+        let doctorAssignedPatients = [];
+        let doctorFilter = 'all';
+        let doctorSearchTerm = '';
+
+        function calculatePatientAge(dob) {
+            const value = String(dob || '').trim();
+            if (!value) {
+                return '';
+            }
+
+            const birthDate = new Date(`${value}T00:00:00`);
+            if (Number.isNaN(birthDate.getTime())) {
+                return '';
+            }
+
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            const dayDiff = today.getDate() - birthDate.getDate();
+
+            if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+                age -= 1;
+            }
+
+            return age >= 0 ? String(age) : '';
+        }
+
+        function getPatientProfileSummary(patient) {
+            const age = calculatePatientAge(patient.dob);
+            const parts = [];
+
+            if (patient.gender) {
+                parts.push(patient.gender);
+            }
+
+            if (age) {
+                parts.push(`${age} yrs`);
+            }
+
+            return parts.join(' • ');
+        }
+
+        function doctorTracksStock(med) {
+            if (med && Object.prototype.hasOwnProperty.call(med, 'stock_tracked')) {
+                return Number(med.stock_tracked) === 1;
+            }
+
+            const normalizedType = String(med?.type || '').toLowerCase();
+            return !normalizedType.includes('liquid')
+                && !normalizedType.includes('syrup')
+                && !normalizedType.includes('inhaler');
+        }
+
+        function getDoctorTrackedStock(med) {
+            return doctorTracksStock(med) ? Number(med?.stock_remaining || 0) : null;
+        }
+
+        function hasDoctorLowStockRisk(med) {
+            const trackedStock = getDoctorTrackedStock(med);
+            return trackedStock !== null && trackedStock <= 5;
+        }
+
+        function hasDoctorCriticalStockRisk(med) {
+            const trackedStock = getDoctorTrackedStock(med);
+            return trackedStock !== null && trackedStock <= 0;
+        }
+
+        function getDoctorStockLabel(med) {
+            const trackedStock = getDoctorTrackedStock(med);
+            return trackedStock === null ? 'Quantity not counted' : `Stock ${trackedStock}`;
+        }
+
+        function openDoctorPatientProfile(patientId) {
+            const patient = doctorAssignedPatients.find((item) => String(item.id) === String(patientId));
+            if (!patient) {
+                return;
+            }
+
+            const age = calculatePatientAge(patient.dob);
+            const grid = document.getElementById('doctorProfileGrid');
+            document.getElementById('doctorProfileTitle').textContent = patient.name || 'Patient Profile';
+            document.getElementById('doctorProfileSubtitle').textContent = `Patient ID: ${patient.id || 'Unknown'}${patient.phone ? ` • ${patient.phone}` : ''}`;
+
+            grid.innerHTML = `
+                <div class="profile-item">
+                    <span>Gender</span>
+                    <strong>${patient.gender || 'Not shared yet'}</strong>
+                </div>
+                <div class="profile-item">
+                    <span>Age</span>
+                    <strong>${age ? `${age} years` : 'Not available'}</strong>
+                </div>
+                <div class="profile-item">
+                    <span>Date of Birth</span>
+                    <strong>${patient.dob ? new Date(`${patient.dob}T00:00:00`).toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' }) : 'Not shared yet'}</strong>
+                </div>
+                <div class="profile-item">
+                    <span>Relation</span>
+                    <strong>${patient.relation || 'Not shared yet'}</strong>
+                </div>
+                <div class="profile-item">
+                    <span>Email</span>
+                    <strong>${patient.email || 'Not shared yet'}</strong>
+                </div>
+                <div class="profile-item">
+                    <span>Address</span>
+                    <strong>${patient.address || 'Not shared yet'}</strong>
+                </div>
+            `;
+
+            document.getElementById('doctorProfileOverlay')?.classList.add('active');
+        }
+
+        function closeDoctorPatientProfile() {
+            document.getElementById('doctorProfileOverlay')?.classList.remove('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!window.MedTrackerApp.protectRoute(['Health Worker', 'Doctor'])) {
+                return;
+            }
+
+            // Logout
+            document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
+                e.preventDefault();
+                if (await window.MedTrackerApp.confirmAction('Are you sure you want to log out?', {
+                    title: 'Log out',
+                    confirmText: 'Log out',
+                    tone: 'warning'
+                })) {
+                    window.MedTrackerApp.logout();
+                }
+            });
+
+            document.getElementById('doctorDateLabel').textContent = `🗓️ ${new Date().toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' })}`;
+
+            document.getElementById('doctorFilterAll')?.addEventListener('click', () => {
+                doctorFilter = 'all';
+                renderDoctorPatients();
+            });
+            document.getElementById('doctorFilterRisk')?.addEventListener('click', () => {
+                doctorFilter = 'risk';
+                renderDoctorPatients();
+            });
+            document.getElementById('doctorFilterCritical')?.addEventListener('click', () => {
+                doctorFilter = 'critical';
+                renderDoctorPatients();
+            });
+            document.getElementById('doctorPatientSearchInput')?.addEventListener('input', (event) => {
+                doctorSearchTerm = String(event.target?.value || '').trim().toLowerCase();
+                renderDoctorPatients();
+            });
+            document.getElementById('doctorProfileCloseBtn')?.addEventListener('click', closeDoctorPatientProfile);
+            document.getElementById('doctorProfileOverlay')?.addEventListener('click', (event) => {
+                if (event.target?.id === 'doctorProfileOverlay') {
+                    closeDoctorPatientProfile();
+                }
+            });
+
+            // Fetch list
+            fetchDoctorPatients();
+        });
+
+        async function fetchDoctorPatients() {
+            try {
+                const [scheduleRes, patientsRes] = await Promise.all([
+                    fetch('../backend/api/get_schedule.php'),
+                    fetch('../backend/api/get_patients.php')
+                ]);
+                const scheduleData = await scheduleRes.json();
+                const patientsData = await patientsRes.json();
+
+                doctorPatientData = scheduleData.success && Array.isArray(scheduleData.data)
+                    ? scheduleData.data
+                    : [];
+                doctorAssignedPatients = patientsData.success && Array.isArray(patientsData.data)
+                    ? patientsData.data
+                    : [];
+                renderDoctorPatients();
+            } catch (err) {
+                console.error(err);
+                document.getElementById('doctorPatientList').innerHTML = window.MedTrackerApp.getEmptyStateHtml({
+                    icon: '!',
+                    title: 'Patient queue unavailable',
+                    message: 'We could not load assigned patients right now.'
+                });
+                document.getElementById('doctorAlertsContainer').innerHTML = window.MedTrackerApp.getEmptyStateHtml({
+                    icon: '⚠',
+                    title: 'Alerts unavailable',
+                    message: 'Critical alerts are temporarily unavailable.'
+                });
+            }
+        }
+
+        function renderDoctorPatients() {
+            const list = document.getElementById('doctorPatientList');
+            const alerts = document.getElementById('doctorAlertsContainer');
+            const uniquePrescriptions = Array.from(new Map(
+                doctorPatientData.map((med) => [med.medicine_id, med])
+            ).values());
+            const activePrescriptions = uniquePrescriptions.filter((med) => (med.prescription_status || 'active') === 'active');
+            const prescriptionsByPatient = uniquePrescriptions.reduce((map, med) => {
+                const key = med.patient_id || '';
+                if (!key) return map;
+                if (!map.has(key)) {
+                    map.set(key, []);
+                }
+                map.get(key).push(med);
+                return map;
+            }, new Map());
+            const patientCards = doctorAssignedPatients.map((patient) => {
+                const meds = prescriptionsByPatient.get(patient.id) || [];
+                const activeMeds = meds.filter((med) => (med.prescription_status || 'active') === 'active');
+                const riskCount = activeMeds.filter((med) => hasDoctorLowStockRisk(med) || med.status === 'Skipped').length;
+                const criticalCount = activeMeds.filter((med) => hasDoctorCriticalStockRisk(med)).length;
+                return {
+                    patient,
+                    meds,
+                    activeMeds,
+                    riskCount,
+                    criticalCount,
+                };
+            });
+            const filtered = patientCards.filter(({ patient, meds, activeMeds, riskCount, criticalCount }) => {
+                if (doctorFilter === 'critical' && criticalCount === 0) {
+                    return false;
+                }
+
+                if (doctorFilter === 'risk' && riskCount === 0) {
+                    return false;
+                }
+
+                if (!doctorSearchTerm) {
+                    return true;
+                }
+
+                const medText = meds.map((med) => [
+                    med.medicine_name,
+                    med.dosage,
+                    med.instructions,
+                    med.prescription_status,
+                    med.stop_reason,
+                ].join(' ')).join(' ');
+
+                const haystack = [
+                    patient.name,
+                    patient.id,
+                    patient.phone,
+                    medText,
+                    activeMeds.length ? 'active' : 'no prescription'
+                ].map((value) => String(value || '').toLowerCase()).join(' ');
+
+                return haystack.includes(doctorSearchTerm);
+            });
+
+            document.getElementById('doctorFilterAll')?.classList.toggle('active', doctorFilter === 'all');
+            document.getElementById('doctorFilterRisk')?.classList.toggle('active', doctorFilter === 'risk');
+            document.getElementById('doctorFilterCritical')?.classList.toggle('active', doctorFilter === 'critical');
+
+            if (!doctorAssignedPatients.length) {
+                list.innerHTML = window.MedTrackerApp.getEmptyStateHtml({
+                    icon: '👥',
+                    title: 'No linked patients yet',
+                    message: 'Once patients connect to your care code, they will appear here.'
+                });
+                alerts.innerHTML = window.MedTrackerApp.getEmptyStateHtml({
+                    icon: '✓',
+                    title: 'No critical alerts',
+                    message: 'There are no critical alerts to review right now.'
+                });
+                document.getElementById('doctorPatientCount').textContent = '0';
+                document.getElementById('doctorPendingDoses').textContent = '0';
+                document.getElementById('doctorRiskCount').textContent = '0';
+                return;
+            }
+
+            const alertItems = activePrescriptions.filter((med) => hasDoctorCriticalStockRisk(med) || med.status === 'Skipped');
+            const pendingDoses = doctorPatientData.filter((med) => (med.prescription_status || 'active') === 'active' && med.status === 'Pending').length;
+            document.getElementById('doctorPatientCount').textContent = String(doctorAssignedPatients.length);
+            document.getElementById('doctorPendingDoses').textContent = String(pendingDoses);
+            document.getElementById('doctorRiskCount').textContent = String(alertItems.length);
+
+            list.innerHTML = filtered.length ? filtered.map(({ patient, meds, activeMeds, riskCount, criticalCount }) => {
+                const medSummary = meds.length
+                    ? meds.map((med) => {
+                        const statusLabel = (med.prescription_status || 'active') === 'active'
+                            ? (med.status || 'Pending')
+                            : (med.prescription_status || 'active');
+                        return `
+                            <div style="margin-top:0.55rem; padding:0.65rem 0.8rem; border-radius:12px; background:#F8FAFC; border:1px solid var(--glass-border);">
+                                <div style="display:flex; justify-content:space-between; gap:1rem; align-items:flex-start;">
+                                    <div>
+                                        <div style="font-weight:700; color:var(--text-main);">${med.medicine_name} (${med.dosage})</div>
+                                        <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">Plan status: <strong style="color:var(--text-main); text-transform:capitalize;">${med.prescription_status || 'active'}</strong>${med.stop_reason ? ` • ${med.stop_reason}` : ''}</p>
+                                    </div>
+                                    <div class="patient-adherence" style="min-width:92px;">
+                                        <div class="adherence-label">Status</div>
+                                        <div class="adherence-val" style="color:var(--text-main); font-size:0.9rem;">${statusLabel}</div>
+                                    </div>
+                                </div>
+                                <div class="patient-actions">
+                                    ${(med.prescription_status || 'active') === 'active' ? `<button class="tiny-action edit" onclick="editDoctorPrescription(${med.medicine_id})">Edit</button>` : ''}
+                                    ${(med.prescription_status || 'active') === 'active' ? `<button class="tiny-action pause" onclick="changeDoctorPrescriptionState(${med.medicine_id}, 'pause', '${String(med.medicine_name || '').replace(/'/g, "\\'")}')">Pause</button>` : ''}
+                                    ${(med.prescription_status || 'active') === 'paused' ? `<button class="tiny-action resume" onclick="changeDoctorPrescriptionState(${med.medicine_id}, 'resume', '${String(med.medicine_name || '').replace(/'/g, "\\'")}')">Resume</button>` : ''}
+                                    ${(med.prescription_status || 'active') !== 'stopped' ? `<button class="tiny-action stop" onclick="changeDoctorPrescriptionState(${med.medicine_id}, 'stop', '${String(med.medicine_name || '').replace(/'/g, "\\'")}')">Stop</button>` : ''}
+                                    <button class="tiny-action delete" onclick="deleteDoctorPrescription(${med.medicine_id}, '${String(med.medicine_name || '').replace(/'/g, "\\'")}')">Delete</button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')
+                    : `
+                        <div style="margin-top:0.7rem; padding:0.9rem 1rem; border-radius:14px; background:#F8FAFC; border:1px dashed rgba(79,70,229,0.25);">
+                            <div style="font-weight:700; color:var(--text-main);">No prescription created yet for this patient.</div>
+                            <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0.25rem;">The patient is linked to you, but you have not prescribed any medicine yet.</p>
+                            <button class="tiny-action edit" style="margin-top:0.65rem;" onclick="window.location.href='doctor_schedule.html?patient_id=${encodeURIComponent(patient.id)}'">Add Prescription</button>
+                        </div>
+                    `;
+
+                return `
+                <div class="patient-card">
+                    <div class="patient-info">
+                        <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(patient.name || 'Patient')}&background=random" class="patient-avatar" alt="pic">
+                        <div class="patient-details">
+                            <h4>${patient.name || 'Patient'}</h4>
+                            <p>${activeMeds.length ? `${activeMeds.length} active prescription${activeMeds.length === 1 ? '' : 's'}` : 'Linked patient'}</p>
+                            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.3rem;">Patient ID: <strong style="color:var(--text-main);">${patient.id}</strong>${patient.phone ? ` • ${patient.phone}` : ''}</p>
+                            ${getPatientProfileSummary(patient) ? `<p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem;">${getPatientProfileSummary(patient)}</p>` : ''}
+                            ${medSummary}
+                        </div>
+                    </div>
+                    <div class="patient-adherence">
+                        <div class="adherence-label">${criticalCount > 0 ? 'Critical' : riskCount > 0 ? 'At Risk' : 'Overview'}</div>
+                        <div class="adherence-val" style="color:var(--text-main); font-size:0.9rem;">
+                            ${criticalCount > 0 ? `${criticalCount} critical` : riskCount > 0 ? `${riskCount} flagged` : (activeMeds.length ? 'Stable' : 'Waiting')}
+                        </div>
+                        <div class="patient-actions" style="margin-top:0.8rem;">
+                            <button class="tiny-action edit" onclick="openDoctorPatientProfile('${String(patient.id).replace(/'/g, "\\'")}')">View Profile</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            }).join('') : window.MedTrackerApp.getEmptyStateHtml({
+                icon: '🔍',
+                title: 'No patients match this view',
+                message: doctorSearchTerm ? 'Try a different search term to widen the queue.' : 'Try switching the queue filter to see more patients.'
+            });
+
+            alerts.innerHTML = alertItems.length ? alertItems.map((med) => `
+                <div style="border-left: 3px solid ${hasDoctorCriticalStockRisk(med) ? 'var(--red)' : 'var(--yellow)'}; padding-left:1rem; margin-bottom:1.5rem;">
+                    <h5 style="font-size:0.95rem; margin-bottom:0.25rem;">${hasDoctorCriticalStockRisk(med) ? 'Empty Stock' : 'Missed Dose'}: ${med.patient_name || 'Patient'}</h5>
+                    <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.5rem;">${hasDoctorCriticalStockRisk(med) ? `${med.medicine_name} (${med.dosage}) is finished. Patient must refill immediately.` : `Failed to take ${med.medicine_name}. Adherence drop predicted.`}</p>
+                </div>
+            `).join('') : window.MedTrackerApp.getEmptyStateHtml({
+                icon: '✓',
+                title: 'No critical alerts',
+                message: 'All current patient alerts look stable right now.'
+            });
+
+            const queueList = document.getElementById('doctorQueueList');
+            const queueItems = doctorPatientData
+                .filter((med) => (med.prescription_status || 'active') === 'active' && (med.status === 'Pending' || med.status === 'Skipped' || hasDoctorLowStockRisk(med)))
+                .slice(0, 5);
+
+            queueList.innerHTML = queueItems.length ? queueItems.map((med) => `
+                <div class="queue-item">
+                    <div>
+                        <div style="font-weight:700; color:var(--text-main);">${med.patient_name || 'Patient'} · ${med.medicine_name}</div>
+                        <p style="font-size:0.875rem; color:var(--text-muted);">${med.status || 'Pending'} · ${med.dosage} · ${getDoctorStockLabel(med)}</p>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="editDoctorPrescription(${med.medicine_id})">Review</button>
+                </div>
+            `).join('') : `
+                <div class="queue-item">
+                    <div>
+                        <div style="font-weight:700;">No urgent follow-up right now.</div>
+                        <p style="font-size:0.875rem; color:var(--text-muted);">All current prescriptions look stable.</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function editDoctorPrescription(medicineId) {
+            window.location.href = `doctor_schedule.html?medicine_id=${medicineId}`;
+        }
+
+        async function deleteDoctorPrescription(medicineId, medicineName) {
+            if (!await window.MedTrackerApp.confirmAction(`Delete ${medicineName || 'this prescription'}? This removes future schedule tracking for that medicine.`, {
+                title: 'Delete prescription',
+                confirmText: 'Delete',
+                tone: 'warning'
+            })) {
+                return;
+            }
+
+            try {
+                const res = await fetch('../backend/api/delete_worker_prescription.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ medicine_id: medicineId })
+                });
+                const data = await res.json();
+
+                if (!data.success) {
+                    throw new Error(data.message || 'Unable to delete prescription.');
+                }
+
+                await fetchDoctorPatients();
+            } catch (error) {
+                window.MedTrackerApp.showToast(error.message || 'Unable to delete this prescription right now.', 'error');
+            }
+        }
+
+        async function changeDoctorPrescriptionState(medicineId, action, medicineName) {
+            let reason = '';
+            const capitalizedAction = action.charAt(0).toUpperCase() + action.slice(1);
+
+            if (!await window.MedTrackerApp.confirmAction(`${capitalizedAction} ${medicineName || 'this prescription'}?`, {
+                title: `${capitalizedAction} prescription`,
+                confirmText: capitalizedAction,
+                tone: action === 'resume' ? 'info' : 'warning'
+            })) {
+                return;
+            }
+
+            if (action === 'stop') {
+                const promptValue = await window.MedTrackerApp.promptForText('Why are you stopping this medicine?', {
+                    title: 'Stop reason',
+                    confirmText: 'Save reason',
+                    defaultValue: 'Stopped by health worker',
+                    inputLabel: 'Reason for stopping',
+                    trim: false
+                });
+                if (promptValue === null) {
+                    return;
+                }
+                reason = promptValue;
+            }
+
+            try {
+                const res = await fetch('../backend/api/update_prescription_state.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ medicine_id: medicineId, action, reason })
+                });
+                const data = await res.json();
+
+                if (!data.success) {
+                    throw new Error(data.message || 'Unable to update this prescription.');
+                }
+
+                await fetchDoctorPatients();
+            } catch (error) {
+                window.MedTrackerApp.showToast(error.message || 'Unable to update this prescription right now.', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - 💊</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=6">
+</head>
+
+<body>
+    <div class="landing-container">
+        <div class="bg-shape shape-1" style="top:-180px; left:-140px;"></div>
+        <div class="bg-shape shape-2" style="bottom:-170px; right:-120px;"></div>
+        <div class="bg-shape shape-3" style="top:38%; left:48%;"></div>
+
+        <main class="auth-wrapper auth-wrapper--showcase">
+            <div class="auth-scene">
+                <div class="auth-page-brand">
+                    <a href="index.html" class="logo" style="text-decoration:none;">
+                        <span class="logo-icon" aria-hidden="true">💊</span>
+                        <span class="logo-text">MedTracker</span>
+                    </a>
+                </div>
+                <section class="auth-split-card">
+                    <aside class="auth-hero-panel">
+                        <div class="auth-hero-shape"></div>
+
+                        <div class="auth-hero-content">
+                            <span class="auth-badge">Fresh account setup</span>
+                            <h2>Start with a smoother care dashboard.</h2>
+                            <p>Create your account to manage reminders, track medicine routines, and keep your health information organized in one place.</p>
+
+                        </div>
+
+                    </aside>
+
+                    <div class="auth-form-panel">
+                        <div class="auth-homebar">
+                            <a href="index.html" class="auth-home-link">
+                                <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"></path></svg>
+                                Home
+                            </a>
+                            <a href="login.html" class="auth-switch-link">Already have an account?</a>
+                        </div>
+
+                        <div class="auth-panel-heading">
+                            <span class="tiny-label">Create Account</span>
+                            <h1>Join your care space</h1>
+                            <p>Complete the details below to start medication tracking with a calmer interface.</p>
+                        </div>
+
+                        <div class="auth-role-pill">
+                            <span>Registering as</span>
+                            <strong id="roleDisplay">User</strong>
+                        </div>
+
+                        <form id="signupForm" class="auth-form modern-auth-form">
+                            <input type="hidden" id="role" name="role" value="User">
+
+                            <div class="auth-grid-two">
+                                <div class="form-group">
+                                    <label for="name">Full Name</label>
+                                    <input type="text" id="name" name="name" required placeholder="John Doe">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="phone">Phone Number</label>
+                                    <input type="tel" id="phone" name="phone" required placeholder="9841000000">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="email">Email Address</label>
+                                <input type="email" id="email" name="email" required placeholder="john@gmail.com">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="password">Password</label>
+                                <div class="password-wrapper">
+                                    <input type="password" id="password" name="password" required placeholder="Create a strong password">
+                                    <button type="button" id="togglePassword" class="password-toggle" aria-label="Toggle password visibility">👁️</button>
+                                </div>
+                                <div id="passwordStrengthSegments" class="strength-segments-container">
+                                    <div class="strength-segment"></div>
+                                    <div class="strength-segment"></div>
+                                    <div class="strength-segment"></div>
+                                    <div class="strength-segment"></div>
+                                    <div class="strength-segment"></div>
+                                </div>
+                                <div id="passwordStrengthText" class="strength-label">Enter a password to see strength</div>
+                            </div>
+
+                            <div class="form-group" id="postGroup" style="display:none;">
+                                <label for="post">Post / Designation</label>
+                                <input type="text" id="post" name="post" placeholder="e.g. Senior Nurse">
+                            </div>
+
+                            <div class="form-group" id="relationGroup" style="display:none;">
+                                <label for="relation">Relation</label>
+                                <input type="text" id="relation" name="relation" placeholder="e.g. self, mother, grandfather">
+                            </div>
+
+                            <div class="auth-grid-two">
+                                <div class="form-group" id="dobGroup" style="display:none;">
+                                    <label for="dob">Date of Birth</label>
+                                    <input type="date" id="dob" name="dob">
+                                    <small>Used to show age context when needed for care review.</small>
+                                </div>
+
+                                <div class="form-group" id="genderGroup" style="display:none;">
+                                    <label for="gender">Gender</label>
+                                    <select id="gender" name="gender">
+                                        <option value="">Select gender</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group" id="healthWorkerCodeGroup" style="display:none;">
+                                <label for="healthWorkerCode">Doctor / Health Worker Code</label>
+                                <input type="text" id="healthWorkerCode" name="health_worker_code" placeholder="e.g. HW-H100">
+                                <small>Optional, but useful if medicines should sync with an assigned health worker.</small>
+                            </div>
+
+                            <button type="submit" class="btn auth-primary-btn btn-block" id="signupBtn">Create Account</button>
+                            <div id="signupMessage" class="form-message"></div>
+                        </form>
+
+                        <p class="auth-footer-note">
+                            Already registered? <a href="login.html" class="auth-switch-link">Sign in here</a>
+                        </p>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="footer-logo">
+                    <span class="logo-icon" aria-hidden="true">💊</span>
+                    <span class="logo-text">MedTracker</span>
+                </div>
+                <p class="footer-tagline">Signup now leads into a lighter, cleaner care experience focused on medicine routines.</p>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 MedTracker. Daily support for medicine and health.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/script.js?v=8"></script>
+</body>
+
+</html>

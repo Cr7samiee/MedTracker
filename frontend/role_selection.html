@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Role - MedTracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=2">
+    <style>
+        .role-selection-wrapper {
+            max-width: 900px;
+            width: 100%;
+            padding: 2rem;
+            margin: auto;
+        }
+
+        .roles-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .role-card-expanded {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 2.5rem 1.5rem;
+            background: var(--surface-solid);
+            border: 2px solid transparent;
+            border-radius: 20px;
+            text-decoration: none;
+            color: var(--text-main);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .role-card-expanded::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: transparent;
+            transition: background 0.3s ease;
+        }
+
+        .role-card-expanded:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-lg);
+            border-color: rgba(79, 70, 229, 0.1);
+        }
+
+        .role-card-expanded.patient:hover::before {
+            background: var(--primary);
+        }
+
+        .role-card-expanded.health-worker:hover::before {
+            background: var(--secondary);
+        }
+
+        .role-card-expanded.admin:hover::before {
+            background: var(--yellow);
+        }
+
+        .role-card-expanded .role-icon {
+            width: 80px;
+            height: 80px;
+            font-size: 2.5rem;
+            margin: 0 auto 1.5rem;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .role-card-expanded h3 {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .role-card-expanded p.role-subtitle {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            min-height: 40px;
+        }
+
+        .role-features {
+            text-align: left;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .role-features ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .role-features li {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .role-features li::before {
+            content: '✓';
+            color: var(--secondary);
+            font-weight: bold;
+        }
+
+        .info-alert {
+            background: rgba(79, 70, 229, 0.05);
+            border-left: 4px solid var(--primary);
+            padding: 1rem 1.5rem;
+            border-radius: 0 8px 8px 0;
+            text-align: left;
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .info-alert-icon {
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+
+<body class="center-content">
+    <div class="landing-container center-content">
+        <div class="bg-shape shape-1"></div>
+        <div class="bg-shape shape-2"></div>
+
+        <nav class="navbar solid-nav">
+            <div class="nav-left" style="flex: 1;">
+                <a href="index.html" class="glass-back-btn">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M15 18l-6-6 6-6" />
+                    </svg> Home
+                </a>
+            </div>
+            <a href="index.html" class="logo"
+                style="text-decoration:none; flex: 0; white-space: nowrap; display: flex; justify-content: center;">
+                <span class="logo-icon">💊</span>
+                <span class="logo-text">MedTracker</span>
+            </a>
+            <div class="nav-right" style="flex: 1; display: flex; justify-content: flex-end;">
+                <a href="javascript:void(0)" class="nav-support-btn">Help & Support</a>
+            </div>
+        </nav>
+
+        <main class="auth-wrapper fade-in-up" style="align-items: flex-start;">
+            <div class="glass-card role-selection-wrapper text-center">
+                <h2 style="font-size: 2.5rem; margin-bottom: 1rem;">Welcome to <span class="highlight">MedTracker</span>
+                </h2>
+                <p class="mb-4" style="font-size: 1.1rem; color: var(--text-muted); max-width: 700px; margin: 0 auto;">
+                    We are thrilled to have you! MedTracker offers focused tools designed for patients, healthcare
+                    providers, and administrators.
+                    Please select the role that best describes you to personalize your experience.
+                </p>
+
+                <div class="info-alert">
+                    <div class="info-alert-icon">💡</div>
+                    <div>
+                        <strong>Confused about your role?</strong>
+                        If you are here to manage your own or your family's daily medications, choose <em>Patient /
+                            User</em>. Professionals managing patient treatment data should choose <em>Health
+                            Worker</em>.
+                    </div>
+                </div>
+
+                <div class="roles-container">
+                    <!-- Patient Role -->
+                    <a href="signup.html?role=User" class="role-card-expanded patient">
+                        <div class="role-icon" style="background: rgba(79, 70, 229, 0.1);">👤</div>
+                        <h3>Patient / User</h3>
+                        <p class="role-subtitle">For individuals monitoring personal or family medical routines.</p>
+                        <div class="role-features">
+                            <ul>
+                                <li>Set up automated dose reminders</li>
+                                <li>Track medication inventory &amp; refills</li>
+                                <li>Maintain personal health logs</li>
+                                <li>Share adherence reports with doctors</li>
+                            </ul>
+                        </div>
+                    </a>
+
+                    <!-- Health Worker Role -->
+                    <a href="signup.html?role=Health Worker" class="role-card-expanded health-worker">
+                        <div class="role-icon" style="background: rgba(16, 185, 129, 0.1);">⚕️</div>
+                        <h3>Health Worker</h3>
+                        <p class="role-subtitle">For doctors, nurses, and care providers tracking patient regimens.</p>
+                        <div class="role-features">
+                            <ul>
+                                <li>Monitor multiple patients' adherence</li>
+                                <li>Update &amp; review prescriptions</li>
+                                <li>Coordinate directly with users</li>
+                                <li>Access clinical data insights</li>
+                            </ul>
+                        </div>
+                    </a>
+
+                    <!-- Admin Role -->
+                    <a href="signup.html?role=Admin" class="role-card-expanded admin">
+                        <div class="role-icon" style="background: rgba(245, 158, 11, 0.1);">🛡️</div>
+                        <h3>Administrator</h3>
+                        <p class="role-subtitle">For facility managers overseeing staff and system data securely.</p>
+                        <div class="role-features">
+                            <ul>
+                                <li>Manage users and staff accounts</li>
+                                <li>Monitor system-wide health analytics</li>
+                                <li>Oversee platform security &amp; privacy</li>
+                                <li>Provide general technical support</li>
+                            </ul>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="auth-footer mt-4" style="font-size: 1rem;">
+                    Already have an account? <a href="login.html" class="text-primary font-bold">Log in here</a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="footer-logo">
+                    <span class="logo-icon">💊</span>
+                    <span class="logo-text">MedTracker</span>
+                </div>
+                <p class="footer-tagline">Reminders, inventory, and care coordination in one calm, simple place.</p>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 MedTracker. Your smart companion for medication and health.</p>
+            </div>
+        </div>
+    </footer>
+<!-- DYNAMIC_NAME_SCRIPT -->
+<script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const userName = localStorage.getItem('name') || 'User';
+                document.querySelectorAll('.dynamic-user-name').forEach(el => el.textContent = userName);
+                // Also fix generic profiles
+                const profileNames = document.querySelectorAll('.name, .user-profile-sm .info .name');
+                profileNames.forEach(el => {
+                    if(el.textContent.includes('User') || el.textContent.includes('David') || el.textContent.includes('Patient Portal') || el.textContent.includes('Sarah')) {
+                        el.textContent = userName;
+                    }
+                });
+            });
+        </script>
+</body>
+
+</html>

@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medications - MedTracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=6">
+    <link rel="stylesheet" href="css/dashboard.css?v=1">
+    <style>
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .header-left h1 {
+            font-size: 2rem;
+            color: var(--text-main);
+            margin-bottom: 0.25rem;
+        }
+
+        .header-left p {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background: var(--surface-solid);
+            border: 1px solid var(--glass-border);
+            border-radius: 9999px;
+            padding: 0.5rem 1rem;
+            width: 300px;
+        }
+
+        .search-bar input {
+            border: none;
+            background: transparent;
+            outline: none;
+            flex: 1;
+            margin-left: 0.5rem;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+        }
+
+        .top-stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background: var(--surface-solid);
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .stat-card.blue {
+            background: var(--primary);
+            color: white;
+        }
+
+        .stat-card.blue .text-muted {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+
+        .stat-card h3 {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+        }
+
+        .stat-card.blue h3 {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .stat-card h2 {
+            font-size: 2.5rem;
+            color: var(--green);
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card:nth-child(2) h2 {
+            color: #C2410C; /* Dark orange */
+        }
+
+        .stat-card.blue h2 {
+            color: white;
+            font-size: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .badge-trend {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--green);
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-alert {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: rgba(245, 158, 11, 0.1);
+            color: #D97706;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .section-header h2 {
+            font-size: 1.25rem;
+        }
+
+        .btn-sort {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .medications-toolbar {
+            align-items: flex-end;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-copy p {
+            margin: 0.35rem 0 0;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+        }
+
+        .toolbar-controls {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            min-width: 200px;
+            border: 1px solid var(--glass-border);
+            background: var(--surface-solid);
+            border-radius: 9999px;
+            padding: 0.75rem 1rem;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.92rem;
+            color: var(--text-main);
+            outline: none;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .med-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .med-card {
+            display: flex;
+            align-items: center;
+            background: var(--surface-solid);
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: var(--shadow-sm);
+            gap: 1.5rem;
+            border: 1px solid transparent;
+        }
+
+        .med-card.alert {
+            background: #FEF2F2;
+            border-color: #FECACA;
+        }
+
+        .med-icon-box {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            background: #F1F5F9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .med-card.alert .med-icon-box {
+            background: #FEE2E2;
+            color: var(--red);
+        }
+
+        .med-info {
+            flex: 2;
+        }
+
+        .med-title-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .med-title-row h3 {
+            font-size: 1.125rem;
+            margin: 0;
+        }
+
+        .med-tag {
+            font-size: 0.65rem;
+            background: #E2E8F0;
+            color: var(--text-muted);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .med-card.alert .med-tag {
+            background: #FECACA;
+            color: var(--red);
+        }
+
+        .med-desc {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        .med-freq, .med-stock {
+            flex: 1;
+            text-align: center;
+        }
+
+        .col-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .freq-val {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .stock-bar {
+            width: 100%;
+            height: 6px;
+            background: #E2E8F0;
+            border-radius: 3px;
+            margin: 0.5rem 0;
+            overflow: hidden;
+        }
+
+        .stock-fill {
+            height: 100%;
+            background: var(--green);
+            border-radius: 3px;
+        }
+
+        .stock-fill.warning { background: var(--yellow); }
+        .stock-fill.danger { background: var(--red); }
+
+        .stock-val {
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .stock-val.danger { color: var(--red); }
+
+        .med-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .med-plan-note {
+            margin-top: 0.35rem;
+            font-size: 0.82rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .dosage-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            margin-top: 0.45rem;
+        }
+
+        .dosage-adjust-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--primary);
+            font-weight: 800;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .dosage-lock-note {
+            margin-top: 0.45rem;
+            font-size: 0.76rem;
+            color: var(--text-muted);
+        }
+
+        .btn-refill {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-refill.urgent {
+            background: var(--red);
+            color: white;
+        }
+
+        .btn-refill.normal {
+            background: #FED7AA;
+            color: #9A3412;
+        }
+
+        .time-editor-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            z-index: 1000;
+        }
+
+        .time-editor-overlay.active {
+            display: flex;
+        }
+
+        .time-editor-modal {
+            width: min(560px, 100%);
+            background: #FFFFFF;
+            border-radius: 24px;
+            padding: 1.6rem;
+            box-shadow: 0 25px 50px rgba(15, 23, 42, 0.22);
+        }
+
+        .time-editor-modal h3 {
+            margin: 0 0 0.45rem;
+            font-size: 1.35rem;
+            color: var(--text-main);
+        }
+
+        .time-editor-modal p {
+            margin: 0;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .time-editor-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem;
+            margin-top: 1.2rem;
+        }
+
+        .time-editor-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        .time-editor-field label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .time-editor-field input {
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 0.85rem;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+        }
+
+        .time-editor-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            margin-top: 1.35rem;
+        }
+
+        .time-editor-feedback {
+            min-height: 1.25rem;
+            margin-top: 0.9rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .adherence-pulse {
+            margin-top: 3rem;
+            background: #F8FAFC;
+            border-radius: 24px;
+            padding: 2.5rem;
+            display: flex;
+            align-items: center;
+            gap: 3rem;
+            border: 1px solid var(--glass-border);
+        }
+
+        .pulse-chart {
+            width: 200px;
+            height: 200px;
+            position: relative;
+            border-radius: 50%;
+            background: conic-gradient(var(--green) 0%, #E2E8F0 0 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pulse-chart::before {
+            content: "";
+            position: absolute;
+            inset: 15px;
+            background: #F8FAFC;
+            border-radius: 50%;
+        }
+
+        .pulse-center {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        .pulse-center h2 {
+            font-size: 2.5rem;
+            color: var(--text-main);
+            line-height: 1;
+            margin-bottom: 0.25rem;
+        }
+
+        .pulse-center span {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 700;
+        }
+
+        .pulse-breakdown {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .pulse-dot-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .pulse-info h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .pulse-info p {
+            color: var(--text-muted);
+            max-width: 500px;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .pulse-info .highlight-green {
+            color: var(--green);
+            font-weight: 700;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="javascript:void(0)" class="sidebar-brand sidebar-brand--with-logo" style="text-decoration: none;">
+                    <span class="logo-icon sidebar-brand-mark" aria-hidden="true">💊</span>
+                    <span class="sidebar-brand-copy">
+                        <span class="title" style="font-size:1.25rem;">MedTracker</span>
+                        <span class="subtitle">Patient Portal</span>
+                    </span>
+                </a>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <i>📊</i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="medications.html" class="nav-item active">
+                    <i>💊</i>
+                    <span>Medications</span>
+                </a>
+                <a href="schedule.html" class="nav-item">
+                    <i>🗓️</i>
+                    <span>Schedule</span>
+                </a>
+                <a href="reports.html" class="nav-item">
+                    <i>📈</i>
+                    <span>Reports</span>
+                </a>
+                <a href="settings.html" class="nav-item">
+                    <i>⚙️</i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="btn btn-primary btn-block" style="display: flex; gap: 0.5rem;" onclick="window.location.href='add_medication.html'">
+                    <i>+</i> Add Medication
+                </button>
+                <div class="user-profile-sm">
+                    <img id="medicationsAvatar" src="https://ui-avatars.com/api/?name=User&background=333&color=fff" alt="Patient Avatar">
+                    <div class="info">
+                        <span class="name"><span class="dynamic-user-name">User</span></span>
+                        <span class="role">Patient</span>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-block" style="display: flex; gap: 0.5rem; background: var(--red);" id="logoutBtn">
+                    <i>🚪</i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content" style="background-color: #FFFFFF;">
+            <div class="top-bar">
+                <div class="search-bar">
+                    <i>🔍</i>
+                    <input type="text" id="medicationsSearchInput" placeholder="Search medicines, instructions, or type...">
+                </div>
+                <div class="top-icons">
+                    <button class="icon-btn" onclick="window.location.href='reports.html'">
+                        🔔
+                        <span class="badge"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="page-header">
+                <div class="header-left">
+                    <h1>Medications</h1>
+                    <p id="medicationsSubtitle">Patient: Medication Manager.</p>
+                </div>
+            </div>
+
+            <div class="top-stats-grid">
+                <div class="stat-card" style="background:#F8FAFC; border:1px solid #E2E8F0;">
+                    <h3>ADHERENCE RATE</h3>
+                    <h2 id="medicationsAdherence">0%</h2>
+                    <span class="badge-trend" id="medicationsAdherenceTrend">Live from today's schedule</span>
+                </div>
+                <div class="stat-card" style="background:#F8FAFC; border:1px solid #E2E8F0;">
+                    <h3>LOW STOCK ALERTS</h3>
+                    <h2 id="medicationsLowStock">00</h2>
+                    <span class="badge-alert" id="medicationsLowStockText">⚠️ Monitoring stock levels</span>
+                </div>
+                <div class="stat-card blue">
+                    <h3>NEXT DELIVERY</h3>
+                    <h2 id="medicationsNextDose">No pending doses</h2>
+                    <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.5rem;">Today's next scheduled medicine</p>
+                </div>
+            </div>
+
+            <div class="section-header">
+                <div class="section-header medications-toolbar" style="width:100%; margin-bottom:0;">
+                    <div class="toolbar-copy">
+                        <h2>Active Prescriptions</h2>
+                        <p>Filter by prescriber and sort the list by name, recent additions, or upcoming doses.</p>
+                    </div>
+                    <div class="toolbar-controls">
+                        <select id="medicationsDoctorFilter" class="filter-select" aria-label="Filter medications by prescriber">
+                            <option value="all">All Prescribers</option>
+                        </select>
+                        <select id="medicationsSortFilter" class="filter-select" aria-label="Sort medications">
+                            <option value="name_asc">Name A-Z</option>
+                            <option value="name_desc">Name Z-A</option>
+                            <option value="recent">Recently Added</option>
+                            <option value="upcoming">Future Schedule</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="med-list" id="medicationsList">
+                <div class="mt-skeleton-list" aria-hidden="true">
+                    <div class="mt-skeleton-card">
+                        <div class="mt-skeleton-row">
+                            <div class="mt-skeleton-avatar"></div>
+                            <div class="mt-skeleton-meta">
+                                <div class="mt-skeleton-line" style="width: 54%;"></div>
+                                <div class="mt-skeleton-line" style="width: 82%;"></div>
+                            </div>
+                        </div>
+                        <div class="mt-skeleton-line" style="width: 92%;"></div>
+                        <div class="mt-skeleton-line" style="width: 66%;"></div>
+                    </div>
+                    <div class="mt-skeleton-card">
+                        <div class="mt-skeleton-row">
+                            <div class="mt-skeleton-avatar"></div>
+                            <div class="mt-skeleton-meta">
+                                <div class="mt-skeleton-line" style="width: 48%;"></div>
+                                <div class="mt-skeleton-line" style="width: 74%;"></div>
+                            </div>
+                        </div>
+                        <div class="mt-skeleton-line" style="width: 88%;"></div>
+                        <div class="mt-skeleton-line" style="width: 58%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Adherence Pulse Section -->
+            <div class="adherence-pulse">
+                <div class="pulse-chart">
+                    <div class="pulse-center">
+                        <h2 id="medicationsPulsePercent">0%</h2>
+                        <span id="medicationsPulseLabel">TODAY'S GOAL</span>
+                    </div>
+                </div>
+                <div class="pulse-info">
+                    <h2>Adherence Pulse</h2>
+                    <p id="medicationsPulseText">Your medication adherence updates automatically from the doses you log each day.</p>
+                    
+                    <div class="pulse-breakdown">
+                        <div class="pulse-dot-label">
+                            <div style="width:12px; height:12px; border-radius:50%; background:var(--green);"></div>
+                            <span id="medicationsPulseCompleted">Completed Doses: 0</span>
+                        </div>
+                        <div class="pulse-dot-label">
+                            <div style="width:12px; height:12px; border-radius:50%; background:#E2E8F0;"></div>
+                            <span id="medicationsPulseRemaining">Remaining Doses: 0</span>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-secondary" onclick="window.location.href='reports.html'">View Analytics</button>
+                </div>
+            </div>
+
+            <!-- Simple Footer at bottom of main content area, keeping styling inline for briefness as shown in mockup -->
+            <div style="margin-top: 4rem; padding: 2rem 0; border-top: 1px solid var(--glass-border); display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted);">
+                <span>© 2024 MedTracker Digital Health Sanctuary. All rights reserved.</span>
+                <div style="display:flex; gap: 1.5rem;">
+                    <a href="reports.html" style="color:var(--text-muted); text-decoration:none;">Emergency Protocol</a>
+                    <a href="settings.html" style="color:var(--text-muted); text-decoration:none;">Privacy Shield</a>
+                    <a href="settings.html" style="color:var(--text-muted); text-decoration:none;">Clinical Support</a>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <div class="time-editor-overlay" id="timeEditorOverlay">
+        <div class="time-editor-modal">
+            <h3 id="timeEditorTitle">Set Reminder Times</h3>
+            <p id="timeEditorSubtitle">Choose the real clock times when you usually take this medicine.</p>
+            <div class="time-editor-grid" id="timeEditorGrid"></div>
+            <div class="time-editor-feedback" id="timeEditorFeedback"></div>
+            <div class="time-editor-actions">
+                <button class="btn-refill normal" type="button" id="timeEditorCancelBtn">Cancel</button>
+                <button class="btn-refill urgent" type="button" id="timeEditorSaveBtn" style="background:var(--primary);">Save Times</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="footer-logo">
+                    <span class="logo-icon" aria-hidden="true">💊</span>
+                    <span class="logo-text">MedTracker</span>
+                </div>
+                <p class="footer-tagline">Reminders, inventory, and care coordination in one calm, simple place.</p>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 MedTracker. Your smart companion for medication and health.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/script.js?v=8"></script>
+    <script>
+        let medicationsData = [];
+        let medicationSearchTerm = '';
+        let medicationPrescriberFilter = 'all';
+        let medicationSortMode = 'name_asc';
+        let timeEditorState = {
+            medicineId: null,
+            frequency: '',
+            medicineName: '',
+            currentTimes: []
+        };
+
+        function getDoseCountForFrequency(frequency) {
+            const normalized = String(frequency || '').toLowerCase();
+            if (normalized.includes('3x') || normalized.includes('three') || normalized.includes('thrice')) {
+                return 3;
+            }
+            if (normalized.includes('2x') || normalized.includes('twice') || normalized.includes('two')) {
+                return 2;
+            }
+            return 1;
+        }
+
+        function isStockTracked(med) {
+            if (med && Object.prototype.hasOwnProperty.call(med, 'stock_tracked')) {
+                return Number(med.stock_tracked) === 1;
+            }
+
+            const normalizedType = String(med?.type || '').toLowerCase();
+            return !normalizedType.includes('liquid')
+                && !normalizedType.includes('syrup')
+                && !normalizedType.includes('inhaler');
+        }
+
+        function getTrackedStock(med) {
+            return isStockTracked(med) ? Number(med?.stock_remaining || 0) : null;
+        }
+
+        function parseMedicineCustomTimes(rawValue, frequency) {
+            let values = rawValue;
+            if (typeof values === 'string' && values.trim()) {
+                try {
+                    values = JSON.parse(values);
+                } catch (error) {
+                    values = [];
+                }
+            }
+
+            if (!Array.isArray(values)) {
+                return [];
+            }
+
+            const expectedDoseCount = getDoseCountForFrequency(frequency);
+            const normalized = values
+                .map((value) => String(value || '').slice(0, 5))
+                .filter((value) => /^\d{2}:\d{2}$/.test(value));
+
+            return normalized.length === expectedDoseCount ? normalized : [];
+        }
+
+        function parseDoctorPlanTimes(rawValue, frequency) {
+            return parseMedicineCustomTimes(rawValue, frequency);
+        }
+
+        function formatScheduleTimes(times) {
+            return times.map((time) => {
+                const [hourText, minuteText] = String(time).split(':');
+                const hour = Number(hourText);
+                const minute = Number(minuteText);
+                const period = hour >= 12 ? 'PM' : 'AM';
+                const twelveHour = hour % 12 || 12;
+                return `${twelveHour}:${String(minute).padStart(2, '0')} ${period}`;
+            }).join(', ');
+        }
+
+        function getTimeWindowLabel(timeValue) {
+            const [hourText] = String(timeValue || '').split(':');
+            const hour = Number(hourText);
+
+            if (Number.isNaN(hour)) {
+                return '';
+            }
+
+            if (hour < 12) {
+                return 'Morning';
+            }
+
+            if (hour < 17) {
+                return 'Afternoon';
+            }
+
+            return 'Evening / Night';
+        }
+
+        function formatScheduleWindowLabels(times) {
+            const labels = times
+                .map((time) => getTimeWindowLabel(time))
+                .filter(Boolean);
+
+            return Array.from(new Set(labels)).join(' + ');
+        }
+
+        function defaultTimesForDoseCount(doseCount) {
+            if (doseCount === 3) {
+                return ['08:00', '13:00', '20:00'];
+            }
+            if (doseCount === 2) {
+                return ['08:00', '20:00'];
+            }
+            return ['08:00'];
+        }
+
+        function doseCountLabel(frequency) {
+            const doseCount = getDoseCountForFrequency(frequency);
+            return `${doseCount} dose${doseCount === 1 ? '' : 's'} per day`;
+        }
+
+        function needsPatientTimeSetup(med) {
+            return !parseMedicineCustomTimes(med.custom_times_json, med.frequency).length;
+        }
+
+        function parseAppDateTime(value) {
+            const text = String(value || '').trim();
+            if (!text) {
+                return null;
+            }
+
+            const normalized = text.includes('T') ? text : text.replace(' ', 'T');
+            const date = new Date(normalized);
+            return Number.isNaN(date.getTime()) ? null : date;
+        }
+
+        function getUpcomingDoseDate(medicineId) {
+            const upcomingItem = medicationsData
+                .filter((item) => Number(item.medicine_id) === Number(medicineId) && item.status === 'Pending')
+                .sort((a, b) => {
+                    const first = parseAppDateTime(a.effective_time || a.scheduled_time);
+                    const second = parseAppDateTime(b.effective_time || b.scheduled_time);
+                    return (first?.getTime() || Number.MAX_SAFE_INTEGER) - (second?.getTime() || Number.MAX_SAFE_INTEGER);
+                })[0];
+
+            return upcomingItem ? parseAppDateTime(upcomingItem.effective_time || upcomingItem.scheduled_time) : null;
+        }
+
+        function getMedicationCreatedDate(med) {
+            return parseAppDateTime(med.created_at) || parseAppDateTime(med.start_date);
+        }
+
+        function populateMedicationFilters() {
+            const prescriberSelect = document.getElementById('medicationsDoctorFilter');
+            if (!prescriberSelect) {
+                return;
+            }
+
+            const uniqueMeds = Array.from(new Map(medicationsData.map((item) => [item.medicine_id, item])).values());
+            const hasSelfAdded = uniqueMeds.some((med) => med.source_type === 'patient');
+            const prescriberOptions = uniqueMeds
+                .filter((med) => med.source_type !== 'patient' && med.prescriber_id)
+                .reduce((map, med) => {
+                    if (!map.has(med.prescriber_id)) {
+                        map.set(med.prescriber_id, med.prescriber_name || 'Health Worker');
+                    }
+                    return map;
+                }, new Map());
+
+            const doctorOptions = Array.from(prescriberOptions.entries())
+                .sort((a, b) => a[1].localeCompare(b[1]))
+                .map(([id, name]) => `<option value="${id}">${name}</option>`)
+                .join('');
+
+            prescriberSelect.innerHTML = `
+                <option value="all">All Prescribers</option>
+                ${doctorOptions}
+                ${hasSelfAdded ? '<option value="self">Self-Added</option>' : ''}
+            `;
+
+            const availableValues = new Set(['all', ...Array.from(prescriberOptions.keys()), ...(hasSelfAdded ? ['self'] : [])]);
+            if (!availableValues.has(medicationPrescriberFilter)) {
+                medicationPrescriberFilter = 'all';
+            }
+            prescriberSelect.value = medicationPrescriberFilter;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
+                e.preventDefault();
+                if (await window.MedTrackerApp.confirmAction('Are you sure you want to log out?', {
+                    title: 'Log out',
+                    confirmText: 'Log out',
+                    tone: 'warning'
+                })) {
+                    window.MedTrackerApp.logout();
+                }
+            });
+
+            const user = window.MedTrackerApp.getCurrentUser();
+            document.getElementById('medicationsAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=333&color=fff`;
+            document.getElementById('medicationsAvatar').alt = `${user.name} Avatar`;
+
+            document.getElementById('medicationsDoctorFilter')?.addEventListener('change', (event) => {
+                medicationPrescriberFilter = String(event.target?.value || 'all');
+                renderMedicationCards();
+            });
+            document.getElementById('medicationsSortFilter')?.addEventListener('change', (event) => {
+                medicationSortMode = String(event.target?.value || 'name_asc');
+                renderMedicationCards();
+            });
+            document.getElementById('medicationsSearchInput')?.addEventListener('input', (event) => {
+                medicationSearchTerm = String(event.target?.value || '').trim().toLowerCase();
+                renderMedicationCards();
+            });
+            document.getElementById('timeEditorCancelBtn')?.addEventListener('click', closeTimeEditor);
+            document.getElementById('timeEditorSaveBtn')?.addEventListener('click', saveTimeEditor);
+            document.getElementById('timeEditorOverlay')?.addEventListener('click', (event) => {
+                if (event.target?.id === 'timeEditorOverlay') {
+                    closeTimeEditor();
+                }
+            });
+
+            loadMedications();
+        });
+
+        async function loadMedications() {
+            try {
+                const response = await fetch('../backend/api/get_schedule.php');
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.message || 'Unable to load medications.');
+                }
+
+                medicationsData = Array.isArray(result.data) ? result.data : [];
+                populateMedicationFilters();
+                renderMedicationStats();
+                renderMedicationCards();
+            } catch (error) {
+                document.getElementById('medicationsList').innerHTML = window.MedTrackerApp.getEmptyStateHtml({
+                    icon: '!',
+                    title: 'Medications unavailable',
+                    message: 'We could not load your medications right now. Try refreshing again in a moment.'
+                });
+            }
+        }
+
+        function renderMedicationStats() {
+            const uniquePrescriptions = Array.from(new Map(medicationsData.map((item) => [item.medicine_id, item])).values());
+            const scheduledItems = medicationsData.filter((item) => item.log_id);
+            const needsSetupCount = uniquePrescriptions.filter((item) => needsPatientTimeSetup(item)).length;
+            const total = scheduledItems.length;
+            const completed = scheduledItems.filter((item) => item.status === 'Taken').length;
+            const skipped = scheduledItems.filter((item) => item.status === 'Skipped').length;
+            const remaining = Math.max(total - completed, 0);
+            const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+            const lowStockItems = uniquePrescriptions.filter((item) => {
+                const trackedStock = getTrackedStock(item);
+                return trackedStock !== null && trackedStock <= 5;
+            });
+            const nextPending = scheduledItems.find((item) => item.status === 'Pending');
+
+            document.getElementById('medicationsSubtitle').textContent = `Patient: Medication Manager — Tracking ${uniquePrescriptions.length} active prescription${uniquePrescriptions.length === 1 ? '' : 's'}.`;
+            document.getElementById('medicationsAdherence').textContent = `${percent}%`;
+            document.getElementById('medicationsAdherenceTrend').textContent = total === 0
+                ? (needsSetupCount ? `${needsSetupCount} prescription${needsSetupCount === 1 ? '' : 's'} waiting for your time setup` : 'No doses logged yet')
+                : `${completed} of ${total} doses completed today`;
+            document.getElementById('medicationsLowStock').textContent = String(lowStockItems.length).padStart(2, '0');
+            document.getElementById('medicationsLowStockText').textContent = lowStockItems.length
+                ? '⚠️ Requires refill planning'
+                : 'Stock levels look healthy';
+            document.getElementById('medicationsNextDose').textContent = nextPending
+                ? `${nextPending.medicine_name} at ${(nextPending.effective_time || nextPending.scheduled_time) ? new Date(nextPending.effective_time || nextPending.scheduled_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Anytime'}`
+                : (needsSetupCount ? 'Set your medicine times' : 'No pending doses');
+            document.getElementById('medicationsPulsePercent').textContent = `${percent}%`;
+            document.getElementById('medicationsPulseLabel').textContent = total === 0 ? 'NO DOSES YET' : 'TODAY\'S GOAL';
+            document.getElementById('medicationsPulseCompleted').textContent = `Completed Doses: ${completed}`;
+            document.getElementById('medicationsPulseRemaining').textContent = `Remaining Doses: ${remaining}`;
+            document.querySelector('.pulse-chart').style.background = `conic-gradient(var(--green) 0 ${percent}%, #E2E8F0 ${percent}% 100%)`;
+            document.getElementById('medicationsPulseText').innerHTML = total === 0
+                ? (needsSetupCount
+                    ? `You have <span class="highlight-green">${needsSetupCount}</span> medicine plan${needsSetupCount === 1 ? '' : 's'} waiting for your reminder time setup. Open each medicine card and choose the real times you take it.`
+                    : 'No active prescriptions are assigned yet. Ask your health worker to add a schedule.')
+                : `You have completed <span class="highlight-green">${completed}</span> of <span class="highlight-green">${total}</span> scheduled doses today, with <span class="highlight-green">${remaining}</span> still open${skipped ? ` and ${skipped} marked missed / skipped` : ''}.`;
+        }
+
+        function renderMedicationCards() {
+            const list = document.getElementById('medicationsList');
+            const uniqueMeds = Array.from(new Map(medicationsData.map((item) => [item.medicine_id, item])).values());
+            const filteredMeds = uniqueMeds.filter((med) => {
+                const prescriberMatches = medicationPrescriberFilter === 'all'
+                    || (medicationPrescriberFilter === 'self' && med.source_type === 'patient')
+                    || String(med.prescriber_id || '') === medicationPrescriberFilter;
+
+                if (!prescriberMatches) {
+                    return false;
+                }
+
+                if (!medicationSearchTerm) {
+                    return true;
+                }
+
+                const haystack = [
+                    med.medicine_name,
+                    med.instructions,
+                    med.type,
+                    med.dosage,
+                    med.frequency,
+                    med.prescriber_name,
+                ].map((value) => String(value || '').toLowerCase()).join(' ');
+
+                return haystack.includes(medicationSearchTerm);
+            });
+            const sorted = [...filteredMeds].sort((a, b) => {
+                if (medicationSortMode === 'recent') {
+                    return (getMedicationCreatedDate(b)?.getTime() || 0) - (getMedicationCreatedDate(a)?.getTime() || 0);
+                }
+
+                if (medicationSortMode === 'upcoming') {
+                    return (getUpcomingDoseDate(a.medicine_id)?.getTime() || Number.MAX_SAFE_INTEGER)
+                        - (getUpcomingDoseDate(b.medicine_id)?.getTime() || Number.MAX_SAFE_INTEGER);
+                }
+
+                const first = (a.medicine_name || '').toLowerCase();
+                const second = (b.medicine_name || '').toLowerCase();
+                return medicationSortMode === 'name_desc'
+                    ? second.localeCompare(first)
+                    : first.localeCompare(second);
+            });
+
+            if (!sorted.length) {
+                list.innerHTML = window.MedTrackerApp.getEmptyStateHtml({
+                    icon: '💊',
+                    title: medicationSearchTerm || medicationPrescriberFilter !== 'all'
+                        ? 'No medicines match this view'
+                        : 'No prescriptions yet',
+                    message: medicationSearchTerm || medicationPrescriberFilter !== 'all'
+                        ? 'Try adjusting the search text or prescriber filter.'
+                        : 'Once a medicine is added, it will appear here with stock, dosage, and schedule details.'
+                });
+                return;
+            }
+
+            list.innerHTML = sorted.map((med) => {
+                const stock = getTrackedStock(med);
+                const stockClass = stock === null ? '' : (stock <= 0 ? 'danger' : stock <= 5 ? 'warning' : '');
+                const cardClass = stock !== null && stock <= 0 ? 'med-card alert' : 'med-card';
+                const stockWidth = stock === null ? 100 : Math.max(Math.min(stock * 4, 100), 0);
+                const statusText = med.status || 'Pending';
+                const icon = stock !== null && stock <= 5 ? '📦' : '💊';
+                const courseText = med.treatment_mode === 'ongoing'
+                    ? 'Ongoing chronic medicine • Continues until doctor review'
+                    : med.duration_days
+                        ? `Course: ${med.duration_days} day${Number(med.duration_days) === 1 ? '' : 's'} • Ends ${new Date(med.end_date).toLocaleDateString([], { month: 'short', day: 'numeric' })}`
+                        : 'Course duration not set';
+                const customTimes = parseMedicineCustomTimes(med.custom_times_json, med.frequency);
+                const doctorPlanTimes = parseDoctorPlanTimes(med.doctor_slots_json, med.frequency);
+                const dailyPlanText = doseCountLabel(med.frequency);
+                const badgeText = med.source_type === 'patient'
+                    ? 'SELF-ADDED'
+                    : (customTimes.length ? (med.status || 'Scheduled') : 'SET TIMES');
+                const prescriberText = med.source_type === 'patient'
+                    ? 'Added by you'
+                    : `Prescribed by ${med.prescriber_name || 'Health Worker'}`;
+                const timingWindowText = doctorPlanTimes.length
+                    ? `Doctor plan: ${formatScheduleWindowLabels(doctorPlanTimes)}`
+                    : 'Doctor plan: Not set yet';
+                const schedulePreferenceText = customTimes.length
+                    ? `Reminder times: ${formatScheduleTimes(customTimes)}`
+                    : (med.source_type === 'health_worker'
+                        ? `Prescription plan: ${dailyPlanText}. Your reminder times are not set yet, so no reminder will run until you choose them.`
+                        : `You added this ${String(med.type || 'medicine').toLowerCase()}. Your reminder times are not set yet, so no reminder will run until you choose them.`);
+
+                return `
+                    <div class="${cardClass}">
+                        <div class="med-icon-box">${icon}</div>
+                        <div class="med-info">
+                            <div class="med-title-row">
+                                <h3>${med.medicine_name}</h3>
+                                <span class="med-tag">${badgeText}</span>
+                            </div>
+                            <p class="med-desc">${med.instructions || 'Follow your prescribed instructions.'}</p>
+                            <p class="med-desc" style="margin-top:0.35rem;">${prescriberText}</p>
+                            <p class="med-desc" style="margin-top:0.35rem; color:var(--primary);">${timingWindowText}</p>
+                            <p class="med-desc" style="margin-top:0.35rem; color:var(--primary);">${courseText}</p>
+                            <p class="med-plan-note">${schedulePreferenceText}</p>
+                        </div>
+                        <div class="med-freq">
+                            <span class="col-title">DOSAGE</span>
+                            <span class="freq-val">${med.dosage}</span>
+                            ${med.source_type === 'patient'
+                                ? `
+                                    <div class="dosage-control">
+                                        <button class="dosage-adjust-btn" title="Decrease dosage" onclick="adjustMedicationDosage(${med.medicine_id}, -1, '${String(med.dosage).replace(/'/g, "\\'")}')">−</button>
+                                        <button class="dosage-adjust-btn" title="Increase dosage" onclick="adjustMedicationDosage(${med.medicine_id}, 1, '${String(med.dosage).replace(/'/g, "\\'")}')">+</button>
+                                    </div>
+                                `
+                                : '<div class="dosage-lock-note">Locked to prescribed dosage</div>'}
+                            <p class="med-desc" style="margin-top:0.4rem;">${med.frequency || 'As needed'} • ${dailyPlanText}</p>
+                        </div>
+                        <div class="med-stock">
+                            <span class="col-title">STOCK LEVEL</span>
+                            <div class="stock-bar"><div class="stock-fill ${stockClass}" style="width: ${stockWidth}%;"></div></div>
+                            <span class="stock-val ${stock !== null && stock <= 0 ? 'danger' : ''}">${stock === null ? 'Not counted' : (stock <= 0 ? 'Out of stock' : `${stock} Left`)}</span>
+                        </div>
+                        <div class="med-actions">
+                            ${stock === null ? '' : `<button class="btn-refill ${stock <= 5 ? 'urgent' : 'normal'}" onclick="increaseMedicationStock(${med.medicine_id})">${stock <= 5 ? 'Refill Qty' : 'Add Qty'}</button>`}
+                            <button class="btn-refill normal" onclick="openTimeEditor(${med.medicine_id}, '${String(med.frequency || '').replace(/'/g, "\\'")}', '${String(med.custom_times_json || '').replace(/'/g, "\\'")}', '${String(med.medicine_name || '').replace(/'/g, "\\'")}', '${String(med.prescriber_name || '').replace(/'/g, "\\'")}', '${String(med.source_type || '').replace(/'/g, "\\'")}')">${customTimes.length ? 'Edit My Times' : 'Set My Times'}</button>
+                            <button class="btn-refill normal" onclick="window.location.href='schedule.html'">Schedule</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function increaseMedicationStock(medicineId) {
+            const refillAmount = await window.MedTrackerApp.promptForText('How many doses are you adding?', {
+                title: 'Add quantity',
+                confirmText: 'Add stock',
+                defaultValue: '10',
+                inputLabel: 'Quantity to add'
+            });
+            if (refillAmount === null || Number.isNaN(Number(refillAmount)) || Number(refillAmount) <= 0) {
+                return;
+            }
+
+            try {
+                const response = await fetch('../backend/api/update_stock.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        medicine_id: medicineId,
+                        added_stock: Number(refillAmount)
+                    })
+                });
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.message || 'Unable to update quantity.');
+                }
+
+                await loadMedications();
+            } catch (error) {
+                window.MedTrackerApp.showToast(error.message || 'Unable to increase this quantity right now.', 'error');
+            }
+        }
+
+        function parseDosageValue(dosage) {
+            const match = String(dosage || '').trim().match(/^(\d+(?:\.\d+)?)(\s*[A-Za-z].*)?$/);
+            if (!match) {
+                return null;
+            }
+
+            return {
+                value: Number(match[1]),
+                unit: match[2] || '',
+            };
+        }
+
+        function buildAdjustedDosage(dosage, direction) {
+            const parsed = parseDosageValue(dosage);
+            if (!parsed) {
+                return null;
+            }
+
+            const unitLower = parsed.unit.toLowerCase();
+            let step = 1;
+            if (unitLower.includes('mg')) {
+                step = parsed.value >= 100 ? 50 : 10;
+            } else if (unitLower.includes('ml')) {
+                step = 1;
+            } else if (parsed.value >= 10) {
+                step = 5;
+            }
+
+            const nextValue = Math.max(parsed.value + (direction * step), step);
+            return `${Number.isInteger(nextValue) ? nextValue : nextValue.toFixed(1)}${parsed.unit}`;
+        }
+
+        async function adjustMedicationDosage(medicineId, direction, currentDosage) {
+            const suggestedDosage = buildAdjustedDosage(currentDosage, direction);
+            const dosage = suggestedDosage || await window.MedTrackerApp.promptForText('Enter the updated dosage:', {
+                title: 'Update dosage',
+                confirmText: 'Save dosage',
+                defaultValue: currentDosage,
+                inputLabel: 'Updated dosage',
+                trim: false
+            });
+
+            if (!dosage || dosage === currentDosage) {
+                return;
+            }
+
+            try {
+                const response = await fetch('../backend/api/update_dosage.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        medicine_id: medicineId,
+                        dosage
+                    })
+                });
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.message || 'Unable to update dosage.');
+                }
+
+                await loadMedications();
+            } catch (error) {
+                window.MedTrackerApp.showToast(error.message || 'Unable to update dosage right now.', 'error');
+            }
+        }
+
+        function openTimeEditor(medicineId, frequency, rawCustomTimes, medicineName, prescriberName = '', sourceType = '') {
+            const doseCount = getDoseCountForFrequency(frequency);
+            const currentTimes = parseMedicineCustomTimes(rawCustomTimes, frequency);
+            const defaults = defaultTimesForDoseCount(doseCount);
+            const grid = document.getElementById('timeEditorGrid');
+            const overlay = document.getElementById('timeEditorOverlay');
+            const title = document.getElementById('timeEditorTitle');
+            const subtitle = document.getElementById('timeEditorSubtitle');
+            const feedback = document.getElementById('timeEditorFeedback');
+
+            timeEditorState = {
+                medicineId,
+                frequency,
+                medicineName,
+                currentTimes,
+                prescriberName,
+                sourceType
+            };
+
+            title.textContent = currentTimes.length ? 'Edit Reminder Times' : 'Set Reminder Times';
+            subtitle.textContent = `${medicineName} is prescribed as ${doseCountLabel(frequency)}. Choose the real clock times when you usually take it. You can reopen this later if you need to correct the schedule.`;
+            feedback.textContent = '';
+            feedback.style.color = 'var(--text-muted)';
+            grid.innerHTML = Array.from({ length: doseCount }, (_, index) => `
+                <div class="time-editor-field">
+                    <label for="timeEditorInput${index}">Dose ${index + 1} Time</label>
+                    <input id="timeEditorInput${index}" type="time" value="${currentTimes[index] || defaults[index] || ''}">
+                </div>
+            `).join('');
+            overlay.classList.add('active');
+        }
+
+        function getTimeEditorPrescriberLabel() {
+            if (timeEditorState.sourceType === 'patient') {
+                return 'Added by you';
+            }
+
+            return timeEditorState.prescriberName
+                ? `Prescribed by ${timeEditorState.prescriberName}`
+                : 'Prescribed by your health worker';
+        }
+
+        function closeTimeEditor() {
+            document.getElementById('timeEditorOverlay')?.classList.remove('active');
+        }
+
+        async function saveTimeEditor() {
+            const doseCount = getDoseCountForFrequency(timeEditorState.frequency);
+            const feedback = document.getElementById('timeEditorFeedback');
+            const collectedTimes = Array.from(document.querySelectorAll('#timeEditorGrid input')).map((input) => String(input.value || '').trim());
+
+            if (collectedTimes.length !== doseCount || collectedTimes.some((value) => !/^\d{2}:\d{2}$/.test(value))) {
+                feedback.textContent = `Please enter exactly ${doseCount} valid time${doseCount === 1 ? '' : 's'} in HH:MM format.`;
+                feedback.style.color = 'var(--red)';
+                return;
+            }
+
+            const formattedTimes = formatScheduleTimes(collectedTimes);
+            const previousTimes = Array.isArray(timeEditorState.currentTimes) && timeEditorState.currentTimes.length
+                ? formatScheduleTimes(timeEditorState.currentTimes)
+                : 'Not set yet';
+            const confirmMessage = [
+                `Reschedule ${timeEditorState.medicineName}?`,
+                '',
+                getTimeEditorPrescriberLabel(),
+                `Previous time${doseCount === 1 ? '' : 's'}: ${previousTimes}`,
+                `New time${doseCount === 1 ? '' : 's'}: ${formattedTimes}`,
+                '',
+                'Do you want to apply this change?'
+            ].join('\n');
+            if (!await window.MedTrackerApp.confirmAction(confirmMessage, {
+                title: 'Apply reminder changes',
+                confirmText: 'Apply times',
+                tone: 'warning'
+            })) {
+                feedback.textContent = 'Reminder update cancelled. You can change the times and save again when ready.';
+                feedback.style.color = 'var(--text-muted)';
+                return;
+            }
+
+            try {
+                const response = await fetch('../backend/api/update_patient_schedule_times.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        medicine_id: timeEditorState.medicineId,
+                        custom_times: collectedTimes
+                    })
+                });
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.message || 'Unable to update your reminder times.');
+                }
+
+                closeTimeEditor();
+                await loadMedications();
+                window.MedTrackerApp.showToast(`Your reminder time${doseCount === 1 ? '' : 's'} are now set to ${formattedTimes}. Future reminders and pending schedule rows have been updated.`, 'success', {
+                    title: 'Reminder times updated',
+                    duration: 5200
+                });
+            } catch (error) {
+                feedback.textContent = error.message || 'Unable to update your reminder times right now.';
+                feedback.style.color = 'var(--red)';
+            }
+        }
+    </script>
+</body>
+
+</html>

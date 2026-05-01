@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Medicine - MedTracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=6">
+    <link rel="stylesheet" href="css/dashboard.css?v=2">
+    <style>
+        .prescription-form-card {
+            background: var(--surface-solid);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow-sm);
+            max-width: 800px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            color: var(--primary);
+            border-bottom: 2px solid var(--glass-border);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .section-title:first-child {
+            margin-top: 0;
+        }
+
+        .time-plan-box {
+            background: #F8FAFC;
+            border: 1px solid var(--glass-border);
+            border-radius: 18px;
+            padding: 1rem 1.1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .time-plan-box p {
+            margin: 0 0 0.9rem;
+            color: var(--text-muted);
+            font-size: 0.84rem;
+            line-height: 1.55;
+        }
+
+        .custom-time-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1rem;
+        }
+
+        .custom-time-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .custom-time-item label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .custom-time-item input {
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 0.75rem;
+            font-family: 'Outfit';
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="javascript:void(0)" class="sidebar-brand" style="text-decoration: none;">
+                    <span class="title" style="font-size:1.25rem;">💊 MedTracker</span>
+                    <span class="subtitle">Patient Portal</span>
+                </a>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <i>📊</i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="medications.html" class="nav-item">
+                    <i>💊</i>
+                    <span>Medications</span>
+                </a>
+                <a href="add_medication.html" class="nav-item active">
+                    <i>🗓️</i>
+                    <span>Add Medicine</span>
+                </a>
+                <a href="schedule.html" class="nav-item">
+                    <i>📈</i>
+                    <span>Schedule</span>
+                </a>
+                <a href="settings.html" class="nav-item">
+                    <i>⚙️</i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="btn btn-primary btn-block" style="display: flex; gap: 0.5rem; background: var(--red);" id="logoutBtn">
+                    <i>🚪</i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="top-bar" style="margin-bottom: 2rem;">
+                <div>
+                    <h1 style="font-size: 2.5rem; color: var(--text-main); margin-bottom:0.25rem;">Add Minor Medicine</h1>
+                    <p style="color: var(--text-muted);">Add your own minor medicine without changing prescriptions assigned by a health worker.</p>
+                </div>
+            </div>
+
+            <div class="prescription-form-card">
+                <div id="responseMessage" style="margin-bottom: 1rem; font-weight: 600; text-align: center;"></div>
+                
+                <form id="prescriptionForm">
+                    <h3 class="section-title">Medication Details</h3>
+                    <div class="form-row">
+                        <div class="form-group" style="margin: 0;">
+                            <label for="medName">Medicine Name</label>
+                            <input type="text" id="medName" class="form-control" required placeholder="e.g. Amoxicillin">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label for="medDosage">Dosage</label>
+                            <input type="text" id="medDosage" class="form-control" required placeholder="e.g. 500mg">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row" id="medTypeRow">
+                        <div class="form-group" style="margin: 0;">
+                            <label for="medType">Medicine Type</label>
+                            <select id="medType" class="form-control" style="width: 100%; border: 1px solid var(--glass-border); padding: 0.75rem; border-radius: 12px; font-family: 'Outfit';">
+                                <option value="Oral Tablet">Oral Tablet</option>
+                                <option value="Capsule">Capsule</option>
+                                <option value="Liquid / Syrup">Liquid / Syrup</option>
+                                <option value="Injection">Injection</option>
+                                <option value="Inhaler">Inhaler</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin: 0;" id="quantityGroup">
+                            <label for="medQuantity">Total Quantity Prescribed</label>
+                            <input type="number" id="medQuantity" class="form-control" required placeholder="e.g. 30" min="1">
+                        </div>
+                    </div>
+
+                    <h3 class="section-title">Scheduling Settings</h3>
+                    <div class="form-row">
+                        <div class="form-group" style="margin: 0;">
+                            <label for="scheduleTime">Daily Intake Frequency</label>
+                            <select id="scheduleTime" class="form-control" required style="width: 100%; border: 1px solid var(--glass-border); padding: 0.75rem; border-radius: 12px; font-family: 'Outfit';">
+                                <option value="1x daily">Once a day</option>
+                                <option value="2x daily">Twice a day</option>
+                                <option value="3x daily">Three times a day</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label for="instructions">Instructions</label>
+                            <input type="text" id="instructions" class="form-control" placeholder="e.g. Take after meal">
+                        </div>
+                    </div>
+                    <div class="time-plan-box">
+                        <p>Choose the real clock times when you take this medicine. This applies to every medicine type, including injections, so the system will not fall back to a default 8:00 AM reminder.</p>
+                        <div class="custom-time-grid" id="customTimesGrid"></div>
+                    </div>
+                    
+                    <div style="margin-top: 2rem;">
+                        <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.1rem;">Add Medicine</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="footer-logo">
+                    <span class="logo-icon">💊</span>
+                    <span class="logo-text">MedTracker</span>
+                </div>
+                <p class="footer-tagline">Reminders, inventory, and care coordination in one calm, simple place.</p>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 MedTracker. Your smart companion for medication and health.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/script.js?v=8"></script>
+    <script>
+        function getDoseCountForFrequency(frequency) {
+            const normalized = String(frequency || '').toLowerCase();
+            if (normalized.includes('3x') || normalized.includes('three') || normalized.includes('thrice')) {
+                return 3;
+            }
+            if (normalized.includes('2x') || normalized.includes('twice') || normalized.includes('two')) {
+                return 2;
+            }
+            return 1;
+        }
+
+        function usesQuantityTracking(type) {
+            const normalized = String(type || '').toLowerCase();
+            return !normalized.includes('liquid')
+                && !normalized.includes('syrup')
+                && !normalized.includes('inhaler');
+        }
+
+        function syncQuantityField() {
+            const typeInput = document.getElementById('medType');
+            const quantityInput = document.getElementById('medQuantity');
+            const quantityGroup = document.getElementById('quantityGroup');
+            const typeRow = document.getElementById('medTypeRow');
+            const tracksQuantity = usesQuantityTracking(typeInput?.value);
+
+            if (!quantityInput || !quantityGroup || !typeRow) {
+                return tracksQuantity;
+            }
+
+            typeRow.style.gridTemplateColumns = tracksQuantity ? '1fr 1fr' : '1fr';
+            quantityGroup.style.display = tracksQuantity ? '' : 'none';
+            quantityInput.required = tracksQuantity;
+            quantityInput.disabled = !tracksQuantity;
+
+            if (!tracksQuantity) {
+                if (quantityInput.value) {
+                    quantityInput.dataset.lastTrackedValue = quantityInput.value;
+                }
+                quantityInput.value = '';
+            } else if (!quantityInput.value && quantityInput.dataset.lastTrackedValue) {
+                quantityInput.value = quantityInput.dataset.lastTrackedValue;
+            }
+
+            return tracksQuantity;
+        }
+
+        function renderCustomTimeInputs() {
+            const frequency = document.getElementById('scheduleTime')?.value || '1x daily';
+            const doseCount = getDoseCountForFrequency(frequency);
+            const grid = document.getElementById('customTimesGrid');
+            if (!grid) {
+                return;
+            }
+
+            const existingValues = Array.from(grid.querySelectorAll('input')).map((input) => input.value);
+            grid.innerHTML = Array.from({ length: doseCount }, (_, index) => `
+                <div class="custom-time-item">
+                    <label>Dose ${index + 1} Time</label>
+                    <input type="time" data-custom-time value="${existingValues[index] || ''}">
+                </div>
+            `).join('');
+        }
+
+        function collectCustomTimes() {
+            return Array.from(document.querySelectorAll('[data-custom-time]'))
+                .map((input) => input.value)
+                .filter(Boolean);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
+                e.preventDefault();
+                if (await window.MedTrackerApp.confirmAction('Are you sure you want to log out?', {
+                    title: 'Log out',
+                    confirmText: 'Log out',
+                    tone: 'warning'
+                })) {
+                    window.MedTrackerApp.logout();
+                }
+            });
+
+            document.getElementById('medType')?.addEventListener('change', syncQuantityField);
+            document.getElementById('scheduleTime')?.addEventListener('change', renderCustomTimeInputs);
+            syncQuantityField();
+            renderCustomTimeInputs();
+
+            // Handle API call
+            document.getElementById('prescriptionForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const msgEl = document.getElementById('responseMessage');
+                const tracksQuantity = syncQuantityField();
+                
+                const data = {
+                    name: document.getElementById('medName').value,
+                    dosage: document.getElementById('medDosage').value,
+                    type: document.getElementById('medType').value,
+                    quantity: tracksQuantity ? document.getElementById('medQuantity').value : null,
+                    frequency: document.getElementById('scheduleTime').value,
+                    instructions: document.getElementById('instructions').value,
+                    custom_times: collectCustomTimes()
+                };
+
+                const expectedDoseCount = getDoseCountForFrequency(data.frequency);
+                if (data.custom_times.length !== expectedDoseCount) {
+                    msgEl.style.color = 'var(--red)';
+                    msgEl.innerText = `Please enter exactly ${expectedDoseCount} reminder time${expectedDoseCount === 1 ? '' : 's'} for this medicine.`;
+                    return;
+                }
+
+                try {
+                    // For local development, assume backend lives one level up
+                    const response = await fetch('../backend/api/add_prescription.php', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(data)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        msgEl.style.color = 'var(--green)';
+                        msgEl.innerText = result.message;
+                        document.getElementById('prescriptionForm').reset();
+                        setTimeout(() => {
+                            window.location.href = 'medications.html';
+                        }, 1000);
+                    } else {
+                        msgEl.style.color = 'var(--red)';
+                        msgEl.innerText = result.message;
+                    }
+                } catch (error) {
+                    msgEl.style.color = 'var(--red)';
+                    msgEl.innerText = "Check your connection to XAMPP.";
+                }
+            });
+        });
+    </script>
+</body>
+</html>

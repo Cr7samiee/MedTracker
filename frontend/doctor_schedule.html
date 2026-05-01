@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prescription Scheduler - Doctor Suite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=6">
+    <link rel="stylesheet" href="css/dashboard.css?v=2">
+    <style>
+        .doctor-sidebar {
+            background: linear-gradient(180deg, #F8FAFC 0%, #EFF6FF 100%);
+        }
+
+        .doctor-sidebar .user-profile-sm {
+            background: rgba(255, 255, 255, 0.72);
+            border-color: rgba(79, 70, 229, 0.12);
+        }
+
+        .doctor-sidebar .user-profile-sm .role {
+            color: var(--text-muted);
+        }
+
+        .prescription-form-card {
+            background: var(--surface-solid);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow-sm);
+            max-width: 800px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            color: var(--primary);
+            border-bottom: 2px solid var(--glass-border);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .section-title:first-child {
+            margin-top: 0;
+        }
+
+        .plan-note-box {
+            background: #F8FAFC;
+            border: 1px solid var(--glass-border);
+            border-radius: 18px;
+            padding: 1rem 1.1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .plan-note-box p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.84rem;
+            line-height: 1.55;
+        }
+
+        .dose-slot-group {
+            display: flex;
+            gap: 0.85rem;
+            flex-wrap: wrap;
+            margin-top: 0.35rem;
+        }
+
+        .dose-slot-btn {
+            flex: 1 1 160px;
+            min-height: 110px;
+            border-radius: 24px;
+            border: 1px solid rgba(79, 70, 229, 0.16);
+            background: linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(255, 255, 255, 1));
+            padding: 1rem 1rem 0.95rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            cursor: pointer;
+            transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+            text-align: center;
+        }
+
+        .dose-slot-btn:hover {
+            transform: translateY(-2px);
+            border-color: rgba(79, 70, 229, 0.3);
+            box-shadow: 0 18px 28px rgba(79, 70, 229, 0.08);
+        }
+
+        .dose-slot-btn.active {
+            border-color: rgba(79, 70, 229, 0.45);
+            background: linear-gradient(180deg, rgba(79, 70, 229, 0.12), rgba(236, 72, 153, 0.08));
+            box-shadow: 0 18px 30px rgba(79, 70, 229, 0.12);
+        }
+
+        .dose-slot-dot {
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+            background: rgba(79, 70, 229, 0.09);
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .dose-slot-btn.active .dose-slot-dot {
+            background: var(--primary);
+            color: #FFFFFF;
+        }
+
+        .dose-slot-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .dose-slot-summary {
+            margin-top: 0.8rem;
+            font-size: 0.88rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar doctor-sidebar">
+            <div class="sidebar-header">
+                <a href="javascript:void(0)" class="sidebar-brand sidebar-brand--with-logo" style="text-decoration: none;">
+                    <span class="logo-icon sidebar-brand-mark" aria-hidden="true">💊</span>
+                    <span class="sidebar-brand-copy">
+                        <span class="title" style="font-size:1.25rem;">MedTracker</span>
+                        <span class="subtitle" style="font-size:0.65rem;">Healthcare Professional</span>
+                    </span>
+                </a>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="doctor_dashboard.html" class="nav-item">
+                    <i>📊</i>
+                    <span>Overview</span>
+                </a>
+                <a href="doctor_schedule.html" class="nav-item active">
+                    <i>🗓️</i>
+                    <span>Prescription Desk</span>
+                </a>
+                <a href="doctor_dashboard.html#doctorPatientSection" class="nav-item">
+                    <i>👥</i>
+                    <span>Patient Queue</span>
+                </a>
+                <a href="settings.html" class="nav-item">
+                    <i>⚙️</i>
+                    <span>Account</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-profile-sm">
+                    <img src="https://ui-avatars.com/api/?name=Health+Worker&background=4F46E5&color=fff" alt="Health Worker Avatar">
+                    <div class="info">
+                        <span class="name dynamic-user-name">User</span>
+                        <span class="role">Healthcare Professional</span>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-block" style="display: flex; gap: 0.5rem; background: #991B1B;" id="logoutBtn">
+                    <i>🚪</i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="top-bar" style="margin-bottom: 2rem;">
+                <div>
+                    <h1 style="font-size: 2.5rem; color: var(--text-main); margin-bottom:0.25rem;">Prescribe & Schedule</h1>
+                    <p style="color: var(--text-muted);">Assign new medications and define the clinical plan. Patients can personalize reminder times later.</p>
+                </div>
+            </div>
+
+            <div class="prescription-form-card">
+                <div id="responseMessage" style="margin-bottom: 1rem; font-weight: 600; text-align: center;"></div>
+                
+                <form id="prescriptionForm">
+                    
+                    <h3 class="section-title">Patient Selection</h3>
+                    <div class="form-group">
+                        <label for="patientSelect">Select Patient</label>
+                        <!-- Note: Since this is a prototype, we're using a dummy PID 'u999' which we assume exists in DB or we use whatever actual user IDs exist. -->
+                        <!-- If you want to use a real ID from your DB, replace the value attribute with it. -->
+                        <select id="patientSelect" class="form-control" required style="width: 100%; border: 1px solid var(--glass-border); padding: 0.75rem; border-radius: 12px; font-family: 'Outfit';">
+                            <option value="">-- Choose Patient --</option>
+                            <option value="test_user_id">Loading patients...</option>
+                        </select>
+                    </div>
+
+                    <h3 class="section-title">Medication Details</h3>
+                    <div class="form-row">
+                        <div class="form-group" style="margin: 0;">
+                            <label for="medName">Medicine Name</label>
+                            <input type="text" id="medName" class="form-control" required placeholder="e.g. Amoxicillin">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label for="medDosage">Dosage</label>
+                            <input type="text" id="medDosage" class="form-control" required placeholder="e.g. 500mg">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row" id="medTypeRow">
+                        <div class="form-group" style="margin: 0;">
+                            <label for="medType">Medicine Type</label>
+                            <select id="medType" class="form-control" style="width: 100%; border: 1px solid var(--glass-border); padding: 0.75rem; border-radius: 12px; font-family: 'Outfit';">
+                                <option value="Oral Tablet">Oral Tablet</option>
+                                <option value="Capsule">Capsule</option>
+                                <option value="Liquid / Syrup">Liquid / Syrup</option>
+                                <option value="Injection">Injection</option>
+                                <option value="Inhaler">Inhaler</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin: 0;" id="quantityGroup">
+                            <label for="medQuantity">Total Quantity Prescribed</label>
+                            <input type="number" id="medQuantity" class="form-control" required placeholder="e.g. 30" min="1">
+                        </div>
+                    </div>
+
+                    <h3 class="section-title">Scheduling Settings</h3>
+                    <div class="form-row">
+                        <div class="form-group" style="margin: 0;">
+                            <label>Doctor Dose Windows</label>
+                            <input type="hidden" id="scheduleTime" value="">
+                            <div class="dose-slot-group" id="doctorDoseSlotGroup">
+                                <button type="button" class="dose-slot-btn" data-slot-key="morning">
+                                    <span class="dose-slot-dot">☀️</span>
+                                    <span class="dose-slot-title">Morning</span>
+                                </button>
+                                <button type="button" class="dose-slot-btn" data-slot-key="afternoon">
+                                    <span class="dose-slot-dot">🌤️</span>
+                                    <span class="dose-slot-title">Afternoon</span>
+                                </button>
+                                <button type="button" class="dose-slot-btn" data-slot-key="evening">
+                                    <span class="dose-slot-dot">🌙</span>
+                                    <span class="dose-slot-title">Evening / Night</span>
+                                </button>
+                            </div>
+                            <div class="dose-slot-summary" id="doctorDoseSlotSummary">Choose one or more dose windows</div>
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label for="instructions">Instructions</label>
+                            <input type="text" id="instructions" class="form-control" placeholder="e.g. Take after meal">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group" style="margin: 0;">
+                            <label for="startDate">Start Date</label>
+                            <input type="date" id="startDate" class="form-control" required>
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label>Clinical Planning Note</label>
+                            <div class="form-control" style="display:flex; align-items:center; min-height:52px; color:var(--text-muted);">Use ongoing mode for chronic patients such as BP medicines that continue every day.</div>
+                        </div>
+                    </div>
+
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin-top:-0.5rem;">
+                        Choose the care window when this medicine should be taken. This makes the plan more natural for both doctor and patient than a plain once/twice/thrice dropdown.
+                    </p>
+                    <div class="plan-note-box">
+                        <p>Health worker duty: choose dosage, daily care windows like morning / afternoon / evening-night, instructions like before meal / after meal, and treatment type. Patient side will clearly show those doctor-selected windows and can still fine-tune exact reminder times later if needed.</p>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="margin: 0;">
+                            <label for="treatmentMode">Treatment Plan Type</label>
+                            <select id="treatmentMode" class="form-control" style="width: 100%; border: 1px solid var(--glass-border); padding: 0.75rem; border-radius: 12px; font-family: 'Outfit';">
+                                <option value="course">Fixed course medicine</option>
+                                <option value="ongoing">Ongoing chronic medicine</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin: 0;" id="durationGroup">
+                            <label for="durationDays">Treatment Duration (Days)</label>
+                            <input type="number" id="durationDays" class="form-control" required min="1" max="365" value="7" placeholder="e.g. 7">
+                        </div>
+                    </div>
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0.5rem;" id="treatmentModeHelp">
+                        Fixed courses use a start date and duration. Ongoing chronic medicines stay active until you update or stop them later.
+                    </p>
+                    
+                    <div style="margin-top: 2rem;">
+                        <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.1rem;">Submit Prescription to System</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="footer-logo">
+                    <span class="logo-icon" aria-hidden="true">💊</span>
+                    <span class="logo-text">MedTracker</span>
+                </div>
+                <p class="footer-tagline">Reminders, inventory, and care coordination in one calm, simple place.</p>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 MedTracker. Your smart companion for medication and health.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/script.js?v=8"></script>
+    <script>
+        let doctorEditMedicineId = null;
+        let doctorPrefilledPatientId = null;
+        const DOCTOR_DOSE_SLOT_MAP = {
+            morning: { label: 'Morning', time: '08:00:00' },
+            afternoon: { label: 'Afternoon', time: '13:00:00' },
+            evening: { label: 'Evening / Night', time: '20:00:00' }
+        };
+
+        function getSelectedDoctorDoseSlots() {
+            return Array.from(document.querySelectorAll('.dose-slot-btn.active'))
+                .map((button) => button.dataset.slotKey)
+                .filter((key) => DOCTOR_DOSE_SLOT_MAP[key]);
+        }
+
+        function syncDoctorFrequencyFromSlots() {
+            const selectedCount = getSelectedDoctorDoseSlots().length;
+            document.getElementById('scheduleTime').value = selectedCount ? `${selectedCount}x daily` : '';
+        }
+
+        function syncDoctorDoseSummary() {
+            const summary = document.getElementById('doctorDoseSlotSummary');
+            const selectedKeys = getSelectedDoctorDoseSlots();
+            const labels = selectedKeys.map((key) => DOCTOR_DOSE_SLOT_MAP[key].label);
+            summary.textContent = labels.length
+                ? labels.join(' + ')
+                : 'Choose one or more dose windows';
+            syncDoctorFrequencyFromSlots();
+        }
+
+        function setDoctorDoseSlots(slotKeys) {
+            const normalized = Array.isArray(slotKeys) ? slotKeys : [];
+            document.querySelectorAll('.dose-slot-btn').forEach((button) => {
+                button.classList.toggle('active', normalized.includes(button.dataset.slotKey));
+            });
+            syncDoctorDoseSummary();
+        }
+
+        function buildDoctorCustomTimesFromSlots() {
+            return getSelectedDoctorDoseSlots().map((key) => DOCTOR_DOSE_SLOT_MAP[key].time);
+        }
+
+        function usesQuantityTracking(type) {
+            const normalized = String(type || '').toLowerCase();
+            return !normalized.includes('liquid')
+                && !normalized.includes('syrup')
+                && !normalized.includes('inhaler');
+        }
+
+        function syncQuantityField() {
+            const typeInput = document.getElementById('medType');
+            const quantityInput = document.getElementById('medQuantity');
+            const quantityGroup = document.getElementById('quantityGroup');
+            const typeRow = document.getElementById('medTypeRow');
+            const tracksQuantity = usesQuantityTracking(typeInput?.value);
+
+            if (!quantityInput || !quantityGroup || !typeRow) {
+                return tracksQuantity;
+            }
+
+            typeRow.style.gridTemplateColumns = tracksQuantity ? '1fr 1fr' : '1fr';
+            quantityGroup.style.display = tracksQuantity ? '' : 'none';
+            quantityInput.required = tracksQuantity;
+            quantityInput.disabled = !tracksQuantity;
+
+            if (!tracksQuantity) {
+                if (quantityInput.value) {
+                    quantityInput.dataset.lastTrackedValue = quantityInput.value;
+                }
+                quantityInput.value = '';
+            } else if (!quantityInput.value && quantityInput.dataset.lastTrackedValue) {
+                quantityInput.value = quantityInput.dataset.lastTrackedValue;
+            }
+
+            return tracksQuantity;
+        }
+
+        function deriveDoctorSlotsFromPrescription(med) {
+            const customTimes = Array.isArray(med.custom_times) ? med.custom_times : [];
+            const slotKeys = [];
+
+            customTimes.forEach((timeValue) => {
+                const normalized = String(timeValue || '').slice(0, 5);
+                if (normalized === '08:00') {
+                    slotKeys.push('morning');
+                } else if (normalized === '13:00') {
+                    slotKeys.push('afternoon');
+                } else if (normalized === '20:00') {
+                    slotKeys.push('evening');
+                }
+            });
+
+            if (slotKeys.length) {
+                return Array.from(new Set(slotKeys));
+            }
+
+            const doseCount = String(med.frequency || '').toLowerCase().includes('3x')
+                ? 3
+                : (String(med.frequency || '').toLowerCase().includes('2x') ? 2 : 1);
+
+            if (doseCount === 3) {
+                return ['morning', 'afternoon', 'evening'];
+            }
+            if (doseCount === 2) {
+                return ['morning', 'evening'];
+            }
+
+            return [];
+        }
+
+        function syncTreatmentModeUi() {
+            const treatmentMode = document.getElementById('treatmentMode')?.value || 'course';
+            const durationGroup = document.getElementById('durationGroup');
+            const durationInput = document.getElementById('durationDays');
+            const help = document.getElementById('treatmentModeHelp');
+
+            if (!durationGroup || !durationInput || !help) {
+                return;
+            }
+
+            const isOngoing = treatmentMode === 'ongoing';
+            durationGroup.style.display = isOngoing ? 'none' : 'block';
+            durationInput.required = !isOngoing;
+            help.textContent = isOngoing
+                ? 'Use ongoing mode for chronic medicines like BP or long-term daily therapy. The schedule keeps running until the doctor changes it.'
+                : 'Fixed courses use a start date and duration. Ongoing chronic medicines stay active until you update or stop them later.';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!window.MedTrackerApp.protectRoute(['Health Worker', 'Doctor'])) {
+                return;
+            }
+
+            const urlParams = new URLSearchParams(window.location.search);
+            doctorEditMedicineId = Number(urlParams.get('medicine_id') || 0) || null;
+            doctorPrefilledPatientId = (urlParams.get('patient_id') || '').trim() || null;
+
+            document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
+                e.preventDefault();
+                if (await window.MedTrackerApp.confirmAction('Are you sure you want to log out?', {
+                    title: 'Log out',
+                    confirmText: 'Log out',
+                    tone: 'warning'
+                })) {
+                    window.MedTrackerApp.logout();
+                }
+            });
+
+            document.getElementById('startDate').value = new Date().toISOString().slice(0, 10);
+            document.getElementById('treatmentMode')?.addEventListener('change', syncTreatmentModeUi);
+            document.getElementById('medType')?.addEventListener('change', syncQuantityField);
+            syncTreatmentModeUi();
+            syncQuantityField();
+            document.querySelectorAll('.dose-slot-btn').forEach((button) => {
+                button.addEventListener('click', () => {
+                    button.classList.toggle('active');
+                    syncDoctorDoseSummary();
+                });
+            });
+            syncDoctorDoseSummary();
+            if (doctorEditMedicineId) {
+                document.querySelector('.top-bar h1').textContent = 'Edit Prescription';
+                document.querySelector('.top-bar p').textContent = 'Correct a prescription safely when a scheduling mistake happens.';
+                document.querySelector('button[type="submit"]').textContent = 'Save Prescription Changes';
+            }
+
+            // Fetch and populate patients
+            const loadPatients = async () => {
+                try {
+                    const response = await fetch('../backend/api/get_patients.php');
+                    const result = await response.json();
+                    if(result.success) {
+                        const select = document.getElementById('patientSelect');
+                        select.innerHTML = '<option value="">-- Choose Patient --</option>';
+                        result.data.forEach(patient => {
+                            select.innerHTML += `<option value="${patient.id}">${patient.name} (${patient.id})</option>`;
+                        });
+                        if (doctorEditMedicineId) {
+                            loadPrescriptionForEdit();
+                        } else if (doctorPrefilledPatientId) {
+                            select.value = doctorPrefilledPatientId;
+                        }
+                    }
+                } catch(e) {
+                    console.error("Error loading patients", e);
+                    document.getElementById('patientSelect').innerHTML = '<option value="">-- Choose Patient --</option>';
+                }
+            };
+            loadPatients();
+
+            // Handle API call
+            document.getElementById('prescriptionForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const tracksQuantity = syncQuantityField();
+                
+                const data = {
+                    patient_id: document.getElementById('patientSelect').value,
+                    name: document.getElementById('medName').value,
+                    dosage: document.getElementById('medDosage').value,
+                    type: document.getElementById('medType').value,
+                    quantity: tracksQuantity ? document.getElementById('medQuantity').value : null,
+                    frequency: document.getElementById('scheduleTime').value,
+                    custom_times: buildDoctorCustomTimesFromSlots(),
+                    instructions: document.getElementById('instructions').value,
+                    duration_days: document.getElementById('durationDays').value,
+                    treatment_mode: document.getElementById('treatmentMode').value,
+                    start_date: document.getElementById('startDate').value
+                };
+
+                const msgEl = document.getElementById('responseMessage');
+
+                if (data.treatment_mode !== 'ongoing' && !data.duration_days) {
+                    msgEl.style.color = 'var(--red)';
+                    msgEl.innerText = 'Please enter the treatment duration for a fixed course.';
+                    return;
+                }
+
+                if (!data.custom_times.length) {
+                    msgEl.style.color = 'var(--red)';
+                    msgEl.innerText = 'Choose at least one doctor dose window before saving the prescription.';
+                    return;
+                }
+
+                try {
+                    const targetUrl = doctorEditMedicineId
+                        ? '../backend/api/update_worker_prescription.php'
+                        : '../backend/api/add_prescription.php';
+                    const payload = doctorEditMedicineId
+                        ? { ...data, medicine_id: doctorEditMedicineId }
+                        : data;
+                    const response = await fetch(targetUrl, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        msgEl.style.color = 'var(--green)';
+                        msgEl.innerText = result.notification_summary
+                            ? `${result.message} ${result.notification_summary}`
+                            : result.message;
+                        document.getElementById('prescriptionForm').reset();
+                        setTimeout(() => {
+                            window.location.href = 'doctor_dashboard.html';
+                        }, 1200);
+                    } else {
+                        msgEl.style.color = 'var(--red)';
+                        msgEl.innerText = result.message;
+                    }
+                } catch (error) {
+                    msgEl.style.color = 'var(--red)';
+                    msgEl.innerText = "Check your connection to XAMPP.";
+                }
+            });
+        });
+
+        async function loadPrescriptionForEdit() {
+            const msgEl = document.getElementById('responseMessage');
+            try {
+                const res = await fetch(`../backend/api/get_worker_prescription.php?medicine_id=${doctorEditMedicineId}`);
+                const result = await res.json();
+
+                if (!result.success) {
+                    throw new Error(result.message || 'Unable to load prescription details.');
+                }
+
+                const med = result.data || {};
+                document.getElementById('patientSelect').value = med.patient_id || '';
+                document.getElementById('patientSelect').disabled = true;
+                document.getElementById('medName').value = med.name || '';
+                document.getElementById('medDosage').value = med.dosage || '';
+                document.getElementById('medType').value = med.type || 'Oral Tablet';
+                document.getElementById('medQuantity').value = med.quantity ?? '';
+                syncQuantityField();
+                document.getElementById('scheduleTime').value = med.frequency || '1x daily';
+                setDoctorDoseSlots(deriveDoctorSlotsFromPrescription(med));
+                document.getElementById('instructions').value = med.instructions || '';
+                document.getElementById('treatmentMode').value = med.treatment_mode || 'course';
+                document.getElementById('startDate').value = med.start_date || new Date().toISOString().slice(0, 10);
+                document.getElementById('durationDays').value = med.duration_days || 7;
+                syncTreatmentModeUi();
+            } catch (error) {
+                msgEl.style.color = 'var(--red)';
+                msgEl.innerText = error.message || 'Unable to load prescription details.';
+            }
+        }
+    </script>
+</body>
+</html>

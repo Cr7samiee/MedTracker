@@ -1,0 +1,1775 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - MedTracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=6">
+    <link rel="stylesheet" href="css/dashboard.css?v=2">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <style>
+        .admin-sidebar {
+            background: linear-gradient(180deg, #F8FAFC 0%, #EEF2FF 100%);
+            border-right: 1px solid var(--glass-border);
+        }
+
+        .admin-sidebar .user-profile-sm {
+            background: rgba(255, 255, 255, 0.72);
+            border-color: rgba(79, 70, 229, 0.12);
+        }
+
+        .admin-sidebar .user-profile-sm .role {
+            color: var(--text-muted);
+        }
+
+        .system-status-banner {
+            background: linear-gradient(135deg, rgba(248, 250, 252, 0.85), rgba(241, 245, 249, 0.85));
+            border-radius: 24px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--glass-border);
+        }
+
+        .status-badge {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--green);
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-badge.info {
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--primary);
+        }
+
+        .ops-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .ops-card,
+        .panel-card,
+        .user-table-container {
+            background: var(--surface-solid);
+            border-radius: 24px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .ops-item,
+        .activity-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.85rem 0;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+        }
+
+        .ops-item:last-child,
+        .activity-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .chart-card {
+            background: var(--surface-solid);
+            border-radius: 24px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 2rem;
+        }
+
+        .chart-wrap {
+            height: 280px;
+        }
+
+        .chart-wrap.compact {
+            height: 240px;
+        }
+
+        .chart-wrap.slim {
+            height: 220px;
+        }
+
+        .admin-report-toolbar {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .admin-filter-control {
+            border: 1px solid rgba(148, 163, 184, 0.24);
+            border-radius: 12px;
+            padding: 0.72rem 0.85rem;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.92rem;
+            background: white;
+            color: var(--text-main);
+        }
+
+        .admin-range-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.45rem 0.85rem;
+            border-radius: 999px;
+            background: rgba(79, 70, 229, 0.08);
+            color: var(--primary);
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        .chart-legend-summary {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .legend-pill {
+            background: #F8FAFC;
+            border: 1px solid rgba(148, 163, 184, 0.14);
+            border-radius: 14px;
+            padding: 0.85rem 1rem;
+        }
+
+        .legend-pill strong {
+            display: block;
+            font-size: 1.05rem;
+            margin-top: 0.25rem;
+        }
+
+        .index-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.85rem;
+            margin-top: 1rem;
+        }
+
+        .index-panel {
+            background: #F8FAFC;
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            border-radius: 16px;
+            padding: 0.95rem 1rem;
+        }
+
+        .index-panel strong {
+            display: block;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--primary);
+            margin-bottom: 0.35rem;
+        }
+
+        .index-panel p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.84rem;
+            line-height: 1.55;
+        }
+
+        .audit-stream,
+        .rank-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+        }
+
+        .audit-card,
+        .rank-card {
+            background: #F8FAFC;
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            border-radius: 18px;
+            padding: 1rem 1.05rem;
+        }
+
+        .audit-card strong,
+        .rank-card strong {
+            color: var(--text-main);
+        }
+
+        .audit-meta,
+        .rank-meta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.35rem;
+            line-height: 1.5;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 1rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--glass-border);
+            vertical-align: middle;
+        }
+
+        .user-identity {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .avatar-initial {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #E2E8F0;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        .role-tag {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            text-transform: uppercase;
+        }
+
+        .role-tag.admin {
+            background: #EDE9FE;
+            color: #6D28D9;
+        }
+
+        .role-tag.worker {
+            background: #FFEDD5;
+            color: #C2410C;
+        }
+
+        .role-tag.patient {
+            background: #D1FAE5;
+            color: var(--green);
+        }
+
+        .admin-action-btn {
+            border: none;
+            border-radius: 999px;
+            padding: 0.45rem 0.85rem;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.78rem;
+        }
+
+        .admin-action-btn.primary {
+            background: rgba(79, 70, 229, 0.12);
+            color: var(--primary);
+        }
+
+        .admin-action-btn.danger {
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--red);
+        }
+
+        .log-box {
+            background: #F8FAFC;
+            border-radius: 20px;
+            padding: 1.5rem;
+            font-family: monospace;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            line-height: 1.8;
+            max-height: 320px;
+            overflow-y: auto;
+        }
+
+        .log-time {
+            color: #94A3B8;
+            margin-right: 1rem;
+        }
+
+        .log-success {
+            color: var(--green);
+            font-weight: 700;
+        }
+
+        .log-error {
+            color: var(--red);
+            font-weight: 700;
+        }
+
+        .reminder-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .reminder-card {
+            background: #F8FAFC;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            border-radius: 18px;
+            padding: 1.1rem;
+        }
+
+        .reminder-card h4 {
+            margin-bottom: 0.35rem;
+            font-size: 1rem;
+        }
+
+        .reminder-card p {
+            margin: 0 0 1rem;
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            line-height: 1.55;
+        }
+
+        .reminder-fields {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.8rem;
+        }
+
+        .reminder-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .reminder-field.full {
+            grid-column: 1 / -1;
+        }
+
+        .reminder-field label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .reminder-field input {
+            border: 1px solid rgba(148, 163, 184, 0.24);
+            border-radius: 12px;
+            padding: 0.72rem 0.8rem;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.92rem;
+            background: white;
+        }
+
+        .reminder-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 0.8rem 0.9rem;
+            border-radius: 14px;
+            background: rgba(79, 70, 229, 0.06);
+            border: 1px solid rgba(79, 70, 229, 0.12);
+        }
+
+        .reminder-toggle span {
+            font-size: 0.84rem;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .reminder-toggle small {
+            display: block;
+            margin-top: 0.2rem;
+            color: var(--text-muted);
+            font-size: 0.76rem;
+            font-weight: 400;
+        }
+
+        .reminder-toggle input {
+            width: 18px;
+            height: 18px;
+        }
+
+        .reminder-message {
+            display: none;
+            margin-bottom: 1rem;
+            padding: 0.9rem 1rem;
+            border-radius: 14px;
+            font-size: 0.88rem;
+            font-weight: 600;
+        }
+
+        .reminder-message.success {
+            display: block;
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--green);
+        }
+
+        .reminder-message.error {
+            display: block;
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--red);
+        }
+
+        @media (max-width: 1080px) {
+            .reminder-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar admin-sidebar">
+            <div class="sidebar-header">
+                <a href="javascript:void(0)" class="sidebar-brand sidebar-brand--with-logo" style="text-decoration: none;">
+                    <span class="logo-icon sidebar-brand-mark" aria-hidden="true">💊</span>
+                    <span class="sidebar-brand-copy">
+                        <span class="title" style="font-size:1.25rem;">MedTracker</span>
+                        <span class="subtitle" style="font-size:0.65rem;">Admin Control</span>
+                    </span>
+                </a>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="admin_dashboard.html" class="nav-item active">
+                    <i>🎛️</i>
+                    <span>Overview</span>
+                </a>
+                <a href="admin_dashboard.html#adminUsageChartCard" class="nav-item">
+                    <i>📈</i>
+                    <span>Usage Analytics</span>
+                </a>
+                <a href="admin_dashboard.html#userManagementSection" class="nav-item">
+                    <i>👥</i>
+                    <span>User Accounts</span>
+                </a>
+                <a href="admin_dashboard.html#adminPrescriptionsSection" class="nav-item">
+                    <i>🧾</i>
+                    <span>Prescription Audit</span>
+                </a>
+                <a href="admin_dashboard.html#logMonitoringSection" class="nav-item">
+                    <i>🛰️</i>
+                    <span>Log Stream</span>
+                </a>
+                <a href="settings.html" class="nav-item">
+                    <i>⚙️</i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="btn btn-primary btn-block" style="display:flex; gap:0.5rem;" onclick="window.location.href='admin_dashboard.html#logMonitoringSection'">
+                    <i>🚨</i> Open Logs
+                </button>
+                <div class="user-profile-sm" style="margin-top:1rem;">
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=4F46E5&color=fff" alt="Admin Avatar">
+                    <div class="info">
+                        <span class="name dynamic-user-name">User</span>
+                        <span class="role">Admin Control</span>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-block" style="display:flex; gap:0.5rem; background:#991B1B; margin-top:1rem;" id="logoutBtn">
+                    <i>🚪</i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <main class="main-content" style="background:#F8FAFC;">
+            <div class="top-bar" style="margin-bottom: 2rem; background:white; padding:1rem 2rem; border-radius:999px; box-shadow:var(--shadow-sm);">
+                <div>
+                    <p style="color:var(--text-muted); margin-bottom:0.25rem;">Monitor system usage, prescriber activity, and account management.</p>
+                    <h1 style="font-size:2rem; color:var(--text-main);">Admin Control Center</h1>
+                </div>
+            </div>
+
+            <div class="dashboard-grid" style="grid-template-columns: 2fr 1fr;">
+                <div class="main-column">
+                    <div id="adminOpsBoard" class="system-status-banner">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:1.5rem;">
+                            <div>
+                                <h2 style="font-size:2rem; margin-bottom:0.5rem;">Systems Operational</h2>
+                                <p style="color:var(--text-muted); line-height:1.6;">Admin focuses on system usage, user control, and prescriber oversight. Patient adherence details stay on the patient side.</p>
+                            </div>
+                            <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+                                <span class="status-badge"><span>●</span> Uptime 99.98%</span>
+                                <span class="status-badge info">Next Audit 4h 12m</span>
+                            </div>
+                        </div>
+                        <div class="ops-grid">
+                            <div class="ops-card">
+                                <h4 style="margin-bottom:0.75rem;">System Usage</h4>
+                                <div class="ops-item"><span>Today's activity</span><strong id="adminTodayActivity">0</strong></div>
+                                <div class="ops-item"><span>Taken today</span><strong id="adminTakenToday">0</strong></div>
+                                <div class="ops-item"><span>Missed / skipped today</span><strong id="adminSkippedToday">0</strong></div>
+                                <div class="ops-item"><span>Pending today</span><strong id="adminPendingToday">0</strong></div>
+                            </div>
+                            <div class="ops-card">
+                                <h4 style="margin-bottom:0.75rem;">System Management</h4>
+                                <div class="ops-item"><span>Admins</span><strong id="adminCount">0</strong></div>
+                                <div class="ops-item"><span>Health workers</span><strong id="adminHealthWorkerCount">0</strong></div>
+                                <div class="ops-item"><span>Patients</span><strong id="adminPatientCount">0</strong></div>
+                                <div class="ops-item"><span>Overuse alerts</span><strong id="adminOveruseCount">0</strong></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="adminUsageChartCard" class="chart-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:1rem; flex-wrap:wrap;">
+                            <div>
+                                <h3 style="font-size:1.15rem;">Usage Graph</h3>
+                                <p style="font-size:0.85rem; color:var(--text-muted);" id="adminUsageGraphDescription">Seven-day system activity with status breakdown and overuse monitoring.</p>
+                                <div class="admin-range-chip" id="adminChartRangeLabel">Week ending today</div>
+                            </div>
+                            <div class="admin-report-toolbar">
+                                <select id="adminReportPeriod" class="admin-filter-control">
+                                    <option value="day">Daily</option>
+                                    <option value="week" selected>Weekly</option>
+                                    <option value="year">Yearly</option>
+                                </select>
+                                <input type="date" id="adminReportDate" class="admin-filter-control">
+                                <button class="admin-action-btn primary" id="applyAdminChartRangeBtn" style="padding:0.72rem 1rem;">Generate</button>
+                                <button class="admin-action-btn primary" id="downloadAdminChartReportBtn" style="padding:0.72rem 1rem;">Download PDF</button>
+                            </div>
+                        </div>
+                        <div class="chart-wrap">
+                            <canvas id="adminUsageChart"></canvas>
+                        </div>
+                        <div class="chart-legend-summary">
+                            <div class="legend-pill">
+                                <span style="color:#10B981; font-size:0.78rem; font-weight:700; text-transform:uppercase;">Taken</span>
+                                <strong id="chartTakenTotal">0</strong>
+                            </div>
+                            <div class="legend-pill">
+                                <span style="color:#F59E0B; font-size:0.78rem; font-weight:700; text-transform:uppercase;">Missed / Skipped</span>
+                                <strong id="chartSkippedTotal">0</strong>
+                            </div>
+                            <div class="legend-pill">
+                                <span style="color:#94A3B8; font-size:0.78rem; font-weight:700; text-transform:uppercase;">Pending</span>
+                                <strong id="chartPendingTotal">0</strong>
+                            </div>
+                            <div class="legend-pill">
+                                <span style="color:#EF4444; font-size:0.78rem; font-weight:700; text-transform:uppercase;">Overuse Alerts</span>
+                                <strong id="chartOveruseTotal">0</strong>
+                            </div>
+                        </div>
+                        <div class="index-grid">
+                            <div class="index-panel">
+                                <strong>Low Stock Index</strong>
+                                <p id="adminLowStockIndex">Low stock is flagged at 5 doses or fewer. Critical stock is 0 doses remaining.</p>
+                            </div>
+                            <div class="index-panel">
+                                <strong>Overuse Index</strong>
+                                <p id="adminOveruseIndex">Overuse alert is recorded when the same scheduled dose is marked as taken again after already being logged as taken on that day.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                            <div>
+                                <h3 style="font-size:1.15rem;">Active Users</h3>
+                                <p style="font-size:0.85rem; color:var(--text-muted);" id="adminActiveUsersDescription">Distinct users interacting with the site each day.</p>
+                            </div>
+                        </div>
+                        <div class="ops-grid" style="margin-bottom:1rem;">
+                            <div class="ops-card" style="padding:1rem 1.25rem;">
+                                <h4 style="margin-bottom:0.35rem;">Active Today</h4>
+                                <div style="font-size:2rem; font-weight:800; color:var(--primary);" id="adminActiveUsersToday">0</div>
+                                <p style="font-size:0.82rem; color:var(--text-muted); margin:0;">Users with real activity today</p>
+                            </div>
+                            <div class="ops-card" style="padding:1rem 1.25rem;">
+                                <h4 style="margin-bottom:0.35rem;" id="adminPeakHeading">Weekly Peak</h4>
+                                <div style="font-size:2rem; font-weight:800; color:var(--green);" id="adminWeeklyActivePeak">0</div>
+                                <p style="font-size:0.82rem; color:var(--text-muted); margin:0;" id="adminPeakDescription">Highest active-user day this week</p>
+                            </div>
+                        </div>
+                        <div class="chart-wrap compact">
+                            <canvas id="adminActiveUsersChart"></canvas>
+                        </div>
+                        <div class="index-grid">
+                            <div class="index-panel">
+                                <strong>Active User Index</strong>
+                                <p id="adminActiveUserIndex">Active user means any unique patient, health worker, or self-add interaction recorded through medicine logs, water logs, or prescription creation on that date.</p>
+                            </div>
+                            <div class="index-panel">
+                                <strong>Usage Graph Index</strong>
+                                <p id="adminUsageGraphIndex">Bars show taken, skipped, and pending dose totals. The red line shows overuse alerts for the same seven-day window.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; gap:1rem; flex-wrap:wrap;">
+                            <div>
+                                <h3 style="font-size:1.15rem;">SMS / Email Success Dashboard</h3>
+                                <p style="font-size:0.85rem; color:var(--text-muted);" id="adminNotificationDescription">Daily delivery performance across email and SMS reminder channels.</p>
+                            </div>
+                        </div>
+                        <div class="ops-grid" style="margin-bottom:1rem;">
+                            <div class="ops-card" style="padding:1rem 1.25rem;">
+                                <h4 style="margin-bottom:0.35rem;">Delivery Rate</h4>
+                                <div style="font-size:2rem; font-weight:800; color:var(--primary);" id="adminNotificationDeliveryRate">0%</div>
+                                <p style="font-size:0.82rem; color:var(--text-muted); margin:0;">Successful sends out of all attempts</p>
+                            </div>
+                            <div class="ops-card" style="padding:1rem 1.25rem;">
+                                <h4 style="margin-bottom:0.35rem;">Failed Sends</h4>
+                                <div style="font-size:2rem; font-weight:800; color:var(--red);" id="adminNotificationFailedTotal">0</div>
+                                <p style="font-size:0.82rem; color:var(--text-muted); margin:0;" id="adminNotificationFailedDescription">Email or SMS failures this week</p>
+                            </div>
+                        </div>
+                        <div class="chart-wrap slim">
+                            <canvas id="adminNotificationChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="ops-grid" style="margin-bottom:2rem;">
+                        <div class="panel-card">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                                <div>
+                                    <h3 style="font-size:1.1rem;">Most Missed Medicines</h3>
+                                    <p style="font-size:0.82rem; color:var(--text-muted); margin:0;">Prescriptions with the highest skipped totals in the recent window.</p>
+                                </div>
+                            </div>
+                            <div class="rank-list" id="adminMostMissedList">
+                                <p style="color:var(--text-muted);">Loading missed medicine trends...</p>
+                            </div>
+                        </div>
+
+                        <div class="panel-card">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                                <div>
+                                    <h3 style="font-size:1.1rem;">System Activity Audit</h3>
+                                    <p style="font-size:0.82rem; color:var(--text-muted); margin:0;">Who changed what and when across the system.</p>
+                                </div>
+                            </div>
+                            <div class="audit-stream" id="adminAuditTrail">
+                                <p style="color:var(--text-muted);">Loading audit trail...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="reminderManagementSection" class="chart-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:1rem; flex-wrap:wrap;">
+                            <div>
+                                <h3 style="font-size:1.15rem;">Reminder Management</h3>
+                                <p style="font-size:0.85rem; color:var(--text-muted);">Admin controls how early reminders go out and how long the system waits before marking a pending dose as missed. Doctor and patient do not manage these timing rules.</p>
+                            </div>
+                        </div>
+                        <div id="adminReminderMessage" class="reminder-message"></div>
+                        <div class="reminder-grid" id="adminReminderGrid">
+                            <div class="reminder-card">
+                                <h4>Loading...</h4>
+                                <p>Fetching reminder scenarios.</p>
+                            </div>
+                        </div>
+                        <div style="display:flex; justify-content:flex-end; margin-top:1rem;">
+                            <button class="admin-action-btn primary" style="padding:0.8rem 1.15rem;" id="saveReminderSettingsBtn">Save Reminder Rules</button>
+                        </div>
+                    </div>
+
+                    <div id="userManagementSection" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                        <h3 style="font-size:1.25rem;">User Management</h3>
+                        <span style="font-size:0.85rem; color:var(--text-muted);">Reset passwords or remove accounts directly.</span>
+                    </div>
+
+                    <div class="user-table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Identity</th>
+                                    <th>Role</th>
+                                    <th>Contact</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminUsersTableBody">
+                                <tr>
+                                    <td colspan="4" style="text-align:center; color:var(--text-muted);">Loading users...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="adminPrescriptionsSection" style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:1rem; margin-top:2rem;">
+                        <h3 style="font-size:1.25rem;">Prescription Oversight</h3>
+                    </div>
+                    <div class="user-grid" id="adminPrescriptionsGrid" style="margin-bottom:2rem;">
+                        <div class="mt-skeleton-list" aria-hidden="true">
+                            <div class="mt-skeleton-card">
+                                <div class="mt-skeleton-row">
+                                    <div class="mt-skeleton-avatar"></div>
+                                    <div class="mt-skeleton-meta">
+                                        <div class="mt-skeleton-line" style="width: 48%;"></div>
+                                        <div class="mt-skeleton-line" style="width: 72%;"></div>
+                                    </div>
+                                </div>
+                                <div class="mt-skeleton-line" style="width: 90%;"></div>
+                                <div class="mt-skeleton-line" style="width: 62%;"></div>
+                            </div>
+                            <div class="mt-skeleton-card">
+                                <div class="mt-skeleton-row">
+                                    <div class="mt-skeleton-avatar"></div>
+                                    <div class="mt-skeleton-meta">
+                                        <div class="mt-skeleton-line" style="width: 40%;"></div>
+                                        <div class="mt-skeleton-line" style="width: 68%;"></div>
+                                    </div>
+                                </div>
+                                <div class="mt-skeleton-line" style="width: 84%;"></div>
+                                <div class="mt-skeleton-line" style="width: 58%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="logMonitoringSection" style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:1rem;">
+                        <h3 style="font-size:1.25rem;">Log Monitoring</h3>
+                        <a href="admin_dashboard.html#logMonitoringSection" style="font-size:0.875rem; font-weight:600; color:var(--primary); text-decoration:none;">View Full Stream →</a>
+                    </div>
+                    <div class="log-box">
+                        <div>Loading logs...</div>
+                    </div>
+                </div>
+
+                <div class="side-column">
+                    <div class="panel-card" style="margin-bottom:2rem;">
+                        <h3 style="font-size:1.15rem; margin-bottom:1rem;">Which Doctor Added What</h3>
+                        <div id="adminDoctorActivityList">
+                            <p style="color:var(--text-muted);">Loading prescriber activity...</p>
+                        </div>
+                    </div>
+
+                    <div class="panel-card">
+                        <h3 style="font-size:1.15rem; margin-bottom:1rem;">Data Supervision</h3>
+                        <div class="ops-item">
+                            <span>Prescriptions tracked</span>
+                            <strong id="adminPrescriptionCount">0</strong>
+                        </div>
+                        <div class="ops-item">
+                            <span>Usage pulse</span>
+                            <strong id="adminUsagePulse">0</strong>
+                        </div>
+                        <div class="ops-item">
+                            <span>Low stock items</span>
+                            <strong id="adminLowStockLabel">0</strong>
+                        </div>
+                        <div class="ops-item">
+                            <span>Total users</span>
+                            <strong id="adminTotalUsersLabel">0</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="footer-logo">
+                    <span class="logo-icon" aria-hidden="true">💊</span>
+                    <span class="logo-text">MedTracker</span>
+                </div>
+                <p class="footer-tagline">Reminders, inventory, and care coordination in one calm, simple place.</p>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 MedTracker. Your smart companion for medication and health.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/script.js?v=8"></script>
+    <script>
+        let adminUsageChart;
+        let adminActiveUsersChart;
+        let adminNotificationChart;
+        let adminReminderSettings = [];
+        let adminOverviewPayload = {};
+        let adminOverviewMeta = { period: 'week', period_label: 'Weekly', range_label: 'Week ending today' };
+        let adminChartFilter = {
+            period: 'week',
+            date: new Date().toISOString().slice(0, 10)
+        };
+        const ADMIN_INDEX = {
+            lowStockThreshold: 5,
+            criticalStockThreshold: 0,
+            activeUserRule: 'Any unique medicine log, water log, prescribed medicine event, or self-added medicine event for that day',
+            overuseRule: 'Same scheduled dose marked Taken more than once on the same day'
+        };
+
+        function waitForAdminChartPaint() {
+            return new Promise((resolve) => {
+                requestAnimationFrame(() => requestAnimationFrame(resolve));
+            });
+        }
+
+        async function captureAdminChartImage(chart, backgroundColor = '#FFFFFF') {
+            if (!chart?.canvas) {
+                return '';
+            }
+
+            try {
+                if (typeof chart.stop === 'function') {
+                    chart.stop();
+                }
+                if (typeof chart.update === 'function') {
+                    chart.update('none');
+                }
+            } catch (error) {
+                // Ignore export refresh issues and fall back to the current canvas state.
+            }
+
+            await waitForAdminChartPaint();
+
+            const sourceCanvas = chart.canvas;
+            const width = sourceCanvas.width || sourceCanvas.clientWidth || 0;
+            const height = sourceCanvas.height || sourceCanvas.clientHeight || 0;
+
+            if (!width || !height) {
+                return '';
+            }
+
+            const exportCanvas = document.createElement('canvas');
+            exportCanvas.width = width;
+            exportCanvas.height = height;
+            const exportContext = exportCanvas.getContext('2d');
+
+            if (!exportContext) {
+                return '';
+            }
+
+            exportContext.fillStyle = backgroundColor;
+            exportContext.fillRect(0, 0, width, height);
+            exportContext.drawImage(sourceCanvas, 0, 0, width, height);
+
+            return exportCanvas.toDataURL('image/png', 1.0);
+        }
+
+        function syncAdminChartControls() {
+            const periodInput = document.getElementById('adminReportPeriod');
+            const dateInput = document.getElementById('adminReportDate');
+
+            if (periodInput) {
+                periodInput.value = adminChartFilter.period;
+            }
+
+            if (dateInput) {
+                dateInput.value = adminChartFilter.date;
+            }
+        }
+
+        function readAdminChartControls() {
+            return {
+                period: document.getElementById('adminReportPeriod')?.value || adminChartFilter.period || 'week',
+                date: document.getElementById('adminReportDate')?.value || adminChartFilter.date || new Date().toISOString().slice(0, 10)
+            };
+        }
+
+        function formatAdminChartLabel(value) {
+            const normalized = String(value || '').trim();
+            if (!normalized) {
+                return '';
+            }
+
+            const date = new Date(`${normalized}T00:00:00`);
+            if (Number.isNaN(date.getTime())) {
+                return normalized;
+            }
+
+            if (adminOverviewMeta.period === 'year') {
+                return date.toLocaleDateString([], { month: 'short' });
+            }
+
+            if (adminOverviewMeta.period === 'day') {
+                return date.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+            }
+
+            return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!window.MedTrackerApp.protectRoute(['Admin'])) {
+                return;
+            }
+
+            document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
+                e.preventDefault();
+                if (await window.MedTrackerApp.confirmAction('Are you sure you want to log out?', {
+                    title: 'Log out',
+                    confirmText: 'Log out',
+                    tone: 'warning'
+                })) {
+                    window.MedTrackerApp.logout();
+                }
+            });
+
+            syncAdminChartControls();
+            document.getElementById('applyAdminChartRangeBtn')?.addEventListener('click', async () => {
+                await loadAdminOverview();
+            });
+            document.getElementById('downloadAdminChartReportBtn')?.addEventListener('click', async () => {
+                await downloadAdminChartReportPdf();
+            });
+            loadAdminOverview();
+            loadAdminUsers();
+            fetchAdminPrescriptions();
+            loadReminderSettings();
+            document.getElementById('saveReminderSettingsBtn')?.addEventListener('click', saveReminderSettings);
+        });
+
+        function showReminderMessage(message, type = 'success') {
+            const box = document.getElementById('adminReminderMessage');
+            if (!box) {
+                return;
+            }
+
+            box.className = `reminder-message ${type}`;
+            box.textContent = message;
+        }
+
+        function renderReminderSettings(settings) {
+            const grid = document.getElementById('adminReminderGrid');
+            if (!grid) {
+                return;
+            }
+
+            if (!settings.length) {
+                grid.innerHTML = `
+                    <div class="reminder-card">
+                        <h4>No scenarios found</h4>
+                        <p>Reminder settings are unavailable right now.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = settings.map((setting) => `
+                <div class="reminder-card" data-scenario-key="${setting.scenario_key}">
+                    <h4>${setting.scenario_label}</h4>
+                    <p>${setting.dose_count} dose${setting.dose_count === 1 ? '' : 's'} per day. Missed status only updates after this scenario reaches its missed stage.</p>
+                    <div class="reminder-fields">
+                        <div class="reminder-field">
+                            <label>Upcoming Reminder (Min)</label>
+                            <input type="number" min="1" max="180" data-field="upcoming_minutes" value="${Number(setting.upcoming_minutes || 5)}">
+                        </div>
+                        <div class="reminder-field">
+                            <label>Missed Delay (Min)</label>
+                            <input type="number" min="1" max="360" data-field="missed_minutes" value="${Number(setting.missed_minutes || 15)}">
+                        </div>
+                        <div class="reminder-field full">
+                            <div class="reminder-toggle">
+                                <div>
+                                    <span>Send exact-time alert</span>
+                                    <small>Send a second reminder when the dose time actually arrives.</small>
+                                </div>
+                                <input type="checkbox" data-field="send_due_now" ${setting.send_due_now ? 'checked' : ''}>
+                            </div>
+                        </div>
+                        <div class="reminder-field full">
+                            <div class="reminder-toggle">
+                                <div>
+                                    <span>Auto-mark missed at missed stage</span>
+                                    <small>Keep the dose pending until the missed window ends, then mark it missed / skipped.</small>
+                                </div>
+                                <input type="checkbox" data-field="auto_mark_skipped" ${setting.auto_mark_skipped ? 'checked' : ''}>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadReminderSettings() {
+            try {
+                const res = await fetch('../backend/api/get_reminder_settings.php');
+                const data = await res.json();
+
+                if (!data.success) {
+                    throw new Error(data.message || 'Unable to load reminder settings.');
+                }
+
+                adminReminderSettings = Array.isArray(data.settings) ? data.settings : [];
+                renderReminderSettings(adminReminderSettings);
+            } catch (error) {
+                showReminderMessage(error.message || 'Unable to load reminder settings right now.', 'error');
+            }
+        }
+
+        async function saveReminderSettings() {
+            const cards = Array.from(document.querySelectorAll('#adminReminderGrid [data-scenario-key]'));
+            if (!cards.length) {
+                showReminderMessage('No reminder settings are available to save right now.', 'error');
+                return;
+            }
+
+            const payload = cards.map((card) => ({
+                scenario_key: card.dataset.scenarioKey,
+                upcoming_minutes: Number(card.querySelector('[data-field="upcoming_minutes"]')?.value || 0),
+                missed_minutes: Number(card.querySelector('[data-field="missed_minutes"]')?.value || 0),
+                send_due_now: card.querySelector('[data-field="send_due_now"]')?.checked ? 1 : 0,
+                auto_mark_skipped: card.querySelector('[data-field="auto_mark_skipped"]')?.checked ? 1 : 0
+            }));
+
+            if (payload.some((row) => row.upcoming_minutes < 1 || row.missed_minutes < 1)) {
+                showReminderMessage('Please keep all reminder minutes above 0.', 'error');
+                return;
+            }
+
+            try {
+                const res = await fetch('../backend/api/update_reminder_settings.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ settings: payload })
+                });
+                const data = await res.json();
+
+                if (!data.success) {
+                    throw new Error(data.message || 'Unable to save reminder settings.');
+                }
+
+                adminReminderSettings = Array.isArray(data.settings) ? data.settings : payload;
+                renderReminderSettings(adminReminderSettings);
+                showReminderMessage(data.message || 'Reminder settings saved successfully.', 'success');
+            } catch (error) {
+                showReminderMessage(error.message || 'Unable to save reminder settings right now.', 'error');
+            }
+        }
+
+        async function loadAdminOverview() {
+            try {
+                adminChartFilter = readAdminChartControls();
+                syncAdminChartControls();
+                const params = new URLSearchParams({
+                    period: adminChartFilter.period,
+                    date: adminChartFilter.date
+                });
+                const res = await fetch(`../backend/api/get_admin_overview.php?${params.toString()}`);
+                const data = await res.json();
+
+                if (!data.success) {
+                    throw new Error(data.message || 'Unable to load admin overview.');
+                }
+
+                adminOverviewPayload = data;
+                adminOverviewMeta = data.report_meta || adminOverviewMeta;
+
+                document.getElementById('adminTodayActivity').textContent = String(data.metrics.today_activity || 0);
+                document.getElementById('adminTakenToday').textContent = String(data.metrics.taken_today || 0);
+                document.getElementById('adminSkippedToday').textContent = String(data.metrics.skipped_today || 0);
+                document.getElementById('adminPendingToday').textContent = String(data.metrics.pending_today || 0);
+                document.getElementById('adminCount').textContent = String(data.metrics.admin_count || 0);
+                document.getElementById('adminHealthWorkerCount').textContent = String(data.metrics.health_worker_count || 0);
+                document.getElementById('adminPatientCount').textContent = String(data.metrics.patient_count || 0);
+                document.getElementById('adminOveruseCount').textContent = String(data.metrics.overuse_total || 0);
+                document.getElementById('adminPrescriptionCount').textContent = String(data.metrics.active_prescriptions || 0);
+                document.getElementById('adminUsagePulse').textContent = String(data.metrics.today_activity || 0);
+                document.getElementById('adminLowStockLabel').textContent = String(data.metrics.low_stock_total || 0);
+                document.getElementById('adminActiveUsersToday').textContent = String(data.metrics.active_users_today || 0);
+                document.getElementById('adminWeeklyActivePeak').textContent = String((data.metrics.period_active_peak ?? data.metrics.weekly_active_peak) || 0);
+                document.getElementById('adminTotalUsersLabel').textContent = String(data.metrics.total_user_count || 0);
+                document.getElementById('adminNotificationDeliveryRate').textContent = `${Number(data.metrics.notification_delivery_rate || 0)}%`;
+                document.getElementById('adminNotificationFailedTotal').textContent = String(data.metrics.notification_failed_total || 0);
+                document.getElementById('adminUsageGraphDescription').textContent = adminOverviewMeta.usage_graph_description || 'Seven-day system activity with status breakdown and overuse monitoring.';
+                document.getElementById('adminChartRangeLabel').textContent = adminOverviewMeta.range_label || 'Selected report window';
+                document.getElementById('adminActiveUsersDescription').textContent = adminOverviewMeta.active_users_description || 'Distinct users interacting with the site each day.';
+                document.getElementById('adminNotificationDescription').textContent = adminOverviewMeta.notification_description || 'Daily delivery performance across email and SMS reminder channels.';
+                document.getElementById('adminPeakHeading').textContent = adminOverviewMeta.peak_label || 'Weekly Peak';
+                document.getElementById('adminPeakDescription').textContent = adminOverviewMeta.peak_description || 'Highest active-user day this week';
+                document.getElementById('adminNotificationFailedDescription').textContent = adminOverviewMeta.failed_description || 'Email or SMS failures this week';
+                document.getElementById('adminLowStockIndex').textContent = `Low stock is flagged at ${ADMIN_INDEX.lowStockThreshold} doses or fewer. Critical stock is ${ADMIN_INDEX.criticalStockThreshold} doses remaining.`;
+                document.getElementById('adminOveruseIndex').textContent = `Overuse alert is recorded when ${ADMIN_INDEX.overuseRule.toLowerCase()}.`;
+                document.getElementById('adminActiveUserIndex').textContent = `Active user means ${ADMIN_INDEX.activeUserRule.toLowerCase()}.`;
+                document.getElementById('adminUsageGraphIndex').textContent = adminOverviewMeta.usage_index_text || 'Bars show taken, missed / skipped, and pending dose totals. The red line shows overuse alerts over the same seven-day window.';
+
+                renderAdminUsageChart(data.usage_chart || []);
+                renderAdminActiveUsersChart(data.active_users_chart || []);
+                renderAdminNotificationChart(data.notification_chart || []);
+                renderAdminDoctorActivity(data.doctor_activity || []);
+                renderAdminMostMissedMedicines(data.most_missed_medicines || []);
+                renderAdminAuditTrail(data.audit_trail || []);
+
+                const logBox = document.querySelector('.log-box');
+                if (logBox && Array.isArray(data.recent_logs)) {
+                    logBox.innerHTML = data.recent_logs.length ? data.recent_logs.map((log) => `
+                        <div>
+                            <span class="log-time">${new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                            <span class="${log.status === 'ERROR' ? 'log-error' : 'log-success'}">[${log.status}]</span>
+                            ${log.message}
+                        </div>
+                    `).join('') : '<div>No recent system logs found.</div>';
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        function renderAdminUsageChart(rows) {
+            const canvas = document.getElementById('adminUsageChart');
+            if (!canvas) {
+                return;
+            }
+
+            const takenTotal = rows.reduce((sum, row) => sum + Number(row.taken || 0), 0);
+            const skippedTotal = rows.reduce((sum, row) => sum + Number(row.skipped || 0), 0);
+            const pendingTotal = rows.reduce((sum, row) => sum + Number(row.pending || 0), 0);
+            const overuseTotal = rows.reduce((sum, row) => sum + Number(row.overuse || 0), 0);
+
+            document.getElementById('chartTakenTotal').textContent = String(takenTotal);
+            document.getElementById('chartSkippedTotal').textContent = String(skippedTotal);
+            document.getElementById('chartPendingTotal').textContent = String(pendingTotal);
+            document.getElementById('chartOveruseTotal').textContent = String(overuseTotal);
+
+            if (adminUsageChart) {
+                adminUsageChart.destroy();
+            }
+
+            adminUsageChart = new Chart(canvas, {
+                type: 'bar',
+                data: {
+                    labels: rows.map((row) => formatAdminChartLabel(row.usage_date)),
+                    datasets: [
+                        {
+                            label: 'Taken',
+                            data: rows.map((row) => Number(row.taken || 0)),
+                            backgroundColor: 'rgba(16, 185, 129, 0.88)',
+                            borderRadius: 10,
+                            stack: 'activity'
+                        },
+                        {
+                            label: 'Missed / Skipped',
+                            data: rows.map((row) => Number(row.skipped || 0)),
+                            backgroundColor: 'rgba(245, 158, 11, 0.88)',
+                            borderRadius: 10,
+                            stack: 'activity'
+                        },
+                        {
+                            label: 'Pending',
+                            data: rows.map((row) => Number(row.pending || 0)),
+                            backgroundColor: 'rgba(148, 163, 184, 0.9)',
+                            borderRadius: 10,
+                            stack: 'activity'
+                        },
+                        {
+                            type: 'line',
+                            label: 'Overuse Alerts',
+                            data: rows.map((row) => Number(row.overuse || 0)),
+                            borderColor: '#EF4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.18)',
+                            borderWidth: 3,
+                            pointBackgroundColor: '#EF4444',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 5,
+                            tension: 0.35,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                boxWidth: 10,
+                                color: '#475569',
+                                font: {
+                                    family: 'Outfit',
+                                    weight: '600'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.92)',
+                            titleFont: { family: 'Outfit', weight: '700' },
+                            bodyFont: { family: 'Outfit' },
+                            padding: 12
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                            grid: { display: false },
+                            ticks: { color: '#64748B' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            stacked: true,
+                            ticks: { precision: 0, color: '#64748B' },
+                            grid: { color: 'rgba(148, 163, 184, 0.18)' }
+                        },
+                        y1: {
+                            beginAtZero: true,
+                            position: 'right',
+                            ticks: { precision: 0, color: '#EF4444' },
+                            grid: { drawOnChartArea: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderAdminDoctorActivity(rows) {
+            const container = document.getElementById('adminDoctorActivityList');
+            container.innerHTML = rows.length ? rows.map((row) => `
+                <div class="activity-item">
+                    <div>
+                        <div style="font-weight:700; color:var(--text-main);">${row.prescriber_name}</div>
+                        <div style="font-size:0.78rem; color:var(--text-muted);">${row.prescriber_id === 'SELF' ? 'Patient self-added medicines' : row.prescriber_id}</div>
+                    </div>
+                    <strong>${row.total_medicines}</strong>
+                </div>
+            `).join('') : '<p style="color:var(--text-muted);">No prescriber activity found.</p>';
+        }
+
+        function renderAdminActiveUsersChart(rows) {
+            const canvas = document.getElementById('adminActiveUsersChart');
+            if (!canvas) {
+                return;
+            }
+
+            if (adminActiveUsersChart) {
+                adminActiveUsersChart.destroy();
+            }
+
+            adminActiveUsersChart = new Chart(canvas, {
+                type: 'line',
+                data: {
+                    labels: rows.map((row) => formatAdminChartLabel(row.usage_date)),
+                    datasets: [{
+                        label: 'Active Users',
+                        data: rows.map((row) => Number(row.active_users || 0)),
+                        borderColor: '#4F46E5',
+                        backgroundColor: 'rgba(79, 70, 229, 0.12)',
+                        fill: true,
+                        borderWidth: 3,
+                        tension: 0.35,
+                        pointRadius: 4,
+                        pointHoverRadius: 5,
+                        pointBackgroundColor: '#4F46E5'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.92)',
+                            titleFont: { family: 'Outfit', weight: '700' },
+                            bodyFont: { family: 'Outfit' },
+                            padding: 12
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#64748B' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0, color: '#64748B' },
+                            grid: { color: 'rgba(148, 163, 184, 0.18)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderAdminNotificationChart(rows) {
+            const canvas = document.getElementById('adminNotificationChart');
+            if (!canvas) {
+                return;
+            }
+
+            if (adminNotificationChart) {
+                adminNotificationChart.destroy();
+            }
+
+            adminNotificationChart = new Chart(canvas, {
+                type: 'bar',
+                data: {
+                    labels: rows.map((row) => formatAdminChartLabel(row.notify_date)),
+                    datasets: [
+                        {
+                            label: 'Sent',
+                            data: rows.map((row) => Number(row.sent_total || 0)),
+                            backgroundColor: 'rgba(16, 185, 129, 0.86)',
+                            borderRadius: 10,
+                            stack: 'delivery'
+                        },
+                        {
+                            label: 'Failed',
+                            data: rows.map((row) => Number(row.failed_total || 0)),
+                            backgroundColor: 'rgba(239, 68, 68, 0.82)',
+                            borderRadius: 10,
+                            stack: 'delivery'
+                        },
+                        {
+                            type: 'line',
+                            label: 'Delivery Rate %',
+                            data: rows.map((row) => Number(row.delivery_rate || 0)),
+                            borderColor: '#4F46E5',
+                            backgroundColor: 'rgba(79, 70, 229, 0.14)',
+                            borderWidth: 3,
+                            pointRadius: 4,
+                            pointHoverRadius: 5,
+                            pointBackgroundColor: '#4F46E5',
+                            tension: 0.35,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                boxWidth: 10,
+                                font: { family: 'Outfit', weight: '600' }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                            grid: { display: false },
+                            ticks: { color: '#64748B' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            stacked: true,
+                            ticks: { precision: 0, color: '#64748B' },
+                            grid: { color: 'rgba(148, 163, 184, 0.18)' }
+                        },
+                        y1: {
+                            beginAtZero: true,
+                            position: 'right',
+                            max: 100,
+                            ticks: {
+                                color: '#4F46E5',
+                                callback: (value) => `${value}%`
+                            },
+                            grid: { drawOnChartArea: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderAdminMostMissedMedicines(rows) {
+            const container = document.getElementById('adminMostMissedList');
+            if (!container) {
+                return;
+            }
+
+            container.innerHTML = rows.length ? rows.map((row, index) => `
+                <div class="rank-card">
+                    <strong>#${index + 1} ${row.medicine_name}</strong>
+                    <div class="rank-meta">
+                        ${row.dosage} • Patient: ${row.patient_name || 'Unknown'}<br>
+                        Missed total: <strong>${Number(row.missed_total || 0)}</strong>
+                    </div>
+                </div>
+            `).join('') : '<p style="color:var(--text-muted);">No missed medicines were detected in the recent window.</p>';
+        }
+
+        function renderAdminAuditTrail(rows) {
+            const container = document.getElementById('adminAuditTrail');
+            if (!container) {
+                return;
+            }
+
+            const formatAction = (actionKey) => String(actionKey || '')
+                .replace(/_/g, ' ')
+                .replace(/\b\w/g, (char) => char.toUpperCase());
+
+                container.innerHTML = rows.length ? rows.map((row) => `
+                <div class="audit-card">
+                    <strong>${formatAction(row.action_key)}</strong>
+                    <div class="audit-meta">
+                        ${row.actor_user_id || 'System'} • ${row.actor_role || 'Unknown role'}<br>
+                        ${row.entity_type}${row.entity_id ? ` #${row.entity_id}` : ''}${row.target_user_id ? ` • Target: ${row.target_user_id}` : ''}<br>
+                        ${new Date(row.created_at).toLocaleString()}
+                    </div>
+                </div>
+            `).join('') : '<p style="color:var(--text-muted);">No audit entries available yet.</p>';
+        }
+
+        async function downloadAdminChartReportPdf() {
+            if (!window.jspdf?.jsPDF) {
+                window.MedTrackerApp.showToast('PDF generator is unavailable right now.', 'error');
+                return;
+            }
+
+            await loadAdminOverview();
+
+            if (!adminOverviewPayload.usage_chart?.length && !adminOverviewPayload.active_users_chart?.length && !adminOverviewPayload.notification_chart?.length) {
+                window.MedTrackerApp.showToast('Please wait for the chart data to finish loading.', 'warning', {
+                    title: 'Charts still loading'
+                });
+                return;
+            }
+
+            const button = document.getElementById('downloadAdminChartReportBtn');
+            const originalText = button?.textContent || 'Download PDF';
+            if (button) {
+                button.disabled = true;
+                button.textContent = 'Generating...';
+            }
+
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+                const margin = 14;
+                const usableWidth = pageWidth - (margin * 2);
+                const metrics = adminOverviewPayload.metrics || {};
+                const meta = adminOverviewMeta || {};
+                const usageRows = adminOverviewPayload.usage_chart || [];
+                const activeRows = adminOverviewPayload.active_users_chart || [];
+                const notificationRows = adminOverviewPayload.notification_chart || [];
+                const missedRows = adminOverviewPayload.most_missed_medicines || [];
+                let y = 18;
+
+                const ensureSpace = (required) => {
+                    if (y + required > pageHeight - margin) {
+                        doc.addPage();
+                        y = 18;
+                    }
+                };
+
+                const drawHeader = () => {
+                    doc.setFillColor(79, 70, 229);
+                    doc.roundedRect(margin, y - 6, usableWidth, 30, 5, 5, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(19);
+                    doc.text('MedTracker Admin Chart Report', margin + 6, y + 1);
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(10);
+                    doc.text(`${meta.period_label || 'Weekly'} window`, margin + 6, y + 9);
+                    doc.text(meta.range_label || '', margin + 6, y + 15);
+                    doc.text(`Generated: ${new Date().toLocaleString()}`, margin + 6, y + 21);
+                    y += 34;
+                };
+
+                const drawMetricRow = (cards) => {
+                    const gap = 6;
+                    const cardWidth = (usableWidth - gap) / 2;
+                    const cardHeight = 22;
+                    const startY = y;
+                    ensureSpace(cardHeight * Math.ceil(cards.length / 2) + 8);
+
+                    cards.forEach((card, index) => {
+                        const x = margin + ((index % 2) * (cardWidth + gap));
+                        const cardY = startY + (Math.floor(index / 2) * (cardHeight + 5));
+                        doc.setFillColor(248, 250, 252);
+                        doc.setDrawColor(226, 232, 240);
+                        doc.roundedRect(x, cardY, cardWidth, cardHeight, 3, 3, 'FD');
+                        doc.setFont('helvetica', 'normal');
+                        doc.setFontSize(8.5);
+                        doc.setTextColor(100, 116, 139);
+                        doc.text(card.label, x + 4, cardY + 7);
+                        doc.setFont('helvetica', 'bold');
+                        doc.setFontSize(14);
+                        doc.setTextColor(15, 23, 42);
+                        doc.text(card.value, x + 4, cardY + 16);
+                    });
+
+                    y = startY + (Math.ceil(cards.length / 2) * (cardHeight + 5));
+                };
+
+                const drawSectionTitle = (title, subtitle = '') => {
+                    ensureSpace(16);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(13);
+                    doc.setTextColor(79, 70, 229);
+                    doc.text(title, margin, y);
+                    if (subtitle) {
+                        doc.setFont('helvetica', 'normal');
+                        doc.setFontSize(9.5);
+                        doc.setTextColor(100, 116, 139);
+                        doc.text(subtitle, margin, y + 6);
+                        y += 10;
+                        return;
+                    }
+                    y += 6;
+                };
+
+                const drawChartImage = async (chart, fallbackText) => {
+                    ensureSpace(76);
+                    const image = await captureAdminChartImage(chart);
+                    if (image) {
+                        doc.setDrawColor(226, 232, 240);
+                        doc.roundedRect(margin, y, usableWidth, 72, 3, 3, 'S');
+                        doc.addImage(image, 'PNG', margin + 3, y + 3, usableWidth - 6, 66);
+                    } else {
+                        doc.setFont('helvetica', 'normal');
+                        doc.setFontSize(10);
+                        doc.setTextColor(100, 116, 139);
+                        doc.text(fallbackText, margin, y + 8);
+                    }
+                    y += 78;
+                };
+
+                drawHeader();
+                drawMetricRow([
+                    { label: 'Taken in window', value: String(usageRows.reduce((sum, row) => sum + Number(row.taken || 0), 0)) },
+                    { label: 'Skipped in window', value: String(usageRows.reduce((sum, row) => sum + Number(row.skipped || 0), 0)) },
+                    { label: 'Overuse alerts', value: String(metrics.overuse_total || 0) },
+                    { label: meta.peak_label || 'Peak activity', value: String((metrics.period_active_peak ?? metrics.weekly_active_peak) || 0) },
+                    { label: 'Delivery rate', value: `${Number(metrics.notification_delivery_rate || 0)}%` },
+                    { label: 'Low stock items', value: String(metrics.low_stock_total || 0) }
+                ]);
+
+                drawSectionTitle('Usage Chart', meta.usage_graph_description || '');
+                await drawChartImage(adminUsageChart, 'Usage chart preview is unavailable right now.');
+
+                drawSectionTitle('Active Users Chart', meta.active_users_description || '');
+                await drawChartImage(adminActiveUsersChart, 'Active users chart preview is unavailable right now.');
+
+                drawSectionTitle('Notification Chart', meta.notification_description || '');
+                await drawChartImage(adminNotificationChart, 'Notification chart preview is unavailable right now.');
+
+                drawSectionTitle('Most Missed Medicines', 'Top skipped medicines from the selected report window');
+                if (!missedRows.length) {
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(10);
+                    doc.setTextColor(100, 116, 139);
+                    doc.text('No missed medicines were detected in this selected window.', margin, y + 6);
+                    y += 12;
+                } else {
+                    missedRows.slice(0, 5).forEach((row, index) => {
+                        ensureSpace(12);
+                        doc.setFont('helvetica', 'bold');
+                        doc.setFontSize(10);
+                        doc.setTextColor(15, 23, 42);
+                        doc.text(`${index + 1}. ${row.medicine_name}`, margin, y + 4);
+                        doc.setFont('helvetica', 'normal');
+                        doc.setFontSize(9);
+                        doc.setTextColor(100, 116, 139);
+                        doc.text(`${row.dosage} • Patient: ${row.patient_name || 'Unknown'} • Missed ${Number(row.missed_total || 0)} time(s)`, margin, y + 9);
+                        y += 13;
+                    });
+                }
+
+                const safeDate = String(adminChartFilter.date || new Date().toISOString().slice(0, 10)).replace(/[^0-9-]/g, '');
+                const safePeriod = String(meta.period || adminChartFilter.period || 'week');
+                doc.save(`MedTracker_Admin_${safePeriod}_${safeDate}.pdf`);
+            } catch (error) {
+                window.MedTrackerApp.showToast('Unable to generate the admin report right now.', 'error');
+            } finally {
+                if (button) {
+                    button.disabled = false;
+                    button.textContent = originalText;
+                }
+            }
+        }
+
+        async function loadAdminUsers() {
+            try {
+                const res = await fetch('../backend/api/get_admin_users.php');
+                const data = await res.json();
+                const tbody = document.getElementById('adminUsersTableBody');
+
+                if (!data.success) {
+                    throw new Error(data.message || 'Unable to load users.');
+                }
+
+                tbody.innerHTML = data.data.length ? data.data.map((user) => {
+                    const initials = user.name.split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase();
+                    const roleClass = user.role === 'Admin' ? 'admin' : user.role === 'Health Worker' ? 'worker' : 'patient';
+                    const safeName = user.name.replace(/'/g, "\\'");
+
+                    return `
+                        <tr id="admin-user-${user.id}">
+                            <td>
+                                <div class="user-identity">
+                                    <div class="avatar-initial">${initials}</div>
+                                    <div>
+                                        <h4 style="font-size:0.875rem; margin:0;">${user.name}</h4>
+                                        <span style="font-size:0.75rem; color:var(--text-muted);">${user.id}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="role-tag ${roleClass}">${user.role}</span></td>
+                            <td style="font-size:0.875rem; color:var(--text-muted);">${user.email}<br>${user.phone}</td>
+                            <td>
+                                <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                                    <button class="admin-action-btn primary" onclick="resetUserPassword('${user.id}')">Reset Password</button>
+                                    <button class="admin-action-btn danger" onclick="removeUser('${user.id}', '${safeName}')">Remove User</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('') : '<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">No users found.</td></tr>';
+            } catch (error) {
+                document.getElementById('adminUsersTableBody').innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Unable to load users right now.</td></tr>';
+            }
+        }
+
+        async function resetUserPassword(userId) {
+            try {
+                const res = await fetch('../backend/api/admin_reset_user_password.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId })
+                });
+                const data = await res.json();
+
+                if (!data.success) {
+                    throw new Error(data.message || 'Unable to reset password.');
+                }
+
+                window.MedTrackerApp.showToast(`Temporary password for ${userId}: ${data.temporary_password}`, 'success', {
+                    title: 'Temporary password generated',
+                    duration: 7000
+                });
+            } catch (error) {
+                window.MedTrackerApp.showToast(error.message || 'Unable to reset this password right now.', 'error');
+            }
+        }
+
+        async function removeUser(userId, userName) {
+            if (!await window.MedTrackerApp.confirmAction(`Remove ${userName} from the system?`, {
+                title: 'Remove user',
+                confirmText: 'Remove',
+                tone: 'warning'
+            })) {
+                return;
+            }
+
+            try {
+                const res = await fetch('../backend/api/admin_delete_user.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId })
+                });
+                const data = await res.json();
+
+                if (!data.success) {
+                    throw new Error(data.message || 'Unable to remove user.');
+                }
+
+                document.getElementById(`admin-user-${userId}`)?.remove();
+                if (!document.querySelector('#adminUsersTableBody tr')) {
+                    document.getElementById('adminUsersTableBody').innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">No users found.</td></tr>';
+                }
+                await loadAdminOverview();
+            } catch (error) {
+                window.MedTrackerApp.showToast(error.message || 'Unable to remove this user right now.', 'error');
+            }
+        }
+
+        async function fetchAdminPrescriptions() {
+            try {
+                const res = await fetch('../backend/api/get_schedule.php?role=Admin');
+                const data = await res.json();
+                const grid = document.getElementById('adminPrescriptionsGrid');
+                grid.innerHTML = '';
+
+                if (data.success && data.data.length > 0) {
+                    const uniqueMeds = Array.from(new Map(data.data.map((med) => [med.medicine_id, med])).values());
+                    uniqueMeds.forEach((med) => {
+                        const stockTracked = Number(med.stock_tracked) === 1;
+                        const stockText = stockTracked ? med.stock_remaining : 'Not counted';
+                        grid.innerHTML += `
+                            <div class="user-card" id="admin-med-${med.medicine_id}" style="background:var(--surface-solid); padding:1.5rem; border-radius:16px; box-shadow:var(--shadow-sm); border:1px solid var(--glass-border);">
+                                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                                    <div>
+                                        <h4 style="font-size:1.125rem;">${med.medicine_name} <span style="font-size:0.8rem; font-weight:normal;">(${med.dosage})</span></h4>
+                                        <p style="color:var(--text-muted); font-size:0.875rem;">Patient: ${med.patient_name || med.patient_id}</p>
+                                    </div>
+                                    <span style="background:rgba(16,185,129,0.1); color:var(--green); padding:0.25rem 0.5rem; border-radius:4px; font-size:0.75rem; font-weight:700;">${med.source_type === 'patient' ? 'Self Added' : 'Assigned'}</span>
+                                </div>
+                                <div style="margin-top:0.5rem; font-size:0.85rem; color:#555;">
+                                    <p style="margin:2px 0;">Stock Remaining: <strong>${stockText}</strong></p>
+                                    <p style="margin:2px 0;">Added By: <strong>${med.prescriber_name || 'Patient Self Added'}</strong></p>
+                                    <p style="margin:2px 0;">Course Window: <strong>${med.start_date || 'Today'} to ${med.end_date || 'Open'}</strong></p>
+                                </div>
+                                <div style="margin-top:1.5rem; display:flex; gap:0.5rem;">
+                                    <button onclick="deleteMedicine(${med.medicine_id})" style="flex:1; padding:0.5rem; border:1px solid rgba(239,68,68,0.2); color:white; background:var(--red); border-radius:8px; cursor:pointer; font-weight:600;">Delete Medicine</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    grid.innerHTML = window.MedTrackerApp.getEmptyStateHtml({
+                        icon: '🧾',
+                        title: 'No active prescriptions',
+                        message: 'There are no active prescriptions in the system right now.'
+                    });
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('adminPrescriptionsGrid').innerHTML = window.MedTrackerApp.getEmptyStateHtml({
+                    icon: '!',
+                    title: 'Prescription oversight unavailable',
+                    message: 'We could not load prescriptions right now.'
+                });
+            }
+        }
+
+        async function deleteMedicine(medicineId) {
+            if (!await window.MedTrackerApp.confirmAction('Are you sure you want to permanently delete this prescription?', {
+                title: 'Delete prescription',
+                confirmText: 'Delete',
+                tone: 'warning'
+            })) {
+                return;
+            }
+
+            try {
+                const res = await fetch('../backend/api/delete_medicine.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ medicine_id: medicineId })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    document.getElementById(`admin-med-${medicineId}`)?.remove();
+                    await fetchAdminPrescriptions();
+                    await loadAdminOverview();
+                } else {
+                    window.MedTrackerApp.showToast('Error: ' + data.message, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                window.MedTrackerApp.showToast('Unable to delete this medicine right now.', 'error');
+            }
+        }
+    </script>
+</body>
+
+</html>

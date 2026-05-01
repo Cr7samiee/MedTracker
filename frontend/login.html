@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - 💊</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=6">
+</head>
+
+<body>
+    <div class="landing-container">
+        <div class="bg-shape shape-1" style="top:-190px; left:-150px;"></div>
+        <div class="bg-shape shape-2" style="bottom:-170px; right:-120px;"></div>
+        <div class="bg-shape shape-3" style="top:40%; left:42%;"></div>
+
+        <main class="auth-wrapper auth-wrapper--showcase">
+            <div class="auth-scene">
+                <div class="auth-page-brand">
+                    <a href="index.html" class="logo" style="text-decoration:none;">
+                        <span class="logo-icon" aria-hidden="true">💊</span>
+                        <span class="logo-text">MedTracker</span>
+                    </a>
+                </div>
+                <section class="auth-split-card reverse">
+                    <aside class="auth-hero-panel">
+                        <div class="auth-hero-shape"></div>
+
+                        <div class="auth-hero-content">
+                            <span class="auth-badge">Secure sign in</span>
+                            <h2>Welcome back.</h2>
+                            <p>Sign in to view reminders, follow your medicine schedule, and stay on top of your daily care with less stress.</p>
+
+                        </div>
+
+                    </aside>
+
+                    <div class="auth-form-panel">
+                        <div class="auth-homebar">
+                            <a href="index.html" class="auth-home-link">
+                                <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"></path></svg>
+                                Home
+                            </a>
+                            <a href="forgot_password.html" class="auth-switch-link">Forgot password?</a>
+                        </div>
+
+                        <div class="auth-panel-heading">
+                            <span class="tiny-label">Sign In</span>
+                            <h1>Your routine is ready</h1>
+                            <p>Enter your phone number and password to continue your care journey.</p>
+                        </div>
+
+                        <form id="loginForm" class="auth-form modern-auth-form">
+                            <div class="form-group">
+                                <label for="phone">Phone Number</label>
+                                <input type="tel" id="phone" name="phone" required placeholder="9841000000">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="password">Password</label>
+                                <div class="password-wrapper">
+                                    <input type="password" id="password" name="password" required placeholder="Enter your password">
+                                    <button type="button" class="password-toggle" aria-label="Toggle password visibility">👁️</button>
+                                </div>
+                            </div>
+
+                            <div class="auth-inline-links">
+                                <label class="remember-me">
+                                    <input type="checkbox"> Remember me
+                                </label>
+                                <a href="forgot_password.html" class="auth-switch-link">Need help signing in?</a>
+                            </div>
+
+                            <button type="submit" class="btn auth-primary-btn btn-block" id="loginBtn">Log In</button>
+                            <div id="loginMessage" class="form-message"></div>
+                        </form>
+
+                        <p class="auth-footer-note">
+                            New here? <a href="role_selection.html" class="auth-switch-link">Create your account</a>
+                        </p>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="footer-logo">
+                    <span class="logo-icon" aria-hidden="true">💊</span>
+                    <span class="logo-text">MedTracker</span>
+                </div>
+                <p class="footer-tagline">A softer, cleaner way to manage reminders, refill tracking, and care routines.</p>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 MedTracker. Daily support for medicine and health.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/script.js?v=8"></script>
+</body>
+
+</html>

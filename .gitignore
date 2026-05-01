@@ -1,0 +1,4 @@
+backend/config/config.local.php
+.env
+backend/cron/logs/run_reminders.log
+backend/cron/run_reminders.lock

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedTracker - Smart Medicine Reminder</title>
+    <!-- Modern font -> Outfit -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=4">
+</head>
+
+<body>
+    <div class="landing-container">
+        <!-- Abstract gradient background shapes -->
+        <div class="bg-shape shape-1"></div>
+        <div class="bg-shape shape-2"></div>
+        <div class="bg-shape shape-3"></div>
+
+        <nav class="navbar">
+            <div class="logo">
+                <span class="logo-icon">💊</span>
+                <span class="logo-text">MedTracker</span>
+            </div>
+            <div class="nav-links">
+                <a href="login.html" class="nav-link">Login</a>
+                <a href="role_selection.html" class="btn btn-primary">Sign Up</a>
+            </div>
+        </nav>
+
+        <main class="hero-section">
+            <div class="hero-content">
+                <div class="badge fade-in-up">🌟 Your Health, Simplified</div>
+                <h1 class="hero-title fade-in-up delay-1">Never Miss a <span class="highlight">Dose</span> Again</h1>
+                <p class="hero-subtitle fade-in-up delay-2">
+                    MedTracker is your smart, elegant companion for managing medications, tracking inventory, and
+                    ensuring your loved ones stay healthy.
+                </p>
+                <div class="hero-actions fade-in-up delay-3">
+                    <a href="role_selection.html" class="btn btn-primary btn-large">Get Started <span
+                            class="arrow">→</span></a>
+                    <a href="login.html" class="btn btn-secondary btn-large">I already have an account</a>
+                </div>
+            </div>
+            <div class="hero-image-container fade-in-up delay-4">
+                
+                <div class="glass-card mockup-card">
+                    <div class="mockup-header">
+                        <div class="mockup-dot red"></div>
+                        <div class="mockup-dot yellow"></div>
+                        <div class="mockup-dot green"></div>
+                    </div>
+                    <div class="mockup-body">
+                        <div class="mockup-title">Today's Schedule</div>
+
+                        <div class="med-item success">
+                            <div class="med-icon">💊</div>
+                            <div class="med-info">
+                                <h4>Amoxicillin</h4>
+                                <span>08:00 AM • After Breakfast</span>
+                            </div>
+                            <div class="med-status">Taken</div>
+                        </div>
+
+                        <div class="med-item pending">
+                            <div class="med-icon">💧</div>
+                            <div class="med-info">
+                                <h4>Vitamin C</h4>
+                                <span>02:00 PM • With Water</span>
+                            </div>
+                            <div class="med-status">Upcoming</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Home Page Extra Content Sections -->
+    <section id="features" class="section-padding features-band">
+        <h2 class="home-section-title">Everything You Need to <span class="highlight">Stay Healthy</span></h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">⏰</div>
+                <h3>Smart Reminders</h3>
+                <p>Get timely alerts for your medication routine. Say goodbye to forgotten pills and hello to consistent health tracking.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📦</div>
+                <h3>Inventory Tracking</h3>
+                <p>Keep an eye on your medicine stock. MedTracker notifies you when it's time to refill, so you never run out unexpectedly.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">👥</div>
+                <h3>Multi-Role Ecosystem</h3>
+                <p>Tailored dashboards for Patients, Health Workers, and Admins to ensure smooth coordination between care providers and receivers.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Health Insights</h3>
+                <p>Monitor your adherence trends over time with dynamic charts and history logs to share with your doctor.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="section-alt">
+        <div class="section-padding">
+            <h2 class="home-section-title">How <span class="highlight">MedTracker</span> Works</h2>
+            <div class="features-grid how-steps">
+                <div class="feature-card feature-card--plain">
+                    <div class="feature-icon feature-icon--step">1</div>
+                    <h3>Create your account</h3>
+                    <p>Sign up as a patient, health worker, or admin for a dashboard tailored to your role.</p>
+                </div>
+                <div class="feature-card feature-card--plain">
+                    <div class="feature-icon feature-icon--step">2</div>
+                    <h3>Add medications &amp; reminders</h3>
+                    <p>Enter schedules, doses, and refills. We organize everything and nudge you at the right time.</p>
+                </div>
+                <div class="feature-card feature-card--plain">
+                    <div class="feature-icon feature-icon--step">3</div>
+                    <h3>Track progress &amp; stay on track</h3>
+                    <p>Log doses, see trends, and share insights with your care team when you need to.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="footer-logo">
+                    <span class="logo-icon">💊</span>
+                    <span class="logo-text">MedTracker</span>
+                </div>
+                <p class="footer-tagline">Reminders, inventory, and care coordination in one calm, simple place.</p>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 MedTracker. Your smart companion for medication and health.</p>
+            </div>
+        </div>
+    </footer>
+<!-- DYNAMIC_NAME_SCRIPT -->
+<script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const userName = localStorage.getItem('name') || 'User';
+                document.querySelectorAll('.dynamic-user-name').forEach(el => el.textContent = userName);
+                // Also fix generic profiles
+                const profileNames = document.querySelectorAll('.name, .user-profile-sm .info .name');
+                profileNames.forEach(el => {
+                    if(el.textContent.includes('User') || el.textContent.includes('David') || el.textContent.includes('Patient Portal') || el.textContent.includes('Sarah')) {
+                        el.textContent = userName;
+                    }
+                });
+            });
+        </script>
+</body>
+
+</html>

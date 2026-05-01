@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports & Analytics - MedTracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=6">
+    <link rel="stylesheet" href="css/dashboard.css?v=1">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <style>
+        :root {
+            --report-accent-start: #4F46E5;
+            --report-accent-end: #EC4899;
+            --report-soft-tint: linear-gradient(135deg, rgba(79, 70, 229, 0.08), rgba(236, 72, 153, 0.08));
+            --report-soft-border: rgba(173, 123, 219, 0.24);
+        }
+
+        .report-header {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .report-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .export-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+            padding: 0.9rem 1.25rem;
+            border-radius: 999px;
+            border: none;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .export-btn.primary {
+            background: linear-gradient(135deg, var(--report-accent-start), var(--report-accent-end));
+            color: white;
+        }
+
+        .export-btn.secondary {
+            background: white;
+            color: var(--text-main);
+            border: 1px solid rgba(79, 70, 229, 0.16);
+        }
+
+        .chart-container {
+            background: var(--surface-solid);
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 2rem;
+            height: 400px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-card {
+            background: var(--surface-solid);
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .summary-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+
+        .summary-card.success .summary-icon { background: rgba(16, 185, 129, 0.1); color: var(--green); }
+        .summary-card.warning .summary-icon { background: rgba(239, 68, 68, 0.1); color: var(--red); }
+        .summary-card.info .summary-icon { background: rgba(79, 70, 229, 0.1); color: var(--primary); }
+
+        .summary-details h3 {
+            font-size: 1.5rem;
+            margin: 0;
+            color: var(--text-main);
+        }
+
+        .summary-details p {
+            color: var(--text-muted);
+            margin: 0;
+            font-size: 0.875rem;
+        }
+
+        .alerts-panel {
+            background: var(--surface-solid);
+            border-radius: 24px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .report-alert {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+        }
+
+        .report-alert:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .report-alert-type {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 700;
+        }
+
+        .report-hero {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.96), rgba(236, 72, 153, 0.82));
+            border-radius: 28px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            color: white;
+            box-shadow: 0 22px 44px rgba(149, 76, 186, 0.18);
+        }
+
+        .week-overview-grid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 0.75rem;
+            margin-top: 1.25rem;
+        }
+
+        .week-overview-day {
+            border-radius: 20px;
+            padding: 0.9rem 0.6rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            text-align: center;
+        }
+
+        .week-overview-day.today {
+            background: rgba(255, 255, 255, 0.16);
+            border-color: rgba(255, 255, 255, 0.34);
+        }
+
+        .week-overview-day.complete { border-color: rgba(16, 185, 129, 0.5); }
+        .week-overview-day.partial { border-color: rgba(245, 158, 11, 0.45); }
+        .week-overview-day.missed { border-color: rgba(239, 68, 68, 0.45); }
+
+        .week-day-name {
+            display: block;
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 0.45rem;
+        }
+
+        .week-day-number {
+            width: 42px;
+            height: 42px;
+            margin: 0 auto 0.5rem;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.16);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+        }
+
+        .week-overview-day.today .week-day-number {
+            background: white;
+            color: #0F172A;
+            border-color: rgba(255,255,255,0.4);
+        }
+
+        .week-day-status {
+            font-size: 0.72rem;
+            color: rgba(255,255,255,0.72);
+        }
+
+        .chart-container.enhanced {
+            height: auto;
+        }
+
+        .chart-stage {
+            height: 360px;
+        }
+
+        .water-panel {
+            background: var(--surface-solid);
+            border-radius: 24px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 2rem;
+        }
+
+        .water-summary-row {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .water-summary-card {
+            background: var(--report-soft-tint);
+            border-radius: 18px;
+            padding: 1rem 1.1rem;
+            border: 1px solid var(--report-soft-border);
+        }
+
+        .water-summary-card span {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.4rem;
+        }
+
+        .water-summary-card strong {
+            font-size: 1.4rem;
+            color: var(--text-main);
+        }
+
+        .water-chart-stage {
+            height: 220px;
+        }
+
+        .chart-context-note {
+            margin-top: 1rem;
+            padding: 0.9rem 1rem;
+            border-radius: 14px;
+            background: var(--report-soft-tint);
+            color: #6B4F90;
+            font-size: 0.86rem;
+            border: 1px solid var(--report-soft-border);
+        }
+
+        .chart-index-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.85rem;
+            margin-top: 1rem;
+        }
+
+        .insight-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .insight-card {
+            background: var(--surface-solid);
+            border-radius: 24px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .insight-card .chart-stage {
+            height: 260px;
+        }
+
+        .mini-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .mini-item {
+            background: var(--report-soft-tint);
+            border: 1px solid var(--report-soft-border);
+            border-radius: 16px;
+            padding: 0.9rem 1rem;
+        }
+
+        .mini-item strong {
+            display: block;
+            color: var(--text-main);
+        }
+
+        .mini-item span {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        .index-card {
+            background: var(--report-soft-tint);
+            border: 1px solid var(--report-soft-border);
+            border-radius: 16px;
+            padding: 1rem 1.05rem;
+        }
+
+        .index-card strong {
+            display: block;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #7C3AED;
+            margin-bottom: 0.35rem;
+        }
+
+        .index-card p {
+            margin: 0;
+            color: #6B4F90;
+            font-size: 0.86rem;
+            line-height: 1.55;
+        }
+
+        @media (max-width: 980px) {
+            .week-overview-grid,
+            .water-summary-row,
+            .insight-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 680px) {
+            .report-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .summary-grid,
+            .week-overview-grid,
+            .water-summary-row,
+            .insight-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="javascript:void(0)" class="sidebar-brand sidebar-brand--with-logo" style="text-decoration: none;">
+                    <span class="logo-icon sidebar-brand-mark" aria-hidden="true">💊</span>
+                    <span class="sidebar-brand-copy">
+                        <span class="title" style="font-size:1.25rem;">MedTracker</span>
+                        <span class="subtitle">Patient Portal</span>
+                    </span>
+                </a>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <i>📊</i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="medications.html" class="nav-item">
+                    <i>💊</i>
+                    <span>Medications</span>
+                </a>
+                <a href="schedule.html" class="nav-item">
+                    <i>🗓️</i>
+                    <span>Schedule</span>
+                </a>
+                <a href="reports.html" class="nav-item active">
+                    <i>📈</i>
+                    <span>Reports</span>
+                </a>
+                <a href="settings.html" class="nav-item">
+                    <i>⚙️</i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="btn btn-primary btn-block" style="display: flex; gap: 0.5rem; background: var(--red);" id="logoutBtn">
+                    <i>🚪</i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="report-header">
+                <div>
+                    <h1 style="font-size: 2rem; color: var(--text-main);">Adherence Analytics</h1>
+                    <p style="color: var(--text-muted);">Visual tracking of your medication intake over time.</p>
+                </div>
+
+                <div class="report-actions">
+                    <form id="reportForm" style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+                        <select id="reportPeriod" style="padding: 0.5rem; border-radius: 8px; border: 1px solid rgba(79, 70, 229, 0.2); background: white;">
+                            <option value="day">Single Day</option>
+                            <option value="week" selected>Week</option>
+                            <option value="month">Month</option>
+                            <option value="year">Year</option>
+                        </select>
+                        <input type="date" id="reportDate" style="padding: 0.5rem; border-radius: 8px; border: 1px solid rgba(79, 70, 229, 0.2); background: white;" value="<?php echo date('Y-m-d'); ?>">
+                        <button type="button" class="export-btn primary" id="generateReportBtn">
+                            <span>📊</span>
+                            <span>Generate Report</span>
+                        </button>
+                        <button type="button" class="export-btn secondary" id="exportPDFBtn">
+                            <span>⬇</span>
+                            <span>Export PDF</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="report-hero">
+                <div style="display:flex; justify-content:space-between; gap:1rem; align-items:flex-start; flex-wrap:wrap;">
+                    <div>
+                        <h2 style="font-size:1.6rem; margin-bottom:0.35rem;">Weekly Progress Strip</h2>
+                        <p style="margin:0; color:rgba(255,255,255,0.72);">See how each day is going at a glance, then drill into trends below.</p>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-size:0.78rem; color:rgba(255,255,255,0.62); text-transform:uppercase; letter-spacing:0.08em;">Expected Doses</div>
+                        <div id="reportExpectedDoses" style="font-size:1.8rem; font-weight:800;">0</div>
+                    </div>
+                </div>
+                <div style="display:flex; justify-content:space-between; gap:1rem; align-items:center; margin-top:1rem; flex-wrap:wrap;">
+                    <p style="margin:0; color:rgba(255,255,255,0.76);">Export this monthly report as a PDF with summary cards, charts, refill insights, alerts, and daily breakdown.</p>
+                    <button class="export-btn primary" id="downloadReportBtnHero">
+                        <span>⬇</span>
+                        <span>Export Monthly PDF</span>
+                    </button>
+                </div>
+                <div class="week-overview-grid" id="reportWeekOverview">
+                    <div class="week-overview-day today">
+                        <span class="week-day-name">Today</span>
+                        <div class="week-day-number">-</div>
+                        <div class="week-day-status">Loading</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="summary-grid">
+                <div class="summary-card success">
+                    <div class="summary-icon">✓</div>
+                    <div class="summary-details">
+                        <h3 id="reportAdherenceRate">0%</h3>
+                        <p>Overall Adherence</p>
+                    </div>
+                </div>
+                <div class="summary-card warning">
+                    <div class="summary-icon">!</div>
+                    <div class="summary-details">
+                        <h3 id="reportSkippedTotal">0</h3>
+                        <p>Missed / Skipped Doses</p>
+                    </div>
+                </div>
+                <div class="summary-card info">
+                    <div class="summary-icon">↻</div>
+                    <div class="summary-details">
+                        <h3 id="reportOveruseTotal">0</h3>
+                        <p>Overuse Alerts</p>
+                    </div>
+                </div>
+                <div class="summary-card info">
+                    <div class="summary-icon">⏰</div>
+                    <div class="summary-details">
+                        <h3 id="reportLateTakenTotal">0</h3>
+                        <p>Late Logged Doses</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container enhanced">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:1rem; flex-wrap:wrap;">
+                    <div>
+                        <h2 style="font-size:1.25rem; margin-bottom:0.3rem;">Dose Completion Graph</h2>
+                        <p style="margin:0; color:var(--text-muted);" id="reportChartDescription">Stacked daily activity with a trend line for adherence rate.</p>
+                    </div>
+                    <div style="font-size:0.82rem; color:var(--text-muted);" id="reportChartRangeLabel">Last 7 days</div>
+                </div>
+                <div class="chart-stage">
+                    <canvas id="adherenceChart"></canvas>
+                </div>
+                <div class="chart-context-note" id="reportChartContext">This chart updates from the actual doses scheduled in your treatment window.</div>
+                <div class="chart-index-grid">
+                    <div class="index-card">
+                        <strong>Overuse Detection Index</strong>
+                        <p id="reportOveruseIndexText">Overuse is recorded when the same scheduled dose is marked as taken again after it was already logged as taken on the same day.</p>
+                    </div>
+                    <div class="index-card">
+                        <strong>Adherence Index</strong>
+                        <p id="reportAdherenceIndexText">Good: 80-100%. Watch: 50-79%. Risk: below 50%. Percent is based on taken doses out of all expected doses in the treatment window.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="summary-grid" style="grid-template-columns: repeat(2, 1fr);">
+                <div class="summary-card info">
+                    <div class="summary-icon">🔥</div>
+                    <div class="summary-details">
+                        <h3 id="reportStreakDays">0 Days</h3>
+                        <p>Current Safe Streak</p>
+                    </div>
+                </div>
+                <div class="summary-card warning">
+                    <div class="summary-icon">📦</div>
+                    <div class="summary-details">
+                        <h3 id="reportLowStockTotal">0</h3>
+                        <p>Low Stock Alerts</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="water-panel">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:1rem; flex-wrap:wrap;">
+                    <div>
+                        <h2 style="font-size:1.25rem; margin-bottom:0.3rem;">Hydration Trend</h2>
+                        <p style="margin:0; color:var(--text-muted);">Water tracking for the same care window as your medication progress.</p>
+                    </div>
+                </div>
+                <div class="water-summary-row">
+                    <div class="water-summary-card">
+                        <span>Today</span>
+                        <strong id="reportWaterToday">0 ml</strong>
+                    </div>
+                    <div class="water-summary-card">
+                        <span>Goal</span>
+                        <strong id="reportWaterGoal">2000 ml</strong>
+                    </div>
+                    <div class="water-summary-card">
+                        <span>7-Day Average</span>
+                        <strong id="reportWaterAverage">0 ml</strong>
+                    </div>
+                </div>
+                <div class="water-chart-stage">
+                    <canvas id="hydrationChart"></canvas>
+                </div>
+                <div class="chart-index-grid">
+                    <div class="index-card">
+                        <strong>Hydration Goal Index</strong>
+                        <p id="reportHydrationIndexText">Daily hydration target is 2000 ml. Progress is shown as current intake divided by this goal.</p>
+                    </div>
+                    <div class="index-card">
+                        <strong>Low Stock Index</strong>
+                        <p id="reportStockIndexText">Low stock alert triggers at 5 doses or fewer. Critical stock means 0 doses remaining.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="summary-grid" style="grid-template-columns: repeat(3, 1fr);">
+                <div class="summary-card info">
+                    <div class="summary-icon">💚</div>
+                    <div class="summary-details">
+                        <h3 id="reportWellnessScore">0</h3>
+                        <p>Combined Wellness Score</p>
+                    </div>
+                </div>
+                <div class="summary-card success">
+                    <div class="summary-icon">💊</div>
+                    <div class="summary-details">
+                        <h3 id="reportWellnessAdherence">0%</h3>
+                        <p>Medicine Adherence</p>
+                    </div>
+                </div>
+                <div class="summary-card info">
+                    <div class="summary-icon">💧</div>
+                    <div class="summary-details">
+                        <h3 id="reportWellnessHydration">0%</h3>
+                        <p>Hydration Goal Progress</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="insight-grid">
+                <div class="insight-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:1rem;">
+                        <div>
+                            <h2 style="font-size:1.15rem; margin-bottom:0.2rem;">Late Dose Chart by Medicine</h2>
+                            <p style="margin:0; color:var(--text-muted); font-size:0.86rem;">See which medicines are most often logged after the grace window.</p>
+                        </div>
+                    </div>
+                    <div class="chart-stage">
+                        <canvas id="lateByMedicineChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="insight-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:1rem;">
+                        <div>
+                            <h2 style="font-size:1.15rem; margin-bottom:0.2rem;">Missed Dose Reasons</h2>
+                            <p style="margin:0; color:var(--text-muted); font-size:0.86rem;">Understand why doses are being skipped so the plan can improve.</p>
+                        </div>
+                    </div>
+                    <div class="chart-stage">
+                        <canvas id="missedReasonChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="insight-card" style="margin-bottom:2rem;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap;">
+                    <div>
+                        <h2 style="font-size:1.15rem; margin-bottom:0.2rem;">Refill Adherence</h2>
+                        <p style="margin:0; color:var(--text-muted); font-size:0.86rem;">Tracks how safely your active medicines are stocked and whether refill actions are happening in time.</p>
+                    </div>
+                </div>
+                <div class="water-summary-row" style="margin-top:1rem;">
+                    <div class="water-summary-card">
+                        <span>Coverage Rate</span>
+                        <strong id="reportRefillCoverageRate">0%</strong>
+                    </div>
+                    <div class="water-summary-card">
+                        <span>Refill Actions</span>
+                        <strong id="reportRefillActions">0</strong>
+                    </div>
+                    <div class="water-summary-card">
+                        <span>Out of Stock</span>
+                        <strong id="reportOutOfStockCount">0</strong>
+                    </div>
+                </div>
+                <div class="mini-list" id="reportRefillList">
+                    <div class="mt-skeleton-list" aria-hidden="true">
+                        <div class="mt-skeleton-card mt-skeleton-card--compact">
+                            <div class="mt-skeleton-line" style="width: 46%;"></div>
+                            <div class="mt-skeleton-line" style="width: 80%;"></div>
+                        </div>
+                        <div class="mt-skeleton-card mt-skeleton-card--compact">
+                            <div class="mt-skeleton-line" style="width: 38%;"></div>
+                            <div class="mt-skeleton-line" style="width: 72%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alerts-panel">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                    <h2 style="font-size:1.25rem;">Adherence Alerts</h2>
+                    <span style="font-size:0.875rem; color:var(--text-muted);">Based on your logged intake behavior</span>
+                </div>
+                <div id="reportAlertsList">
+                    <div class="mt-skeleton-list" aria-hidden="true">
+                        <div class="mt-skeleton-card mt-skeleton-card--compact">
+                            <div class="mt-skeleton-line" style="width: 40%;"></div>
+                            <div class="mt-skeleton-line" style="width: 78%;"></div>
+                        </div>
+                        <div class="mt-skeleton-card mt-skeleton-card--compact">
+                            <div class="mt-skeleton-line" style="width: 52%;"></div>
+                            <div class="mt-skeleton-line" style="width: 68%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="footer-logo">
+                    <span class="logo-icon" aria-hidden="true">💊</span>
+                    <span class="logo-text">MedTracker</span>
+                </div>
+                <p class="footer-tagline">Reminders, inventory, and care coordination in one calm, simple place.</p>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 MedTracker. Your smart companion for medication and health.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/script.js?v=8"></script>
+    <script>
+        let adherenceChart;
+        let hydrationChart;
+        let lateByMedicineChart;
+        let missedReasonChart;
+
+        function waitForChartPaint() {
+            return new Promise((resolve) => {
+                requestAnimationFrame(() => requestAnimationFrame(resolve));
+            });
+        }
+
+        async function captureChartImage(chart, backgroundColor = '#FFFFFF') {
+            if (!chart?.canvas) {
+                return '';
+            }
+
+            try {
+                if (typeof chart.stop === 'function') {
+                    chart.stop();
+                }
+                if (typeof chart.update === 'function') {
+                    chart.update('none');
+                }
+            } catch (error) {
+                // Ignore export refresh issues and fall back to the current canvas state.
+            }
+
+            await waitForChartPaint();
+
+            const sourceCanvas = chart.canvas;
+            const width = sourceCanvas.width || sourceCanvas.clientWidth || 0;
+            const height = sourceCanvas.height || sourceCanvas.clientHeight || 0;
+
+            if (!width || !height) {
+                return '';
+            }
+
+            const exportCanvas = document.createElement('canvas');
+            exportCanvas.width = width;
+            exportCanvas.height = height;
+            const exportContext = exportCanvas.getContext('2d');
+
+            if (!exportContext) {
+                return '';
+            }
+
+            exportContext.fillStyle = backgroundColor;
+            exportContext.fillRect(0, 0, width, height);
+            exportContext.drawImage(sourceCanvas, 0, 0, width, height);
+
+            return exportCanvas.toDataURL('image/png', 1.0);
+        }
+        let reportPayload = {
+            summary: {},
+            alerts: [],
+            chart: [],
+            week_overview: [],
+            water: {},
+            late_by_medicine: [],
+            missed_reason_breakdown: [],
+            refill_adherence: {},
+            wellness_summary: {}
+        };
+        const REPORT_INDEX = {
+            lowStockThreshold: 5,
+            criticalStockThreshold: 0,
+            missedGraceMinutes: 15,
+            hydrationGoalMl: 2000,
+            adherenceBands: {
+                good: '80-100%',
+                watch: '50-79%',
+                risk: 'Below 50%'
+            },
+            overuseRule: 'Same scheduled dose marked as taken more than once on the same day'
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!window.MedTrackerApp.protectRoute(['User'])) {
+                return;
+            }
+
+            // Confirm Logout feature
+            document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
+                e.preventDefault();
+                if (await window.MedTrackerApp.confirmAction('Are you sure you want to log out?', {
+                    title: 'Log out',
+                    confirmText: 'Log out',
+                    tone: 'warning'
+                })) {
+                    window.MedTrackerApp.logout();
+                }
+            });
+
+            document.getElementById('downloadReportBtnHero')?.addEventListener('click', async () => {
+                await downloadPatientReportPdf();
+            });
+
+            document.getElementById('generateReportBtn')?.addEventListener('click', async () => {
+                await generateReport();
+            });
+
+            document.getElementById('exportPDFBtn')?.addEventListener('click', async () => {
+                await downloadPatientReportPdf();
+            });
+
+            loadPatientReport();
+        });
+
+        async function generateReport() {
+            const period = document.getElementById('reportPeriod').value;
+            const date = document.getElementById('reportDate').value;
+
+            let days = 7;
+            if (period === 'day') {
+                days = 1;
+            } else if (period === 'week') {
+                days = 7;
+            } else if (period === 'month') {
+                days = 30;
+            } else if (period === 'year') {
+                days = 365;
+            }
+
+            try {
+                const response = await fetch(`../backend/api/get_patient_adherence.php?days=${days}`);
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.message || 'Unable to load adherence report.');
+                }
+
+                reportPayload = {
+                    summary: result.summary || {},
+                    alerts: result.alerts || [],
+                    chart: result.chart || [],
+                    week_overview: result.week_overview || [],
+                    water: result.water || {},
+                    late_by_medicine: result.late_by_medicine || [],
+                    missed_reason_breakdown: result.missed_reason_breakdown || [],
+                    refill_adherence: result.refill_adherence || {},
+                    wellness_summary: result.wellness_summary || {}
+                };
+
+                renderReportSummary(reportPayload.summary);
+                renderWeekOverview(reportPayload.week_overview);
+                renderReportAlerts(reportPayload.alerts);
+                renderReportChart(reportPayload.chart);
+                renderWaterPanel(reportPayload.water);
+                renderReportIndexes(reportPayload.summary, reportPayload.water);
+                renderLateByMedicineChart(reportPayload.late_by_medicine);
+                renderMissedReasonChart(reportPayload.missed_reason_breakdown);
+                renderRefillSection(reportPayload.refill_adherence);
+                renderWellnessSummary(reportPayload.wellness_summary);
+
+                // Update chart description based on period
+                const chartDesc = document.getElementById('reportChartDescription');
+                if (chartDesc) {
+                    if (period === 'day') {
+                        chartDesc.textContent = 'Daily activity for the selected date.';
+                    } else if (period === 'week') {
+                        chartDesc.textContent = 'Weekly activity with a trend line for adherence rate.';
+                    } else if (period === 'month') {
+                        chartDesc.textContent = 'Monthly activity with a trend line for adherence rate.';
+                    } else if (period === 'year') {
+                        chartDesc.textContent = 'Yearly activity with a trend line for adherence rate.';
+                    }
+                }
+
+                // Update range label
+                const rangeLabel = document.getElementById('reportChartRangeLabel');
+                if (rangeLabel) {
+                    if (period === 'day') {
+                        rangeLabel.textContent = `Date: ${date}`;
+                    } else if (period === 'week') {
+                        rangeLabel.textContent = `Week of ${date}`;
+                    } else if (period === 'month') {
+                        rangeLabel.textContent = `Month of ${date}`;
+                    } else if (period === 'year') {
+                        rangeLabel.textContent = `Year of ${date}`;
+                    }
+                }
+
+            } catch (error) {
+                console.error('Error generating report:', error);
+                window.MedTrackerApp.showToast('Unable to generate report. Please try again.', 'error');
+            }
+        }
+
+        async function loadPatientReport() {
+            try {
+                const response = await fetch('../backend/api/get_patient_adherence.php?days=30');
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.message || 'Unable to load adherence report.');
+                }
+
+                reportPayload = {
+                    summary: result.summary || {},
+                    alerts: result.alerts || [],
+                    chart: result.chart || [],
+                    week_overview: result.week_overview || [],
+                    water: result.water || {},
+                    late_by_medicine: result.late_by_medicine || [],
+                    missed_reason_breakdown: result.missed_reason_breakdown || [],
+                    refill_adherence: result.refill_adherence || {},
+                    wellness_summary: result.wellness_summary || {}
+                };
+
+                renderReportSummary(reportPayload.summary);
+                renderWeekOverview(reportPayload.week_overview);
+                renderReportAlerts(reportPayload.alerts);
+                renderReportChart(reportPayload.chart);
+                renderWaterPanel(reportPayload.water);
+                renderReportIndexes(reportPayload.summary, reportPayload.water);
+                renderLateByMedicineChart(reportPayload.late_by_medicine);
+                renderMissedReasonChart(reportPayload.missed_reason_breakdown);
+                renderRefillSection(reportPayload.refill_adherence);
+                renderWellnessSummary(reportPayload.wellness_summary);
+            } catch (error) {
+                document.getElementById('reportAlertsList').innerHTML = window.MedTrackerApp.getEmptyStateHtml({
+                    icon: '!',
+                    title: 'Report alerts unavailable',
+                    message: 'We could not load adherence alerts right now.'
+                });
+                document.getElementById('reportRefillList').innerHTML = window.MedTrackerApp.getEmptyStateHtml({
+                    icon: '📦',
+                    title: 'Refill insights unavailable',
+                    message: 'We could not load refill activity for this report window.'
+                });
+            }
+        }
+
+        function renderReportIndexes(summary, water) {
+            const lowStockCount = Number(summary.low_stock_total || 0);
+            document.getElementById('reportOveruseIndexText').textContent =
+                `Overuse is recorded when ${REPORT_INDEX.overuseRule.toLowerCase()}. Each repeated taken-log creates one overuse alert in the graph and report.`;
+            document.getElementById('reportAdherenceIndexText').textContent =
+                `Good: ${REPORT_INDEX.adherenceBands.good}. Watch: ${REPORT_INDEX.adherenceBands.watch}. Risk: ${REPORT_INDEX.adherenceBands.risk}. Percent is calculated from taken doses out of expected doses, while late logs are tracked separately after the ${REPORT_INDEX.missedGraceMinutes}-minute grace window.`;
+            document.getElementById('reportHydrationIndexText').textContent =
+                `Daily hydration target is ${Number(water.goal_ml || REPORT_INDEX.hydrationGoalMl)} ml. Progress is current intake divided by that goal.`;
+            document.getElementById('reportStockIndexText').textContent =
+                `Low stock alert triggers at ${REPORT_INDEX.lowStockThreshold} doses or fewer. Critical stock means ${REPORT_INDEX.criticalStockThreshold} doses left. Current low-stock count: ${lowStockCount}.`;
+        }
+
+        function renderReportSummary(summary) {
+            document.getElementById('reportAdherenceRate').textContent = `${summary.adherence_rate || 0}%`;
+            document.getElementById('reportSkippedTotal').textContent = String(summary.skipped_total || 0);
+            document.getElementById('reportOveruseTotal').textContent = String(summary.overuse_total || 0);
+            document.getElementById('reportLateTakenTotal').textContent = String(summary.late_taken_total || 0);
+            document.getElementById('reportStreakDays').textContent = `${summary.streak_days || 0} Days`;
+            document.getElementById('reportLowStockTotal').textContent = String(summary.low_stock_total || 0);
+            document.getElementById('reportExpectedDoses').textContent = String(summary.expected_doses || 0);
+        }
+
+        function renderWeekOverview(days) {
+            const container = document.getElementById('reportWeekOverview');
+
+            if (!days.length) {
+                container.innerHTML = '<div class="week-overview-day today"><span class="week-day-name">Today</span><div class="week-day-number">-</div><div class="week-day-status">No data</div></div>';
+                return;
+            }
+
+            const labels = {
+                complete: 'Complete',
+                partial: 'Partial',
+                missed: 'Missed',
+                pending: 'Pending',
+                upcoming: 'Upcoming',
+                none: 'No doses'
+            };
+
+            container.innerHTML = days.map((day) => `
+                <div class="week-overview-day ${day.status} ${day.is_today ? 'today' : ''}">
+                    <span class="week-day-name">${day.day_short}</span>
+                    <div class="week-day-number">${day.day_number}</div>
+                    <div class="week-day-status">${labels[day.status] || 'Tracked'}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderReportAlerts(alerts) {
+            const container = document.getElementById('reportAlertsList');
+
+            if (!alerts.length) {
+                container.innerHTML = window.MedTrackerApp.getEmptyStateHtml({
+                    icon: '✓',
+                    title: 'No adherence alerts',
+                    message: 'No adherence alerts were detected in the selected window.'
+                });
+                return;
+            }
+
+            container.innerHTML = alerts.map((alert) => `
+                <div class="report-alert">
+                    <div>
+                        <div class="report-alert-type" style="color:${alert.type === 'overuse' ? 'var(--red)' : alert.type === 'late_intake' ? 'var(--primary)' : 'var(--yellow)'};">${alert.type.replace('_', ' ')}</div>
+                        <p style="margin-top:0.35rem; color:var(--text-main);">${alert.message}</p>
+                    </div>
+                    <span style="font-size:0.8rem; color:var(--text-muted); white-space:nowrap;">${new Date(alert.created_at).toLocaleString()}</span>
+                </div>
+            `).join('');
+        }
+
+        function renderReportChart(chartRows) {
+            const ctx = document.getElementById('adherenceChart');
+            const description = document.getElementById('reportChartDescription');
+            const rangeLabel = document.getElementById('reportChartRangeLabel');
+            const context = document.getElementById('reportChartContext');
+            if (!ctx) {
+                return;
+            }
+
+            if (adherenceChart) {
+                adherenceChart.destroy();
+            }
+
+            const rowsWithActivity = chartRows.filter((row) => {
+                const total = Number(row.taken || 0) + Number(row.skipped || 0) + Number(row.pending || 0) + Number(row.overuse || 0) + Number(row.late || 0);
+                return total > 0;
+            });
+            const rowsToRender = rowsWithActivity.length ? rowsWithActivity : chartRows;
+            const hasCollapsedRange = rowsWithActivity.length > 0 && rowsWithActivity.length < chartRows.length;
+            const maxDoseCount = Math.max(1, ...rowsToRender.map((row) => Number(row.taken || 0) + Number(row.skipped || 0) + Number(row.pending || 0) + Number(row.overuse || 0) + Number(row.late || 0)));
+
+            const adherenceRateSeries = rowsToRender.map((row) => {
+                const total = Number(row.taken || 0) + Number(row.skipped || 0) + Number(row.pending || 0);
+                return total ? Math.round((Number(row.taken || 0) / total) * 100) : null;
+            });
+
+            rangeLabel.textContent = hasCollapsedRange
+                ? `Showing ${rowsToRender.length} active treatment day${rowsToRender.length === 1 ? '' : 's'}`
+                : 'Last 30 days';
+            description.textContent = hasCollapsedRange
+                ? 'Only days with scheduled doses are shown here, so the chart stays focused on real treatment activity.'
+                : 'Stacked daily activity with a trend line for adherence rate.';
+            context.textContent = hasCollapsedRange
+                ? 'Days without scheduled medicine are hidden from the graph instead of being shown as flat zero-performance days.'
+                : 'This chart updates from the actual doses scheduled in your treatment window.';
+
+            adherenceChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: rowsToRender.map((row) => row.label),
+                    datasets: [
+                        {
+                            label: 'Taken',
+                            data: rowsToRender.map((row) => row.taken),
+                            backgroundColor: '#10B981',
+                            borderRadius: 10,
+                            stack: 'doses',
+                            maxBarThickness: 58
+                        },
+                        {
+                            label: 'Missed / Skipped',
+                            data: rowsToRender.map((row) => row.skipped),
+                            backgroundColor: '#F59E0B',
+                            borderRadius: 10,
+                            stack: 'doses',
+                            maxBarThickness: 58
+                        },
+                        {
+                            label: 'Pending',
+                            data: rowsToRender.map((row) => row.pending),
+                            backgroundColor: '#94A3B8',
+                            borderRadius: 10,
+                            stack: 'doses',
+                            maxBarThickness: 58
+                        },
+                        {
+                            label: 'Overuse Alerts',
+                            data: rowsToRender.map((row) => row.overuse),
+                            backgroundColor: '#EF4444',
+                            borderRadius: 10,
+                            stack: 'doses',
+                            maxBarThickness: 58
+                        },
+                        {
+                            type: 'line',
+                            label: 'Late Logged',
+                            data: rowsToRender.map((row) => row.late),
+                            borderColor: '#F97316',
+                            backgroundColor: 'rgba(249, 115, 22, 0.16)',
+                            borderWidth: 3,
+                            borderDash: [6, 4],
+                            pointRadius: 4,
+                            pointHoverRadius: 5,
+                            pointBackgroundColor: '#F97316',
+                            tension: 0.35,
+                            yAxisID: 'y'
+                        },
+                        {
+                            type: 'line',
+                            label: 'Adherence %',
+                            data: adherenceRateSeries,
+                            borderColor: '#4F46E5',
+                            backgroundColor: 'rgba(79, 70, 229, 0.14)',
+                            borderWidth: 3,
+                            pointRadius: 4,
+                            pointHoverRadius: 5,
+                            pointBackgroundColor: '#4F46E5',
+                            tension: 0.35,
+                            spanGaps: false,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                boxWidth: 10,
+                                font: { family: 'Outfit' }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                afterBody: (items) => {
+                                    const row = rowsToRender[items[0]?.dataIndex ?? -1];
+                                    if (!row) {
+                                        return '';
+                                    }
+
+                                    const expected = Number(row.taken || 0) + Number(row.skipped || 0) + Number(row.pending || 0);
+                                    return expected
+                                        ? [`Expected doses: ${expected}`, `Late logged: ${Number(row.late || 0)}`]
+                                        : 'No scheduled doses';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { stacked: true, grid: { display: false } },
+                        y: {
+                            beginAtZero: true,
+                            stacked: true,
+                            suggestedMax: maxDoseCount + 1,
+                            ticks: { precision: 0 }
+                        },
+                        y1: {
+                            beginAtZero: true,
+                            position: 'right',
+                            max: 100,
+                            ticks: {
+                                callback: (value) => `${value}%`
+                            },
+                            grid: { drawOnChartArea: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderWaterPanel(water) {
+            document.getElementById('reportWaterToday').textContent = `${Number(water.today_ml || 0)} ml`;
+            document.getElementById('reportWaterGoal').textContent = `${Number(water.goal_ml || 2000)} ml`;
+            document.getElementById('reportWaterAverage').textContent = `${Number(water.weekly_average_ml || 0)} ml`;
+
+            const ctx = document.getElementById('hydrationChart');
+            if (!ctx) {
+                return;
+            }
+
+            if (hydrationChart) {
+                hydrationChart.destroy();
+            }
+
+            hydrationChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: (water.series || []).map((row) => row.label),
+                    datasets: [
+                        {
+                            label: 'Water Intake (ml)',
+                            data: (water.series || []).map((row) => Number(row.value || 0)),
+                            borderColor: '#0EA5E9',
+                            backgroundColor: 'rgba(14, 165, 233, 0.14)',
+                            fill: true,
+                            borderWidth: 3,
+                            tension: 0.35,
+                            pointRadius: 4,
+                            pointHoverRadius: 5
+                        },
+                        {
+                            label: 'Goal',
+                            data: (water.series || []).map(() => Number(water.goal_ml || 2000)),
+                            borderColor: '#94A3B8',
+                            borderDash: [6, 6],
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                boxWidth: 10,
+                                font: { family: 'Outfit' }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: (value) => `${value} ml`
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderLateByMedicineChart(rows) {
+            const ctx = document.getElementById('lateByMedicineChart');
+            if (!ctx) {
+                return;
+            }
+
+            if (lateByMedicineChart) {
+                lateByMedicineChart.destroy();
+            }
+
+            lateByMedicineChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: rows.map((row) => row.medicine_name),
+                    datasets: [{
+                        label: 'Late Logged Doses',
+                        data: rows.map((row) => Number(row.late_total || 0)),
+                        backgroundColor: 'rgba(249, 115, 22, 0.82)',
+                        borderRadius: 10,
+                        maxBarThickness: 54
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { beginAtZero: true, ticks: { precision: 0 } }
+                    }
+                }
+            });
+        }
+
+        function renderMissedReasonChart(rows) {
+            const ctx = document.getElementById('missedReasonChart');
+            if (!ctx) {
+                return;
+            }
+
+            if (missedReasonChart) {
+                missedReasonChart.destroy();
+            }
+
+            missedReasonChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: rows.map((row) => row.reason),
+                    datasets: [{
+                        data: rows.map((row) => Number(row.count || 0)),
+                        backgroundColor: ['#4F46E5', '#F59E0B', '#EF4444', '#0EA5E9', '#10B981', '#8B5CF6'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                boxWidth: 10,
+                                font: { family: 'Outfit' }
+                            }
+                        }
+                    },
+                    cutout: '62%'
+                }
+            });
+        }
+
+        function renderRefillSection(refill) {
+            document.getElementById('reportRefillCoverageRate').textContent = `${Number(refill.refill_coverage_rate || 0)}%`;
+            document.getElementById('reportRefillActions').textContent = String(refill.refill_actions_total || 0);
+            document.getElementById('reportOutOfStockCount').textContent = String(refill.out_of_stock_count || 0);
+
+            const list = document.getElementById('reportRefillList');
+            const recentRefills = Array.isArray(refill.recent_refills) ? refill.recent_refills : [];
+            const lowStock = Array.isArray(refill.low_stock_medicines) ? refill.low_stock_medicines : [];
+
+            if (!recentRefills.length && !lowStock.length) {
+                list.innerHTML = window.MedTrackerApp.getEmptyStateHtml({
+                    icon: '📦',
+                    title: 'No refill pressure detected',
+                    message: 'Your medicines stayed comfortably stocked during this report window.'
+                });
+                return;
+            }
+
+            list.innerHTML = [
+                ...recentRefills.slice(0, 3).map((item) => `
+                    <div class="mini-item">
+                        <strong>${item.medicine_name}</strong>
+                        <span>Refilled ${Number(item.added_stock || 0)} units on ${new Date(item.created_at).toLocaleString()} • New stock ${Number(item.new_quantity || 0)}</span>
+                    </div>
+                `),
+                ...lowStock.slice(0, 3).map((item) => `
+                    <div class="mini-item">
+                        <strong>${item.name}</strong>
+                        <span>${item.dosage} • Low stock warning with ${Number(item.quantity || 0)} units left</span>
+                    </div>
+                `)
+            ].join('');
+        }
+
+        function renderWellnessSummary(summary) {
+            document.getElementById('reportWellnessScore').textContent = String(summary.wellness_score || 0);
+            document.getElementById('reportWellnessAdherence').textContent = `${Number(summary.adherence_percent || 0)}%`;
+            document.getElementById('reportWellnessHydration').textContent = `${Number(summary.hydration_percent || 0)}%`;
+        }
+
+        async function downloadPatientReportPdf() {
+            const buttons = [
+                document.getElementById('downloadReportBtnHero'),
+                document.getElementById('exportPDFBtn')
+            ].filter(Boolean);
+
+            if (!window.jspdf?.jsPDF) {
+                window.MedTrackerApp.showToast('PDF generator is unavailable right now.', 'error');
+                return;
+            }
+
+            if (!reportPayload.chart.length && !reportPayload.alerts.length && !Object.keys(reportPayload.summary).length) {
+                window.MedTrackerApp.showToast('Please wait for the report data to finish loading.', 'warning', {
+                    title: 'Report still loading'
+                });
+                return;
+            }
+
+            const originalLabels = buttons.map((button) => button.innerHTML);
+            buttons.forEach((button) => {
+                button.disabled = true;
+                button.innerHTML = '<span>⏳</span><span>Generating PDF...</span>';
+            });
+
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+                const margin = 14;
+                const usableWidth = pageWidth - (margin * 2);
+                const currentUser = window.MedTrackerApp.getCurrentUser();
+                const summary = reportPayload.summary || {};
+                const chartRows = reportPayload.chart || [];
+                const alerts = reportPayload.alerts || [];
+                const water = reportPayload.water || {};
+                const refill = reportPayload.refill_adherence || {};
+                const wellness = reportPayload.wellness_summary || {};
+                const missedReasons = reportPayload.missed_reason_breakdown || [];
+                const generatedAt = new Date();
+                const activeChartRows = chartRows.filter((row) => Number(row.taken || 0) + Number(row.skipped || 0) + Number(row.pending || 0) + Number(row.overuse || 0) + Number(row.late || 0) > 0);
+                const reportRows = activeChartRows.length ? activeChartRows : chartRows;
+                let y = 18;
+
+                const ensureSpace = (required) => {
+                    if (y + required > pageHeight - margin) {
+                        doc.addPage();
+                        y = 18;
+                    }
+                };
+
+                const drawSectionHeader = (title, subtitle = '') => {
+                    ensureSpace(20);
+                    doc.setFillColor(248, 245, 255);
+                    doc.setDrawColor(224, 214, 255);
+                    doc.roundedRect(margin, y - 2, usableWidth, subtitle ? 16 : 10, 3, 3, 'FD');
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(13);
+                    doc.setTextColor(79, 70, 229);
+                    doc.text(title, margin + 4, y + 4);
+                    if (subtitle) {
+                        doc.setFont('helvetica', 'normal');
+                        doc.setFontSize(9.5);
+                        doc.setTextColor(100, 116, 139);
+                        doc.text(subtitle, margin + 4, y + 10);
+                    }
+                    y += subtitle ? 19 : 12;
+                };
+
+                const drawInfoCard = (title, body, options = {}) => {
+                    const width = options.width || usableWidth;
+                    const x = options.x || margin;
+                    const accent = options.accent || [79, 70, 229];
+                    const background = options.background || [250, 250, 252];
+                    const titleLines = doc.splitTextToSize(title, width - 12);
+                    const bodyLines = doc.splitTextToSize(body, width - 12);
+                    const height = 8 + (titleLines.length * 5) + (bodyLines.length * 4.8) + 6;
+
+                    if (options.ensure !== false) {
+                        ensureSpace(height + 2);
+                    }
+
+                    doc.setFillColor(...background);
+                    doc.setDrawColor(226, 232, 240);
+                    doc.roundedRect(x, y, width, height, 3, 3, 'FD');
+                    doc.setFillColor(...accent);
+                    doc.roundedRect(x + 3, y + 3, 2.5, height - 6, 1, 1, 'F');
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(10);
+                    doc.setTextColor(15, 23, 42);
+                    doc.text(titleLines, x + 9, y + 6);
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(9.5);
+                    doc.setTextColor(71, 85, 105);
+                    doc.text(bodyLines, x + 9, y + 11 + ((titleLines.length - 1) * 5));
+                    y += height + 4;
+                };
+
+                const drawMetricCards = (cards) => {
+                    const columns = 2;
+                    const gap = 6;
+                    const cardWidth = (usableWidth - gap) / columns;
+                    const cardHeight = 21;
+                    const startY = y;
+
+                    ensureSpace((Math.ceil(cards.length / columns) * (cardHeight + 5)) + 2);
+
+                    cards.forEach((card, index) => {
+                        const col = index % columns;
+                        const row = Math.floor(index / columns);
+                        const x = margin + (col * (cardWidth + gap));
+                        const cardY = startY + (row * (cardHeight + 5));
+
+                        doc.setFillColor(255, 255, 255);
+                        doc.setDrawColor(226, 232, 240);
+                        doc.roundedRect(x, cardY, cardWidth, cardHeight, 3, 3, 'FD');
+                        doc.setFillColor(...card.color);
+                        doc.roundedRect(x + 3, cardY + 3, 3, cardHeight - 6, 1, 1, 'F');
+                        doc.setFont('helvetica', 'normal');
+                        doc.setFontSize(8.5);
+                        doc.setTextColor(100, 116, 139);
+                        doc.text(card.label, x + 10, cardY + 7);
+                        doc.setFont('helvetica', 'bold');
+                        doc.setFontSize(13);
+                        doc.setTextColor(15, 23, 42);
+                        doc.text(card.value, x + 10, cardY + 15);
+                    });
+
+                    y = startY + (Math.ceil(cards.length / columns) * (cardHeight + 5));
+                };
+
+                const adherenceTone = Number(summary.adherence_rate || 0) >= 80
+                    ? 'strong'
+                    : Number(summary.adherence_rate || 0) >= 50
+                        ? 'watch'
+                        : 'risk';
+                const overviewSentence = Number(summary.expected_doses || 0) === 0
+                    ? 'No scheduled doses were detected in the current monthly report window, so the report is focused on setup status and monitoring rules.'
+                    : `This monthly report shows ${summary.adherence_rate || 0}% adherence with ${summary.taken_total || 0} completed doses out of ${summary.expected_doses || 0} expected doses. Current status is ${adherenceTone}.`;
+
+                doc.setFillColor(79, 70, 229);
+                doc.roundedRect(margin, y - 6, usableWidth, 32, 5, 5, 'F');
+                doc.setFillColor(236, 72, 153);
+                doc.roundedRect(margin + (usableWidth * 0.52), y - 6, usableWidth * 0.48, 32, 5, 5, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(19);
+                doc.text('MedTracker Adherence Report', margin + 6, y + 2);
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'normal');
+                doc.text(`Patient: ${currentUser.name || 'User'}`, margin + 6, y + 10);
+                doc.text(`Generated: ${generatedAt.toLocaleString()}`, margin + 6, y + 16);
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(24);
+                doc.text(`${summary.adherence_rate || 0}%`, pageWidth - margin - 28, y + 10, { align: 'right' });
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(9);
+                doc.text('Current adherence', pageWidth - margin - 6, y + 16, { align: 'right' });
+                y += 36;
+
+                drawInfoCard(
+                    'Executive Summary',
+                    overviewSentence,
+                    { accent: [236, 72, 153], background: [252, 244, 250] }
+                );
+
+                drawSectionHeader('Summary Snapshot', 'Key metrics from the current monthly treatment window');
+                drawMetricCards([
+                    { label: 'Overall Adherence', value: `${summary.adherence_rate || 0}%`, color: [16, 185, 129] },
+                    { label: 'Expected Doses', value: String(summary.expected_doses || 0), color: [59, 130, 246] },
+                    { label: 'Completed Doses', value: String(summary.taken_total || 0), color: [79, 70, 229] },
+                    { label: 'Missed / Skipped Doses', value: String(summary.skipped_total || 0), color: [245, 158, 11] },
+                    { label: 'Overuse Alerts', value: String(summary.overuse_total || 0), color: [239, 68, 68] },
+                    { label: 'Late Logged Doses', value: String(summary.late_taken_total || 0), color: [249, 115, 22] },
+                    { label: 'Water Today', value: `${water.today_ml || 0} ml`, color: [14, 165, 233] },
+                    { label: 'Wellness Score', value: String(wellness.wellness_score || 0), color: [236, 72, 153] },
+                ]);
+
+                drawSectionHeader('Detection Index', 'Thresholds used by MedTracker in this report');
+                [
+                    {
+                        title: 'Overuse Index',
+                        body: `${REPORT_INDEX.overuseRule}. Each repeated taken-log creates one overuse alert entry.`,
+                        accent: [239, 68, 68],
+                        background: [254, 242, 242]
+                    },
+                    {
+                        title: 'Low Stock Index',
+                        body: `Low stock alert starts at ${REPORT_INDEX.lowStockThreshold} doses or fewer. Critical stock means ${REPORT_INDEX.criticalStockThreshold} doses remaining.`,
+                        accent: [245, 158, 11],
+                        background: [255, 247, 237]
+                    },
+                    {
+                        title: 'Adherence Index',
+                        body: `Good ${REPORT_INDEX.adherenceBands.good}, Watch ${REPORT_INDEX.adherenceBands.watch}, Risk ${REPORT_INDEX.adherenceBands.risk}. This is based on taken doses out of expected doses, while late logs are tracked separately.`,
+                        accent: [79, 70, 229],
+                        background: [245, 243, 255]
+                    },
+                    {
+                        title: 'Late Intake Index',
+                        body: `A dose is counted as late when it is marked taken more than ${REPORT_INDEX.missedGraceMinutes} minutes after the scheduled time. Late doses still count as taken, but they are highlighted separately.`,
+                        accent: [249, 115, 22],
+                        background: [255, 247, 237]
+                    },
+                    {
+                        title: 'Hydration Index',
+                        body: `Daily hydration target is ${Number(water.goal_ml || REPORT_INDEX.hydrationGoalMl)} ml. Progress is current intake divided by this target.`,
+                        accent: [14, 165, 233],
+                        background: [240, 249, 255]
+                    }
+                ].forEach((item) => {
+                    drawInfoCard(item.title, item.body, {
+                        accent: item.accent,
+                        background: item.background
+                    });
+                });
+
+                if (adherenceChart) {
+                    const chartImage = await captureChartImage(adherenceChart);
+                    if (chartImage) {
+                        drawSectionHeader('Adherence Trend', 'Daily dose completion with adherence percentage overlay');
+                        ensureSpace(76);
+                        doc.setFillColor(255, 255, 255);
+                        doc.setDrawColor(226, 232, 240);
+                        doc.roundedRect(margin, y, usableWidth, 72, 4, 4, 'FD');
+                        doc.addImage(chartImage, 'PNG', margin + 4, y + 4, usableWidth - 8, 64);
+                        y += 78;
+                    }
+                }
+
+                if (hydrationChart) {
+                    const hydrationImage = await captureChartImage(hydrationChart);
+                    if (hydrationImage) {
+                        drawSectionHeader('Hydration Trend', 'Water intake performance against the daily goal');
+                        ensureSpace(62);
+                        doc.setFillColor(255, 255, 255);
+                        doc.setDrawColor(226, 232, 240);
+                        doc.roundedRect(margin, y, usableWidth, 58, 4, 4, 'FD');
+                        doc.addImage(hydrationImage, 'PNG', margin + 4, y + 4, usableWidth - 8, 50);
+                        y += 64;
+                    }
+                }
+
+                drawSectionHeader('Wellness Summary', 'Combined medicine adherence and hydration picture');
+                drawMetricCards([
+                    { label: 'Wellness Score', value: String(wellness.wellness_score || 0), color: [236, 72, 153] },
+                    { label: 'Medicine Adherence', value: `${wellness.adherence_percent || 0}%`, color: [16, 185, 129] },
+                    { label: 'Hydration Progress', value: `${wellness.hydration_percent || 0}%`, color: [14, 165, 233] },
+                    { label: 'Refill Coverage', value: `${refill.refill_coverage_rate || 0}%`, color: [245, 158, 11] },
+                ]);
+
+                if (lateByMedicineChart) {
+                    const lateImage = await captureChartImage(lateByMedicineChart);
+                    if (lateImage) {
+                        drawSectionHeader('Late Dose Trend By Medicine', 'Highlights the medicines most often logged beyond the grace window');
+                        ensureSpace(62);
+                        doc.setFillColor(255, 255, 255);
+                        doc.setDrawColor(226, 232, 240);
+                        doc.roundedRect(margin, y, usableWidth, 58, 4, 4, 'FD');
+                        doc.addImage(lateImage, 'PNG', margin + 4, y + 4, usableWidth - 8, 50);
+                        y += 64;
+                    }
+                }
+
+                if (missedReasonChart) {
+                    const missedReasonImage = await captureChartImage(missedReasonChart);
+                    if (missedReasonImage) {
+                        drawSectionHeader('Missed Dose Reason Graph', 'Visual breakdown of the most common skipped-dose reasons');
+                        ensureSpace(62);
+                        doc.setFillColor(255, 255, 255);
+                        doc.setDrawColor(226, 232, 240);
+                        doc.roundedRect(margin, y, usableWidth, 58, 4, 4, 'FD');
+                        doc.addImage(missedReasonImage, 'PNG', margin + 4, y + 4, usableWidth - 8, 50);
+                        y += 64;
+                    }
+                }
+
+                drawSectionHeader('Missed Dose Reasons', 'Most common causes recorded when doses were skipped');
+                if (!missedReasons.length) {
+                    drawInfoCard(
+                        'No Missed Reasons Logged',
+                        'No skipped-dose reasons were recorded in this monthly window.',
+                        { accent: [16, 185, 129], background: [240, 253, 244] }
+                    );
+                } else {
+                    missedReasons.slice(0, 5).forEach((item, index) => {
+                        drawInfoCard(
+                            `${index + 1}. ${item.reason}`,
+                            `Skipped ${item.count || 0} time${Number(item.count || 0) === 1 ? '' : 's'} in this monthly window.`,
+                            { accent: [245, 158, 11], background: [255, 247, 237] }
+                        );
+                    });
+                }
+
+                drawSectionHeader('Refill Adherence', 'Stock safety, refill actions, and medicines needing attention');
+                drawMetricCards([
+                    { label: 'Refill Actions', value: String(refill.refill_actions_total || 0), color: [79, 70, 229] },
+                    { label: 'Low Stock Medicines', value: String(refill.low_stock_count || 0), color: [245, 158, 11] },
+                    { label: 'Out Of Stock', value: String(refill.out_of_stock_count || 0), color: [239, 68, 68] },
+                    { label: 'Safe Stock Count', value: String(refill.safe_stock_count || 0), color: [16, 185, 129] },
+                ]);
+                (refill.recent_refills || []).slice(0, 4).forEach((item, index) => {
+                    drawInfoCard(
+                        `Recent Refill ${index + 1}: ${item.medicine_name || 'Medicine'}`,
+                        `Added ${item.added_stock || 0} units on ${new Date(item.created_at).toLocaleString()}. New quantity: ${item.new_quantity || 0}.`,
+                        { accent: [14, 165, 233], background: [240, 249, 255] }
+                    );
+                });
+
+                drawSectionHeader('Adherence Alerts', 'Recent alert history for low stock and overuse review');
+                if (!alerts.length) {
+                    drawInfoCard(
+                        'No Active Alerts',
+                        'No adherence alerts were detected in the selected report window.',
+                        { accent: [16, 185, 129], background: [240, 253, 244] }
+                    );
+                } else {
+                    alerts.slice(0, 6).forEach((alert, index) => {
+                        drawInfoCard(
+                            `${index + 1}. ${(alert.type || 'alert').replace('_', ' ').toUpperCase()}`,
+                            `${alert.message || ''} Logged at ${new Date(alert.created_at).toLocaleString()}.`,
+                            {
+                                accent: alert.type === 'overuse' ? [239, 68, 68] : alert.type === 'late_intake' ? [249, 115, 22] : [245, 158, 11],
+                                background: alert.type === 'overuse' ? [254, 242, 242] : alert.type === 'late_intake' ? [255, 247, 237] : [255, 247, 237]
+                            }
+                        );
+                    });
+                }
+
+                drawSectionHeader('Daily Breakdown', 'Compact table for day-by-day presentation reference');
+                const tableRows = reportRows.slice(0, 7);
+                const tableColumns = [
+                    { label: 'Date', width: 32 },
+                    { label: 'Taken', width: 18 },
+                    { label: 'Missed', width: 24 },
+                    { label: 'Pending', width: 20 },
+                    { label: 'Overuse', width: 24 },
+                    { label: 'Late', width: 18 },
+                    { label: 'Water', width: 20 },
+                ];
+                const tableWidth = tableColumns.reduce((sum, col) => sum + col.width, 0);
+                const tableX = margin + ((usableWidth - tableWidth) / 2);
+
+                ensureSpace(14 + (tableRows.length * 8));
+                doc.setFillColor(79, 70, 229);
+                doc.setTextColor(255, 255, 255);
+                doc.roundedRect(tableX, y, tableWidth, 9, 2, 2, 'F');
+                let colX = tableX;
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(9);
+                tableColumns.forEach((column) => {
+                    doc.text(column.label, colX + 2, y + 6);
+                    colX += column.width;
+                });
+                y += 9;
+
+                tableRows.forEach((row, index) => {
+                    ensureSpace(9);
+                    const background = index % 2 === 0 ? [250, 250, 252] : [255, 255, 255];
+                    doc.setFillColor(...background);
+                    doc.setDrawColor(226, 232, 240);
+                    doc.rect(tableX, y, tableWidth, 8, 'FD');
+                    const values = [
+                        row.label,
+                        String(row.taken || 0),
+                        String(row.skipped || 0),
+                        String(row.pending || 0),
+                        String(row.overuse || 0),
+                        String(row.late || 0),
+                        `${row.water_ml || 0}ml`
+                    ];
+                    let valueX = tableX;
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(9);
+                    doc.setTextColor(51, 65, 85);
+                    values.forEach((value, valueIndex) => {
+                        doc.text(String(value), valueX + 2, y + 5.4);
+                        valueX += tableColumns[valueIndex].width;
+                    });
+                    y += 8;
+                });
+
+                const fileDate = generatedAt.toISOString().slice(0, 10);
+                const safeName = (currentUser.name || 'patient').replace(/[^a-z0-9]+/gi, '_').replace(/^_+|_+$/g, '');
+                doc.save(`MedTracker_Report_${safeName || 'patient'}_${fileDate}.pdf`);
+            } catch (error) {
+                console.error(error);
+                window.MedTrackerApp.showToast('Unable to generate the PDF report right now.', 'error');
+            } finally {
+                buttons.forEach((button, index) => {
+                    button.disabled = false;
+                    button.innerHTML = originalLabels[index];
+                });
+            }
+        }
+    </script>
+</body>
+</html>

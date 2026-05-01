@@ -1,0 +1,7 @@
+.git
+.sixth
+.vscode
+backups
+backend/cron/logs
+backend/config/config.local.php
+vendor/phpmailer/phpmailer/test

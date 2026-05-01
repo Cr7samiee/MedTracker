@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Schedule - MedTracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=6">
+    <link rel="stylesheet" href="css/dashboard.css?v=1">
+    <style>
+        .schedule-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .schedule-item {
+            background: var(--surface-solid);
+            padding: 1.5rem;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow-sm);
+            border-left: 5px solid var(--primary);
+            transition: all 0.2s ease;
+        }
+
+        .schedule-item.taken {
+            border-left-color: var(--green);
+            opacity: 0.7;
+        }
+
+        .schedule-item.skipped {
+            border-left-color: var(--red);
+            opacity: 0.7;
+        }
+
+        .schedule-time {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+            min-width: 100px;
+        }
+        
+        .schedule-details {
+            flex-grow: 1;
+            margin-left: 2rem;
+        }
+
+        .schedule-details h4 {
+            font-size: 1.25rem;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .schedule-details p {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin: 0;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .btn-taken {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--green);
+            border: 1px solid var(--green);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-taken:hover {
+            background: var(--green);
+            color: white;
+        }
+
+        .btn-skipped {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--red);
+            border: 1px solid var(--red);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-skipped:hover {
+            background: var(--red);
+            color: white;
+        }
+
+        .btn-snooze {
+            background: rgba(59, 130, 246, 0.08);
+            color: #2563EB;
+            border: 1px solid rgba(37, 99, 235, 0.32);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-snooze:hover {
+            background: #2563EB;
+            color: white;
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 0.875rem;
+            display: none;
+        }
+
+        .status-badge.taken { background: rgba(16, 185, 129, 0.1); color: var(--green); display: inline-block; }
+        .status-badge.skipped { background: rgba(239, 68, 68, 0.1); color: var(--red); display: inline-block; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="javascript:void(0)" class="sidebar-brand sidebar-brand--with-logo" style="text-decoration: none;">
+                    <span class="logo-icon sidebar-brand-mark" aria-hidden="true">💊</span>
+                    <span class="sidebar-brand-copy">
+                        <span class="title" style="font-size:1.25rem;">MedTracker</span>
+                        <span class="subtitle">Patient Portal</span>
+                    </span>
+                </a>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <i>📊</i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="medications.html" class="nav-item">
+                    <i>💊</i>
+                    <span>Medications</span>
+                </a>
+                <a href="schedule.html" class="nav-item active">
+                    <i>🗓️</i>
+                    <span>Schedule</span>
+                </a>
+                <a href="reports.html" class="nav-item">
+                    <i>📈</i>
+                    <span>Reports</span>
+                </a>
+                <a href="settings.html" class="nav-item">
+                    <i>⚙️</i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="btn btn-primary btn-block" style="display: flex; gap: 0.5rem; background: var(--red);" id="logoutBtn">
+                    <i>🚪</i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="top-bar" style="margin-bottom: 2rem;">
+                <div>
+                    <h1 style="font-size: 2rem; color: var(--text-main);">Today's Schedule</h1>
+                    <p style="color: var(--text-muted);">Mark your medications as taken or skipped to maintain your adherence score.</p>
+                </div>
+                <div id="scheduleDateChip" style="background:#F1F5F9; padding:0.5rem 1rem; border-radius:999px; font-weight:600;">
+                    🗓️ Today
+                </div>
+            </div>
+
+            <div class="schedule-grid" id="scheduleGrid">
+                <div class="mt-skeleton-list" aria-hidden="true">
+                    <div class="mt-skeleton-card">
+                        <div class="mt-skeleton-row">
+                            <div class="mt-skeleton-avatar"></div>
+                            <div class="mt-skeleton-meta">
+                                <div class="mt-skeleton-line" style="width: 50%;"></div>
+                                <div class="mt-skeleton-line" style="width: 76%;"></div>
+                            </div>
+                        </div>
+                        <div class="mt-skeleton-line" style="width: 88%;"></div>
+                        <div class="mt-skeleton-line" style="width: 70%;"></div>
+                    </div>
+                    <div class="mt-skeleton-card">
+                        <div class="mt-skeleton-row">
+                            <div class="mt-skeleton-avatar"></div>
+                            <div class="mt-skeleton-meta">
+                                <div class="mt-skeleton-line" style="width: 44%;"></div>
+                                <div class="mt-skeleton-line" style="width: 72%;"></div>
+                            </div>
+                        </div>
+                        <div class="mt-skeleton-line" style="width: 82%;"></div>
+                        <div class="mt-skeleton-line" style="width: 56%;"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="footer-logo">
+                    <span class="logo-icon" aria-hidden="true">💊</span>
+                    <span class="logo-text">MedTracker</span>
+                </div>
+                <p class="footer-tagline">Reminders, inventory, and care coordination in one calm, simple place.</p>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 MedTracker. Your smart companion for medication and health.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/script.js?v=8"></script>
+    <script>
+        function getDoseCountForFrequency(frequency) {
+            const normalized = String(frequency || '').toLowerCase();
+            if (normalized.includes('3x') || normalized.includes('three') || normalized.includes('thrice')) {
+                return 3;
+            }
+            if (normalized.includes('2x') || normalized.includes('twice') || normalized.includes('two')) {
+                return 2;
+            }
+            return 1;
+        }
+
+        function isStockTracked(med) {
+            if (med && Object.prototype.hasOwnProperty.call(med, 'stock_tracked')) {
+                return Number(med.stock_tracked) === 1;
+            }
+
+            const normalizedType = String(med?.type || '').toLowerCase();
+            return !normalizedType.includes('liquid')
+                && !normalizedType.includes('syrup')
+                && !normalizedType.includes('inhaler');
+        }
+
+        function getTrackedStock(med) {
+            return isStockTracked(med) ? Number(med?.stock_remaining || 0) : null;
+        }
+
+        function hasCustomTimes(rawValue) {
+            if (!rawValue) {
+                return false;
+            }
+
+            if (Array.isArray(rawValue)) {
+                return rawValue.length > 0;
+            }
+
+            try {
+                const parsed = JSON.parse(rawValue);
+                return Array.isArray(parsed) && parsed.length > 0;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        function needsPatientTimeSetup(med) {
+            return !hasCustomTimes(med.custom_times_json) && !med.log_id;
+        }
+
+        function parsePatientReminderTimes(rawValue) {
+            if (!rawValue) {
+                return [];
+            }
+
+            if (Array.isArray(rawValue)) {
+                return rawValue.filter((value) => typeof value === 'string' && value.trim() !== '');
+            }
+
+            try {
+                const parsed = JSON.parse(rawValue);
+                return Array.isArray(parsed)
+                    ? parsed.filter((value) => typeof value === 'string' && value.trim() !== '')
+                    : [];
+            } catch (error) {
+                return [];
+            }
+        }
+
+        function parseDoctorPlanSlots(rawValue) {
+            return parsePatientReminderTimes(rawValue);
+        }
+
+        function formatPatientReminderTimes(times) {
+            return times
+                .map((value) => {
+                    const normalized = String(value || '').trim();
+                    if (!normalized) {
+                        return '';
+                    }
+
+                    const timeSource = normalized.length === 5 ? `${normalized}:00` : normalized;
+                    const candidate = new Date(`1970-01-01T${timeSource}`);
+                    return Number.isNaN(candidate.getTime())
+                        ? normalized
+                        : candidate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                })
+                .filter(Boolean)
+                .join(', ');
+        }
+
+        function getPatientTimeWindowLabel(timeValue) {
+            const [hourText] = String(timeValue || '').split(':');
+            const hour = Number(hourText);
+
+            if (Number.isNaN(hour)) {
+                return '';
+            }
+
+            if (hour < 12) {
+                return 'Morning';
+            }
+
+            if (hour < 17) {
+                return 'Afternoon';
+            }
+
+            return 'Evening / Night';
+        }
+
+        function formatPatientTimeWindows(times) {
+            const labels = times
+                .map((value) => getPatientTimeWindowLabel(value))
+                .filter(Boolean);
+
+            return Array.from(new Set(labels)).join(' + ');
+        }
+
+        function isPatientDoseActionAvailable(status, effectiveTimeValue) {
+            if (status !== 'Pending' || !effectiveTimeValue) {
+                return status === 'Pending';
+            }
+
+            const dueAt = new Date(effectiveTimeValue);
+            if (Number.isNaN(dueAt.getTime())) {
+                return true;
+            }
+
+            return dueAt.getTime() <= Date.now();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!window.MedTrackerApp.protectRoute(['User', 'Patient'])) {
+                return;
+            }
+
+            document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
+                e.preventDefault();
+                if (await window.MedTrackerApp.confirmAction('Are you sure you want to log out?', {
+                    title: 'Log out',
+                    confirmText: 'Log out',
+                    tone: 'warning'
+                })) {
+                    window.MedTrackerApp.logout();
+                }
+            });
+
+            document.getElementById('scheduleDateChip').textContent = `🗓️ ${new Date().toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}`;
+            fetchSchedule();
+        });
+
+        async function fetchSchedule() {
+            const grid = document.getElementById('scheduleGrid');
+
+            try {
+                const res = await fetch('../backend/api/get_schedule.php');
+                const data = await res.json();
+                grid.innerHTML = '';
+
+                if (data.success && data.data.length > 0) {
+                    data.data.forEach((med) => {
+                    const requiresSetup = needsPatientTimeSetup(med);
+                    const doseCount = getDoseCountForFrequency(med.frequency || '');
+                    const status = med.status || 'Pending';
+                    const effectiveTimeValue = med.effective_time || med.scheduled_time;
+                    const timeDisp = requiresSetup
+                        ? 'Set Times'
+                        : effectiveTimeValue
+                            ? new Date(effectiveTimeValue).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                            : 'Anytime';
+                    const canActOnDose = isPatientDoseActionAvailable(status, effectiveTimeValue);
+                    const reminderTimes = parsePatientReminderTimes(med.custom_times_json);
+                    const doctorPlanSlots = parseDoctorPlanSlots(med.doctor_slots_json);
+                    const courseLabel = med.treatment_mode === 'ongoing'
+                        ? 'Ongoing chronic schedule'
+                        : med.duration_days
+                            ? `Course Day ${med.treatment_day || 1} of ${med.duration_days} • ${med.days_remaining || 0} day${Number(med.days_remaining) === 1 ? '' : 's'} left`
+                            : '';
+                    const prescriberLine = med.source_type === 'patient'
+                        ? 'Added by you'
+                        : `Prescribed by ${med.prescriber_name || 'Health Worker'}`;
+                    const doctorPlanLine = doctorPlanSlots.length
+                        ? `Doctor plan: ${formatPatientTimeWindows(doctorPlanSlots)}`
+                        : 'Doctor plan: Not set yet';
+                    const reminderPlanLine = reminderTimes.length
+                        ? `Reminder times: ${formatPatientReminderTimes(reminderTimes)}`
+                        : 'Reminder times: Not set yet';
+                    const skipReasonLine = med.skip_reason
+                        ? `<p style="font-size:0.8rem; color:var(--red); margin-top:0.45rem;">Skip reason: ${med.skip_reason}</p>`
+                        : '';
+                    const snoozeLine = med.snooze_until && status === 'Pending'
+                        ? `<p style="font-size:0.8rem; color:#2563EB; margin-top:0.45rem;">Snoozed until ${new Date(med.snooze_until).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>`
+                        : '';
+                    
+                    let actionHtml = '';
+                    let badgeHtml = '';
+                    let extraClass = '';
+                    let outOfStockAlert = '';
+                    const trackedStock = getTrackedStock(med);
+
+                    // Check stock
+                    if (trackedStock !== null && trackedStock <= 0) {
+                        outOfStockAlert = `
+                            <div style="color:var(--red); font-size:0.8rem; font-weight:bold; margin-top:0.5rem;">
+                                ⚠️ Finished! Doctor recommends taking it. 
+                                <button onclick="restockManual(${med.medicine_id})" style="background:var(--primary); color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; margin-left:0.5rem;">Restock</button>
+                            </div>
+                        `;
+                    }
+
+                    if (requiresSetup) {
+                        actionHtml = `<button class="btn-taken" onclick="window.location.href='medications.html'">Set My Times</button>`;
+                        badgeHtml = `<div class="status-badge skipped" style="display:inline-block; background:rgba(79,70,229,0.12); color:var(--primary);">Needs Setup</div>`;
+                    } else if (status === 'Taken') {
+                        extraClass = 'taken';
+                        badgeHtml = `<div class="status-badge taken" style="display:inline-block;">✓ Taken</div>`;
+                    } else if (status === 'Skipped') {
+                        extraClass = 'skipped';
+                        badgeHtml = `<div class="status-badge skipped" style="display:inline-block;">✗ Missed / Skipped</div>`;
+                        actionHtml = `
+                            <button class="btn-taken" onclick="updateStatus(${med.log_id}, ${med.medicine_id}, 'Taken')">✓ Log Late Dose</button>
+                        `;
+                    } else if (!canActOnDose) {
+                        actionHtml = '';
+                        badgeHtml = `<div class="status-badge skipped" style="display:inline-block; background:rgba(79,70,229,0.12); color:var(--primary);">Available at ${timeDisp}</div>`;
+                    } else {
+                        actionHtml = `
+                            <button class="btn-taken" onclick="updateStatus(${med.log_id}, ${med.medicine_id}, 'Taken')">✓ Taken</button>
+                            <button class="btn-snooze" onclick="snoozeDose(${med.log_id})">Snooze</button>
+                            <button class="btn-skipped" onclick="updateStatus(${med.log_id}, ${med.medicine_id}, 'Skipped')">✗ Skipped</button>
+                        `;
+                    }
+
+                    grid.innerHTML += `
+                        <div class="schedule-item ${extraClass}" id="item-${med.log_id || med.medicine_id}">
+                            <div class="schedule-time">${timeDisp}</div>
+                            <div class="schedule-details">
+                                <h4>${med.medicine_name} <span>💊</span></h4>
+                                <p>${med.dosage} • ${med.instructions || 'Follow the prescription guidance.'} • ${doseCount} dose${doseCount === 1 ? '' : 's'} per day • <span style="font-size:0.75rem; color:#888;">${trackedStock === null ? 'Quantity not counted' : `Remaining: ${trackedStock}`}</span></p>
+                                <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0.45rem;">${prescriberLine}</p>
+                                <p style="font-size:0.8rem; color:var(--primary); margin-top:0.35rem;">${doctorPlanLine}</p>
+                                <p style="font-size:0.8rem; color:var(--primary); margin-top:0.35rem;">${reminderPlanLine}</p>
+                                ${requiresSetup ? `<p style="font-size:0.8rem; color:var(--primary); margin-top:0.45rem;">Choose ${doseCount} real reminder time${doseCount === 1 ? '' : 's'} first so this medicine does not fall back to a generic default time.</p>` : ''}
+                                ${courseLabel ? `<p style="font-size:0.8rem; color:var(--primary); margin-top:0.45rem;">${courseLabel}</p>` : ''}
+                                ${snoozeLine}
+                                ${skipReasonLine}
+                                ${outOfStockAlert}
+                            </div>
+                            <div class="action-buttons" id="actions-${med.log_id || med.medicine_id}">
+                                ${actionHtml}
+                            </div>
+                            ${badgeHtml}
+                        </div>
+                    `;
+                    });
+                } else {
+                    grid.innerHTML = window.MedTrackerApp.getEmptyStateHtml({
+                        icon: '🗓',
+                        title: 'No medications scheduled today',
+                        message: 'Your day is clear right now. New doses will appear here as soon as they are scheduled.'
+                    });
+                }
+            } catch (error) {
+                grid.innerHTML = window.MedTrackerApp.getEmptyStateHtml({
+                    icon: '!',
+                    title: 'Schedule unavailable',
+                    message: 'We could not load your schedule right now. Try refreshing again in a moment.'
+                });
+            }
+        }
+
+        async function updateStatus(logId, medicineId, status) {
+            let skipReason = '';
+            if (status === 'Skipped') {
+                if (!await window.MedTrackerApp.confirmAction('Are you sure you want to skip this medication? This will drop your adherence score.', {
+                    title: 'Skip medication',
+                    confirmText: 'Skip dose',
+                    tone: 'warning'
+                })) {
+                    return;
+                }
+
+                const promptValue = await window.MedTrackerApp.promptForText('Why are you skipping this medicine? (forgot, out of stock, felt unwell...)', {
+                    title: 'Skip reason',
+                    confirmText: 'Save reason',
+                    defaultValue: '',
+                    inputLabel: 'Skip reason',
+                    trim: false
+                });
+                if (promptValue === null) {
+                    return;
+                }
+                skipReason = promptValue;
+            }
+
+            try {
+                const res = await fetch('../backend/api/log_intake.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        log_id: logId,
+                        medicine_id: medicineId,
+                        status: status,
+                        skip_reason: skipReason
+                    })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    fetchSchedule(); // Refresh layout
+                } else {
+                    if (data.overuse_alert) {
+                        fetchSchedule();
+                    }
+                    window.MedTrackerApp.showToast('Could not update: ' + data.message, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                window.MedTrackerApp.showToast('Unable to update your schedule right now.', 'error');
+            }
+        }
+
+        async function snoozeDose(logId) {
+            const minutesInput = await window.MedTrackerApp.promptForText('Snooze this dose for how many minutes? (5, 10, 15)', {
+                title: 'Snooze dose',
+                confirmText: 'Snooze',
+                defaultValue: '10',
+                inputLabel: 'Minutes to snooze'
+            });
+            if (minutesInput === null) {
+                return;
+            }
+
+            const minutes = Number(minutesInput);
+            if (Number.isNaN(minutes) || minutes <= 0) {
+                window.MedTrackerApp.showToast('Enter a valid snooze time in minutes.', 'warning', {
+                    title: 'Invalid snooze time'
+                });
+                return;
+            }
+
+            try {
+                const res = await fetch('../backend/api/snooze_intake.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        log_id: logId,
+                        minutes
+                    })
+                });
+                const data = await res.json();
+                if (!data.success) {
+                    throw new Error(data.message || 'Unable to snooze this dose.');
+                }
+                fetchSchedule();
+            } catch (err) {
+                window.MedTrackerApp.showToast(err.message || 'Unable to snooze this dose right now.', 'error');
+            }
+        }
+
+        async function restockManual(medicineId) {
+            const stock = await window.MedTrackerApp.promptForText('How many pills/units did you refill?', {
+                title: 'Restock medicine',
+                confirmText: 'Save stock',
+                defaultValue: '30',
+                inputLabel: 'Refill amount'
+            });
+            if (stock === null || isNaN(stock) || parseInt(stock, 10) <= 0) return;
+
+            try {
+                const res = await fetch('../backend/api/update_stock.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        medicine_id: medicineId,
+                        added_stock: parseInt(stock, 10)
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    window.MedTrackerApp.showToast('Stock updated!', 'success', {
+                        title: 'Inventory refreshed'
+                    });
+                    fetchSchedule();
+                } else {
+                    window.MedTrackerApp.showToast('Failed to restock: ' + data.message, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                window.MedTrackerApp.showToast('Failed to restock this medicine right now.', 'error');
+            }
+        }
+    </script>
+</body>
+</html>
