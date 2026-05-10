@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Consultation - MedTracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=6">
+    <link rel="stylesheet" href="css/dashboard.css?v=2">
+    <style>
+        .video-layout { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 1.5rem; min-height: calc(100vh - 4rem); }
+        .video-panel { background: var(--surface-solid); border: 1px solid rgba(15,23,42,0.08); border-radius: 20px; box-shadow: var(--shadow-sm); padding: 1.25rem; }
+        .video-contact-list { display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem; }
+        .video-contact { width: 100%; border: 1px solid rgba(15,23,42,0.08); background: #F8FAFC; border-radius: 16px; padding: 0.9rem; display: flex; align-items: center; gap: 0.8rem; text-align: left; cursor: pointer; }
+        .video-contact.active, .video-contact:hover { border-color: rgba(79,70,229,0.45); background: rgba(79,70,229,0.06); }
+        .video-contact-avatar { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--primary); color: #FFFFFF; font-weight: 800; flex-shrink: 0; }
+        .video-contact-copy { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+        .video-contact-copy strong { color: var(--text-main); font-size: 0.96rem; }
+        .video-contact-copy small { color: var(--text-muted); overflow-wrap: anywhere; }
+        .video-status-dot { width: 10px; height: 10px; border-radius: 50%; background: #94A3B8; flex-shrink: 0; }
+        .video-status-dot.active { background: #10B981; }
+        .video-call-card { display: flex; flex-direction: column; min-height: calc(100vh - 4rem); }
+        .video-call-header { display: flex; justify-content: space-between; gap: 1rem; align-items: center; margin-bottom: 1rem; }
+        .video-call-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+        .video-frame { flex: 1; min-height: 560px; border-radius: 16px; overflow: hidden; background: #0F172A; }
+        .video-placeholder { height: 100%; min-height: 560px; color: #FFFFFF; display: grid; place-items: center; text-align: center; padding: 2rem; }
+        .video-placeholder p { color: rgba(255,255,255,0.76); margin-top: 0.4rem; }
+        .availability-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 0.85rem; }
+        .message-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr); gap: 1rem; margin-top: 1rem; }
+        .message-thread { height: 260px; overflow: auto; border: 1px solid rgba(15,23,42,0.08); border-radius: 16px; padding: 1rem; background: #F8FAFC; }
+        .message-row { margin-bottom: 0.8rem; display: flex; }
+        .message-row.mine { justify-content: flex-end; }
+        .message-bubble { max-width: min(78%, 520px); background: #FFFFFF; border: 1px solid rgba(15,23,42,0.08); border-radius: 14px; padding: 0.7rem 0.8rem; box-shadow: 0 8px 18px rgba(15,23,42,0.05); }
+        .message-row.mine .message-bubble { background: rgba(79,70,229,0.10); border-color: rgba(79,70,229,0.18); }
+        .message-bubble strong { display: block; font-size: 0.76rem; margin-bottom: 0.2rem; color: var(--text-main); }
+        .message-bubble small { display: block; color: var(--text-muted); margin-top: 0.35rem; }
+        .message-form { display: flex; gap: 0.6rem; margin-top: 0.8rem; }
+        .message-form input, .appointment-form input, .appointment-form textarea, .availability-note { width: 100%; border: 1px solid rgba(15,23,42,0.10); border-radius: 12px; padding: 0.8rem; font-family: 'Outfit', sans-serif; }
+        .appointment-form { display: grid; gap: 0.7rem; }
+        .appointment-list { display: grid; gap: 0.7rem; margin-top: 0.9rem; }
+        .appointment-item { border: 1px solid rgba(15,23,42,0.08); border-radius: 14px; background: #F8FAFC; padding: 0.8rem; }
+        .appointment-item strong { display: block; color: var(--text-main); }
+        .appointment-item small { color: var(--text-muted); }
+        @media (max-width: 1100px) { .video-layout { grid-template-columns: 1fr; } .video-call-card { min-height: auto; } }
+        @media (max-width: 900px) { .message-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 720px) { .video-call-header { align-items: flex-start; flex-direction: column; } .video-frame, .video-placeholder { min-height: 460px; } .message-form { flex-direction: column; } }
+    </style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="javascript:void(0)" class="sidebar-brand sidebar-brand--with-logo" style="text-decoration: none;">
+                    <span class="logo-icon sidebar-brand-mark" aria-hidden="true">💊</span>
+                    <span class="sidebar-brand-copy">
+                        <span class="title" style="font-size:1.25rem;">MedTracker</span>
+                        <span class="subtitle" id="videoRoleLabel">Video Consultation</span>
+                    </span>
+                </a>
+            </div>
+            <nav class="sidebar-nav" id="videoRoleNav"></nav>
+            <div class="sidebar-footer">
+                <div class="user-profile-sm">
+                    <img src="https://ui-avatars.com/api/?name=MedTracker&background=4F46E5&color=fff" alt="Profile">
+                    <div class="info">
+                        <span class="name dynamic-user-name">User</span>
+                        <span class="role">Video Consultation</span>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-block" style="display:flex; gap:0.5rem; background:#991B1B;" id="logoutBtn"><i>🚪</i> Logout</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="top-bar">
+                <div>
+                    <p style="color:var(--text-muted); margin-bottom:0.25rem;">Secure consultation room</p>
+                    <h1 style="font-size:2rem; color:var(--text-main);">Video Consultation</h1>
+                </div>
+            </div>
+
+            <div class="video-layout">
+                <section class="video-panel">
+                    <h2 style="font-size:1.2rem; margin-bottom:0.35rem;">Contacts</h2>
+                    <p style="color:var(--text-muted); margin:0;">Choose a linked doctor or patient to open the shared room.</p>
+                    <div id="doctorAvailabilityPanel" style="display:none; margin-top:1rem; padding-top:1rem; border-top:1px solid rgba(15,23,42,0.08);">
+                        <h3 style="font-size:1rem; margin-bottom:0.45rem;">My Availability</h3>
+                        <input class="availability-note" id="availabilityNote" type="text" placeholder="Optional note, e.g. Busy after 4 PM">
+                        <div class="availability-actions">
+                            <button class="btn btn-primary btn-sm" type="button" id="setActiveBtn">Active</button>
+                            <button class="btn btn-secondary btn-sm" type="button" id="setInactiveBtn">Inactive</button>
+                        </div>
+                    </div>
+                    <div class="video-contact-list" id="videoContactList">
+                        <div class="mt-skeleton-list" aria-hidden="true">
+                            <div class="mt-skeleton-card mt-skeleton-card--compact"></div>
+                            <div class="mt-skeleton-card mt-skeleton-card--compact"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="video-panel video-call-card">
+                    <div class="video-call-header">
+                        <div>
+                            <h2 id="videoCallTitle" style="font-size:1.25rem;">Choose a contact</h2>
+                            <p id="videoCallSubtitle" style="color:var(--text-muted); margin:0.25rem 0 0;">Your call room will appear here.</p>
+                        </div>
+                        <div class="video-call-actions">
+                            <button class="btn btn-primary" type="button" id="videoJoinBtn">Start / Join Call</button>
+                            <button class="btn btn-secondary" type="button" id="videoLeaveBtn" disabled>Leave</button>
+                        </div>
+                    </div>
+                    <div class="video-frame" id="videoMeetFrame">
+                        <div class="video-placeholder">
+                            <div>
+                                <h3>Ready for consultation</h3>
+                                <p>Select a contact, then start the call. The other side joins the same room from their account.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="message-grid">
+                        <section>
+                            <h3 style="font-size:1rem; margin-bottom:0.75rem;">Messages</h3>
+                            <div class="message-thread" id="messageThread">
+                                <p style="color:var(--text-muted);">Choose a contact to load messages.</p>
+                            </div>
+                            <div class="message-form">
+                                <input id="messageInput" type="text" placeholder="Send message about availability, symptoms, or follow-up">
+                                <button class="btn btn-primary" type="button" id="messageSendBtn">Send</button>
+                            </div>
+                        </section>
+
+                        <section>
+                            <h3 style="font-size:1rem; margin-bottom:0.75rem;">Video Appointments</h3>
+                            <form class="appointment-form" id="appointmentForm" style="display:none;">
+                                <input id="appointmentTime" type="datetime-local" required>
+                                <textarea id="appointmentNote" rows="2" placeholder="Optional appointment note"></textarea>
+                                <button class="btn btn-primary" type="submit">Set Appointment</button>
+                            </form>
+                            <div class="appointment-list" id="appointmentList">
+                                <p style="color:var(--text-muted);">Choose a contact to load appointments.</p>
+                            </div>
+                        </section>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/script.js?v=9"></script>
+    <script src="https://meet.jit.si/external_api.js"></script>
+    <script src="js/video_call.js?v=1"></script>
+</body>
+</html>

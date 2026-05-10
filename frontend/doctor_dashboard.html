@@ -320,6 +320,10 @@
                     <i>👥</i>
                     <span>Patient Queue</span>
                 </a>
+                <a href="video_call.html" class="nav-item">
+                    <i>📹</i>
+                    <span>Video Call</span>
+                </a>
                 <a href="settings.html" class="nav-item">
                     <i>⚙️</i>
                     <span>Account</span>
@@ -449,6 +453,9 @@
                         </div>
                         <div class="action-card light" onclick="document.getElementById('doctorPatientList')?.scrollIntoView({ behavior: 'smooth' })">
                             <span style="font-size:1.25rem;">👥</span> Review Patients
+                        </div>
+                        <div class="action-card light" onclick="window.location.href='video_call.html'">
+                            <span style="font-size:1.25rem;">📹</span> Video Consultation
                         </div>
                     </div>
 
@@ -851,11 +858,14 @@
                         </div>
                     </div>
                     <div class="patient-adherence">
-                        <div class="adherence-label">${criticalCount > 0 ? 'Critical' : riskCount > 0 ? 'At Risk' : 'Overview'}</div>
-                        <div class="adherence-val" style="color:var(--text-main); font-size:0.9rem;">
-                            ${criticalCount > 0 ? `${criticalCount} critical` : riskCount > 0 ? `${riskCount} flagged` : (activeMeds.length ? 'Stable' : 'Waiting')}
-                        </div>
+                        ${criticalCount > 0 || riskCount > 0 || activeMeds.length ? `
+                            <div class="adherence-label">${criticalCount > 0 ? 'Critical' : riskCount > 0 ? 'At Risk' : 'Status'}</div>
+                            <div class="adherence-val" style="color:var(--text-main); font-size:0.9rem;">
+                                ${criticalCount > 0 ? `${criticalCount} critical` : riskCount > 0 ? `${riskCount} flagged` : 'Stable'}
+                            </div>
+                        ` : ''}
                         <div class="patient-actions" style="margin-top:0.8rem;">
+                            <button class="tiny-action edit" onclick="window.location.href='video_call.html?contact_id=${encodeURIComponent(patient.id)}'">Video Call</button>
                             <button class="tiny-action edit" onclick="openDoctorPatientProfile('${String(patient.id).replace(/'/g, "\\'")}')">View Profile</button>
                         </div>
                     </div>

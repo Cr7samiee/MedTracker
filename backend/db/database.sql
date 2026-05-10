@@ -155,3 +155,42 @@ CREATE TABLE IF NOT EXISTS system_logs (
     status ENUM('SUCCESS', 'ERROR', 'RETRIED') DEFAULT 'SUCCESS',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Consultation messaging between linked patients and health workers
+CREATE TABLE IF NOT EXISTS consultation_messages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sender_id VARCHAR(50) NOT NULL,
+    receiver_id VARCHAR(50) NOT NULL,
+    message TEXT NOT NULL,
+    is_read TINYINT(1) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_consultation_pair (sender_id, receiver_id, created_at),
+    FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Health worker availability for video consultations
+CREATE TABLE IF NOT EXISTS doctor_presence (
+    worker_id VARCHAR(50) PRIMARY KEY,
+    status ENUM('active', 'inactive') NOT NULL DEFAULT 'inactive',
+    note VARCHAR(255) DEFAULT NULL,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (worker_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Scheduled video appointments created by health workers
+CREATE TABLE IF NOT EXISTS video_appointments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    worker_id VARCHAR(50) NOT NULL,
+    patient_id VARCHAR(50) NOT NULL,
+    scheduled_at DATETIME NOT NULL,
+    note VARCHAR(255) DEFAULT NULL,
+    status ENUM('scheduled', 'cancelled', 'completed') NOT NULL DEFAULT 'scheduled',
+    created_by VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_video_appointment_worker (worker_id, scheduled_at),
+    INDEX idx_video_appointment_patient (patient_id, scheduled_at),
+    FOREIGN KEY (worker_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
+);

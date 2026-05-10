@@ -79,6 +79,7 @@ window.MedTrackerApp = {
                     { href: 'doctor_dashboard.html', label: 'Overview', icon: '📊' },
                     { href: 'doctor_schedule.html', label: 'Prescription Desk', icon: '🗓️' },
                     { href: 'doctor_dashboard.html#doctorPatientSection', label: 'Patient Queue', icon: '👥' },
+                    { href: 'video_call.html', label: 'Video Call', icon: '📹' },
                     { href: 'doctor_dashboard.html#doctorAlertsSection', label: 'Alerts', icon: '🔔' },
                     { href: 'settings.html', label: 'Account', icon: '⚙️' }
                 ]
@@ -94,6 +95,7 @@ window.MedTrackerApp = {
                 { href: 'dashboard.html', label: 'Dashboard', icon: '📊' },
                 { href: 'medications.html', label: 'Medications', icon: '💊' },
                 { href: 'schedule.html', label: 'Schedule', icon: '🗓️' },
+                { href: 'video_call.html', label: 'Video Call', icon: '📹' },
                 { href: 'reports.html', label: 'Reports', icon: '📈' },
                 { href: 'settings.html', label: 'Settings', icon: '⚙️' }
             ]
