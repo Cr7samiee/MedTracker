@@ -1,2 +1,1 @@
-# MedTracker
-5th Semester Project
+💊 MedTracker — Smart Medication Management System📌 Project OverviewMedTracker is a web-based medication management and health coordination platform designed to help patients track their daily medication schedules, manage medicine inventory, and connect with healthcare providers. The system supports three distinct user roles — Patient, Health Worker, and Admin — each with a dedicated dashboard and set of features tailored to their responsibilities.The project is built using HTML, CSS, and vanilla JavaScript on the frontend, with a PHP-based REST API backend. No frontend frameworks are used — the entire UI is hand-crafted with custom components.
